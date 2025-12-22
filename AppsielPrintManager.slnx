@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Core/Core.csproj" />
+  <Project Path="Infraestructure/Infraestructure.csproj" />
+  <Project Path="UI/UI.csproj" />
+  <Project Path="WorkerService/WorkerService.csproj" />
+</Solution>
