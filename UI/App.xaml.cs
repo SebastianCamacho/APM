@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection; // Se mantiene por si era necesario antes, si no, se puede eliminar.
 
 namespace UI
 {

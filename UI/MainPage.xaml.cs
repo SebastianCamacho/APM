@@ -1,4 +1,4 @@
-﻿namespace UI
+namespace UI
 {
     public partial class MainPage : ContentPage
     {

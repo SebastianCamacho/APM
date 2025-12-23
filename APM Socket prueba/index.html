@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Conexión APM WebSocket</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        #status { font-weight: bold; margin-top: 10px; }
+        #messages { border: 1px solid #ccc; padding: 10px; min-height: 150px; overflow-y: scroll; margin-top: 20px; background-color: #f9f9f9; }
+        .log-info { color: blue; }
+        .log-success { color: green; }
+        .log-error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Cliente de Prueba APM WebSocket</h1>
+    <p>Estado de la conexión: <span id="status">Desconectado</span></p>
+    <button id="reconnectButton" style="margin-top: 10px; padding: 5px 10px;">Reconectar</button>
+    <p>Mensajes del Cliente:</p>
+    <div id="messages"></div>
+
+    <h2>Enviar Mensaje de Prueba (PrintJobRequest)</h2>
+    <textarea id="jsonPayload" rows="15" cols="80" style="width:100%; box-sizing:border-box;">
+{
+    "JobId": "1234",
+    "StationId": "CAJA_1",
+    "PrinterId": "PRN_CAJA_01",
+    "DocumentType": "ticket_venta",
+    "Data": {
+        "company": {
+            "Name": "Supermercado El Ahorro",
+            "Nit": "900123456-7",
+            "Address": "Cra 10 #20-30",
+            "Phone": "3001234567"
+        },
+        "sale": {
+            "Number": "FV-000123",
+            "Date": "2025-12-18T10:35:00Z",
+            "Subtotal": 16200,
+            "Tax": 3078,
+            "Total": 19278,
+            "Items": [
+                { "Name": "Arroz x 1kg", "Qty": 2, "UnitPrice": 3200, "Total": 6400 },
+                { "Name": "Aceite x 1L", "Qty": 1, "UnitPrice": 9800, "Total": 9800 }
+            ],
+            "footer": [
+                "Gracias por su compra",
+                "Síguenos en @tienda"
+            ]
+        }
+    },
+    "Images": [
+        {
+            "Id": "LOGO",
+            "Base64": "iVBORw0KGgoAAAANSUhEUgAABVYAA...",
+            "Align": "center",
+            "WidthMm": 48
+        }
+    ],
+    "Barcodes": [
+        {
+            "Type": "CODE128",
+            "Value": "FV-000123",
+            "Height": 80,
+            "Hri": true,
+            "Align": "center"
+        }
+    ],
+    "QRs": [
+        {
+            "Value": "https://appsiel.com/venta/1234",
+            "Size": 200,
+            "Align": "center"
+        }
+    ]
+}
+    </textarea>
+    <button id="sendPayloadButton" style="margin-top: 10px; padding: 10px 20px; font-size: 16px;">Enviar PrintJobRequest</button>
+
+    <script src="main.js"></script>
+</body>
+</html>
