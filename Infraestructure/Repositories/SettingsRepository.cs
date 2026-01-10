@@ -27,9 +27,19 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         public SettingsRepository(ILoggingService logger)
         {
             _logger = logger;
-            // Para una aplicación de consola o MAUI, podemos guardar en el directorio base de la aplicación.
-            // En una aplicación MAUI, se podría considerar FileSystem.AppDataDirectory para ubicaciones específicas de usuario.
-            _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SettingsFileName);
+            
+            // Obtener el directorio de datos de la aplicación local del usuario
+            string appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            // Crear una subcarpeta específica para nuestra aplicación
+            string appSpecificDirectory = Path.Combine(appDataDirectory, "AppsielPrintManager");
+
+            // Asegurarse de que el directorio exista
+            if (!Directory.Exists(appSpecificDirectory))
+            {
+                Directory.CreateDirectory(appSpecificDirectory);
+            }
+
+            _filePath = Path.Combine(appSpecificDirectory, SettingsFileName);
             _logger.LogInfo($"Ruta del archivo de configuraciones de impresora: {_filePath}");
         }
 
@@ -116,6 +126,8 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         {
             if (!File.Exists(_filePath))
             {
+                _logger.LogError($"EEl archivo no exite {_filePath}");
+
                 return new List<PrinterSettings>();
             }
 

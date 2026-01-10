@@ -21,7 +21,11 @@ namespace ConsoleApp
                     // Registro de servicios de Core e Infraestructure
                     services.AddSingleton<ILoggingService, Logger>();
                     services.AddSingleton<IWebSocketService, WebSocketServerService>();
-                    services.AddSingleton<ISettingsRepository, SettingsRepository>(); // Nuevo registro
+                    services.AddSingleton<ISettingsRepository, SettingsRepository>();
+                    services.AddSingleton<ITicketRenderer, TicketRendererService>(); // Nuevo registro
+                    services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>(); // Nuevo registro
+                    services.AddSingleton<TcpIpPrinterClient>(); // Nuevo registro
+                    services.AddSingleton<IPrintService, PrintService>(); // Nuevo registro
 
                     // Registrar el servicio alojado que gestionará la lógica de la consola y el WebSocketServer.
                     services.AddHostedService<ConsoleHostedService>();

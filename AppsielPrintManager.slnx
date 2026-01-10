@@ -2,6 +2,6 @@
   <Project Path="ConsoleApp/ConsoleApp.csproj" />
   <Project Path="Core/Core.csproj" />
   <Project Path="Infraestructure/Infraestructure.csproj" />
-  <Project Path="UI/UI.csproj" />
+  <Project Path="UI/UI.csproj" Id="44da8534-ed12-4cd0-9574-f88acef06183" />
   <Project Path="WorkerService/WorkerService.csproj" />
 </Solution>

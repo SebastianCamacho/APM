@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection; // Se mantiene por si era necesario antes, si no, se puede eliminar.
+using UI.Views; // Añadir este using
+using CommunityToolkit.Mvvm.Messaging; // Añadir este using para mensajería MVVM
+using Microsoft.Maui.Controls; // Añadir este using para Application.Current
 
 namespace UI
 {
@@ -7,11 +9,25 @@ namespace UI
         public App()
         {
             InitializeComponent();
+
+            UserAppTheme = AppTheme.Light;
+
+            // Suscribirse al mensaje de login exitoso
+            WeakReferenceMessenger.Default.Register<LoginSuccessMessage>(this, (r, m) =>
+            {
+                // Al recibir el mensaje de éxito, establecer AppShell como la MainPage de la aplicación
+                Application.Current.MainPage = new AppShell();
+            });
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new AppShell());
+            // La ventana inicial contendrá la LoginView.
+            // Una vez que el login sea exitoso, la MainPage de la aplicación se reemplazará por AppShell.
+            return new Window(new LoginView());
         }
     }
+
+    // Definir un mensaje simple para comunicar el éxito del login
+    public class LoginSuccessMessage { }
 }

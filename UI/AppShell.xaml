@@ -3,12 +3,60 @@
     x:Class="UI.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:UI"
-    Title="UI">
+    xmlns:views="clr-namespace:UI.Views"
+    Title="Appsiel Print Manager"
+    FlyoutIcon="icono_menu.png">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    
+   
+    <!-- Encabezado del Flyout -->
+    <Shell.FlyoutHeader>
+        <Grid HeightRequest="150" BackgroundColor="{StaticResource Primary}">
+            <Label Text="Appsiel Print Manager"
+                   TextColor="White"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" />
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <!-- Items del Flyout -->
+    <FlyoutItem Title="Inicio" Icon="icono_inicio.png"> <!-- Actualizado -->
+        <ShellContent
+            Route="HomePage"
+            ContentTemplate="{DataTemplate views:HomePage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Impresoras" Icon="icono_impresora.png"> <!-- Actualizado -->
+        <ShellContent
+            Route="PrintersPage"
+            ContentTemplate="{DataTemplate views:PrintersPage}" />
+    </FlyoutItem>
+
+    <!-- Solo visible en Windows. La visibilidad condicional se manejará en code-behind. -->
+    <FlyoutItem x:Name="ScalesFlyoutItem" Title="Básculas" Icon="icono_balanza.png"> <!-- Actualizado -->
+        <ShellContent
+            Route="ScalesPage"
+            ContentTemplate="{DataTemplate views:ScalesPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Logs" Icon="icono_logs.png"> <!-- Actualizado -->
+        <ShellContent
+            Route="LogsPage"
+            ContentTemplate="{DataTemplate views:LogsPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Configuración" Icon="icono_configuracion.png"> <!-- Actualizado -->
+        <ShellContent
+            Route="SettingsPage"
+            ContentTemplate="{DataTemplate views:SettingsPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Acerca de" Icon="icono_info.png"> <!-- Actualizado -->
+        <ShellContent
+            Route="AboutPage"
+            ContentTemplate="{DataTemplate views:AboutPage}" />
+    </FlyoutItem>
 
 </Shell>

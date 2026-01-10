@@ -1,14 +1,12 @@
-using Microsoft.Extensions.Logging;
-using AppsielPrintManager.Core.Interfaces;
+﻿using AppsielPrintManager.Core.Interfaces;
+using AppsielPrintManager.Infraestructure.Repositories;
 using AppsielPrintManager.Infraestructure.Services;
-using AppsielPrintManager.Infraestructure.Repositories; // Para ISettingsRepository, SettingsRepository
-
-#if ANDROID
-using UI.Platforms.Android.Services; // Para AndroidPlatformService
-#elif WINDOWS
-using UI.Platforms.Windows.Services; // Para WindowsPlatformService
-#endif
-
+using CommunityToolkit.Maui;
+using Microsoft.Extensions.DependencyInjection; // Added for service registration
+using Microsoft.Extensions.Logging;
+using UI.Services;
+using UI.ViewModels;
+using UI.Converters; // Añadir esta línea
 
 namespace UI
 {
@@ -19,6 +17,7 @@ namespace UI
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -28,17 +27,25 @@ namespace UI
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
-            // Registro de servicios de Core e Infraestructure
+            // Register Core and Infraestructure services
             builder.Services.AddSingleton<ILoggingService, Logger>();
             builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>();
-            builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>(); // Registrar el repositorio de configuraciones
+            builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
+            builder.Services.AddSingleton<ITicketRenderer, TicketRendererService>(); // Nuevo registro
+            builder.Services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>(); // Nuevo registro
+            builder.Services.AddSingleton<TcpIpPrinterClient>(); // Nuevo registro
+            builder.Services.AddSingleton<IPrintService, PrintService>(); // Nuevo registro
+            builder.Services.AddSingleton<IPlatformService, StubPlatformService>(); // Registra StubPlatformService
 
-            // Registro de servicios específicos de la plataforma
-#if ANDROID
-            builder.Services.AddSingleton<IPlatformService, UI.Platforms.Android.Services.AndroidPlatformService>();
-#elif WINDOWS
-            builder.Services.AddSingleton<IPlatformService, UI.Platforms.Windows.Services.WindowsPlatformService>();
-#endif
+            // ViewModels
+            builder.Services.AddTransient<PrintersViewModel>();
+            builder.Services.AddTransient<PrinterDetailViewModel>(); // Nuevo registro
+            builder.Services.AddTransient<LogsViewModel>(); // Nuevo registro
+
+            // Converters
+            builder.Services.AddSingleton<InverseBoolConverter>(); // Nuevo registro
+            builder.Services.AddSingleton<NumericToStringConverter>(); // Nuevo registro
+            builder.Services.AddSingleton<LogLevelToColorConverter>(); // Nuevo registro
 
             return builder.Build();
         }

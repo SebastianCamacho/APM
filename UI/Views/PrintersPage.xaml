@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:UI.ViewModels"
+             xmlns:model="clr-namespace:AppsielPrintManager.Core.Models"
+             x:Class="UI.Views.PrintersPage"
+             Title="Impresoras"
+             x:DataType="viewmodels:PrintersViewModel">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Añadir Impresora" Command="{Binding AddPrinterCommand}" IconImageSource="icono_anadir_impresora.svg" />
+    </ContentPage.ToolbarItems>
+
+    <ContentPage.Content>
+        <Grid RowDefinitions="Auto, *" RowSpacing="10">
+            <Label Grid.Row="0" Text="Gestión de Impresoras" 
+                   Style="{StaticResource SubHeadline}"
+                   HorizontalOptions="Center" VerticalOptions="Center"
+                   Margin="0,10,0,10" />
+
+            <CollectionView Grid.Row="1" ItemsSource="{Binding Printers}" SelectionMode="None"
+                            Margin="10,0,10,0"> <!-- Margen horizontal para toda la lista -->
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                         Padding="20">
+                        <Label Text="No hay impresoras configuradas." FontSize="Medium" TextColor="Gray" />
+                        <Button Text="Añadir la primera impresora" Command="{Binding AddPrinterCommand}" Margin="10" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:PrinterSettings">
+                        <SwipeView Margin="0,5,0,5"> <!-- Margen vertical entre ítems -->
+                            <SwipeView.RightItems>
+                                <SwipeItems Mode="Reveal">
+                                    <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PrintersViewModel}}, Path=EditPrinterCommand}"
+                                                   CommandParameter="{Binding .}">
+                                        <Grid BackgroundColor="LightBlue">
+                                            <Label Text="Editar"
+                                                   TextColor="White"
+                                                   FontAttributes="Bold"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                    </SwipeItemView>
+                                    <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PrintersViewModel}}, Path=DeletePrinterCommand}"
+                                                   CommandParameter="{Binding .}">
+                                        <Grid BackgroundColor="Red">
+                                            <Label Text="Eliminar"
+                                                   TextColor="White"
+                                                   FontAttributes="Bold"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                    </SwipeItemView>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Border StrokeShape="RoundRectangle 10" StrokeThickness="1"
+                                    Stroke="{StaticResource Gray300}"
+                                    BackgroundColor="{AppThemeBinding Light=White, Dark=DarkGray}">
+                                <Grid ColumnDefinitions="Auto, *" Padding="15">
+                                    <Image Source="icono_impresora.png"
+                                           HeightRequest="40" WidthRequest="40"
+                                           VerticalOptions="Center" HorizontalOptions="Center"
+                                           Margin="0,0,10,0" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                        <Label Text="{Binding PrinterId}" FontAttributes="Bold" FontSize="Medium" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                        <Label Text="{Binding IpAddress}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+                                        <Label Text="{Binding Port, StringFormat='Puerto: {0}'}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+                                        <Label Text="{Binding PaperWidthMm, StringFormat='Ancho Papel: {0}mm'}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <ActivityIndicator Grid.Row="2" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                               VerticalOptions="Center" HorizontalOptions="Center"
+                               Color="{StaticResource Primary}" />
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

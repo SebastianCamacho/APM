@@ -4,7 +4,7 @@ const websocketUrl = 'ws://localhost:7000/websocket/'; // La URL de tu servidor 
 let socket;
 const statusSpan = document.getElementById('status');
 const messagesDiv = document.getElementById('messages');
-let jsonPayloadTextarea; 
+let activePayloadId = 'payloadTicket'; // Por defecto
 
 function logMessage(message, type = 'info') {
     const p = document.createElement('p');
@@ -93,18 +93,122 @@ function sendTestMessage(message) {
     }
 }
 
+// Plantillas JSON para cada tipo de documento
+const templates = {
+    ticket: {
+        "JobId": "TICKET-001",
+        "StationId": "CAJA_1",
+        "PrinterId": "printHambuger",
+        "DocumentType": "ticket_venta",
+        "Data": {
+            "company": { "Name": "Supermercado Demo", "Nit": "900123456", "Address": "Calle Principal #123" },
+            "sale": { 
+                "Number": "FV-1001", 
+                "Date": new Date().toISOString(), 
+                "Items": [
+                    { "Name": "Leche Entera", "Qty": 2, "Total": 5000 },
+                    { "Name": "Pan Tajado", "Qty": 1, "Total": 3500 }
+                ],
+                "Total": 8500
+            },
+            "footer": ["Gracias por su compra"]
+        },
+        "Images": [], "Barcodes": [], "QRs": []
+    },
+    comanda: {
+        "JobId": "CMD-001",
+        "StationId": "COCINA",
+        "PrinterId": "printHambuger",
+        "DocumentType": "comanda",
+        "Data": {
+            "order": { 
+                "Number": "CMD-001",
+                "Table": "Mesa 5", 
+                "Waiter": "Carlos", 
+                "Date": new Date().toISOString(),
+                "Items": [
+                    { "Name": "Hamburguesa Doble", "Qty": 1, "Notes": "Sin cebolla" },
+                    { "Name": "Papas Fritas", "Qty": 1, "Notes": "Extra crocantes" },
+                    { "Name": "Gaseosa", "Qty": 2 }
+                ]
+            }
+        },
+        "Images": [], "Barcodes": [], "QRs": []
+    },
+    factura: {
+        "JobId": "FE-2025",
+        "StationId": "ADMIN",
+        "PrinterId": "printHambuger",
+        "DocumentType": "factura_electronica",
+        "Data": {
+            "header": { "Title": "FACTURA ELECTRÓNICA DE VENTA", "Number": "FE-2025" },
+            "customer": { "Name": "Empresa Cliente S.A.S", "Nit": "800.111.222-3", "Address": "Av. Empresarial 55" },
+            "totals": { "Subtotal": 100000, "Tax": 19000, "Total": 119000 },
+            "cufe": "abc1234567890def..."
+        },
+        "Images": [], "Barcodes": [], "QRs": []
+    },
+    barcodes: {
+        "JobId": "BAR-001",
+        "StationId": "BODEGA",
+        "PrinterId": "printHambuger",
+        "DocumentType": "codigos_barra",
+        "Data": { "Label": "Etiqueta de Inventario" },
+        "Images": [],
+        "Barcodes": [
+            { "Type": "CODE128", "Value": "PROD-12345", "Height": 60, "Hri": true, "Align": "center" }
+        ],
+        "QRs": []
+    }
+};
+
+// Función global para cambiar de pestaña (llamada desde HTML)
+window.openTab = function(tabName) {
+    // Actualizar botones
+    const buttons = document.querySelectorAll('.tab-button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    // Buscar el botón que llamó a la función (esto es un poco hacky si se llama programáticamente, pero funciona con onclick)
+    const clickedBtn = Array.from(buttons).find(b => b.textContent.toLowerCase().includes(tabName.replace('ticket', 'ticket').replace('barcodes', 'códigos')));
+    if(clickedBtn) clickedBtn.classList.add('active'); // Fallback simple
+    
+    // Encontrar el botón específico por texto o índice sería más robusto, pero para este script simple:
+    // Vamos a confiar en que el usuario hace click. Para hacerlo visualmente correcto:
+    if (event && event.target) {
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    // Actualizar Textareas
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => content.classList.remove('active'));
+    
+    const selectedId = 'payload' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
+    document.getElementById(selectedId).classList.add('active');
+    activePayloadId = selectedId;
+};
+
 // Conectar automáticamente cuando la página se carga y adjuntar listeners al DOM
 document.addEventListener('DOMContentLoaded', () => {
     connectWebSocket();
 
-    jsonPayloadTextarea = document.getElementById('jsonPayload');
+    // Inicializar los textareas con los JSONs
+    document.getElementById('payloadTicket').value = JSON.stringify(templates.ticket, null, 4);
+    document.getElementById('payloadComanda').value = JSON.stringify(templates.comanda, null, 4);
+    document.getElementById('payloadFactura').value = JSON.stringify(templates.factura, null, 4);
+    document.getElementById('payloadBarcodes').value = JSON.stringify(templates.barcodes, null, 4);
+
     const sendPayloadButton = document.getElementById('sendPayloadButton');
     const reconnectButton = document.getElementById('reconnectButton'); // Obtener el botón de reconexión
 
-    if (sendPayloadButton && jsonPayloadTextarea) {
+    if (sendPayloadButton) {
         sendPayloadButton.addEventListener('click', () => {
-            const payload = jsonPayloadTextarea.value;
-            sendTestMessage(payload);
+            const activeTextarea = document.getElementById(activePayloadId);
+            if (activeTextarea) {
+                const payload = activeTextarea.value;
+                sendTestMessage(payload);
+            } else {
+                logMessage('Error: No se encontró el área de texto activa.', 'error');
+            }
         });
     } else {
         logMessage('Error: No se encontraron los elementos HTML para enviar el payload.', 'error');

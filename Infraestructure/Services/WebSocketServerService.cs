@@ -55,13 +55,12 @@ namespace AppsielPrintManager.Infraestructure.Services
         public int CurrentClientCount => _connectedClientCount;
 
 
-        /// <summary>
-        /// Constructor del servicio WebSocketServerService.
-        /// </summary>
-        /// <param name="logger">Servicio de logging para registrar eventos.</param>
-        public WebSocketServerService(ILoggingService logger)
+        private readonly IPrintService _printService;
+
+        public WebSocketServerService(ILoggingService logger, IPrintService printService)
         {
             _logger = logger;
+            _printService = printService;
             _messageQueue = new ConcurrentQueue<string>();
         }
 
@@ -84,12 +83,12 @@ namespace AppsielPrintManager.Infraestructure.Services
             // La URL debe terminar en '/' para HttpListener.
             // 'http://*:' permite escuchar en todas las interfaces de red, útil para conexiones desde otros dispositivos.
             // Requiere permisos de administrador o configuración de ACL (netsh http add urlacl).
-            _httpListener.Prefixes.Add($"http://*:{port}/websocket/"); 
+            _httpListener.Prefixes.Add($"http://localhost:{port}/websocket/"); 
 
             try
             {
                 _httpListener.Start();
-                _logger.LogInfo($"Servidor WebSocket iniciado y escuchando en puerto {port} en http://*:{port}/websocket/");
+                _logger.LogInfo($"Servidor WebSocket iniciado y escuchando en puerto {port} en http://localhost:{port}/websocket/");
                 // Inicia un bucle para escuchar conexiones entrantes de clientes.
                 _ = ListenForConnectionsAsync(_cts.Token); 
                 // Inicia una tarea para procesar los mensajes JSON recibidos de forma asíncrona.
@@ -291,7 +290,6 @@ namespace AppsielPrintManager.Infraestructure.Services
                             // Usamos la dirección IP del cliente como un ID simple para logs.
                             var clientId = context.Request.RemoteEndPoint.ToString(); 
 
-                            _logger.LogInfo($"Cliente WebSocket conectado: {clientId}");
                             Interlocked.Increment(ref _connectedClientCount); // Incrementar el contador de clientes
                             // Disparar evento de conexión de cliente.
                             OnClientConnected?.Invoke(this, clientId).Forget();
@@ -432,9 +430,10 @@ namespace AppsielPrintManager.Infraestructure.Services
                         var request = JsonSerializer.Deserialize<PrintJobRequest>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                         if (request != null)
                         {
-                            _logger.LogInfo($"PrintJobRequest deserializado para JobId: {request.JobId}. Disparando evento OnPrintJobReceived.");
-                            // Disparar el evento para que los suscriptores (ej. la UI) procesen la solicitud.
-                            OnPrintJobReceived?.Invoke(this, request).Forget();
+                            _logger.LogInfo($"PrintJobRequest deserializado para JobId: {request.JobId}. Iniciando procesamiento.");
+                            PrintJobResult printResult = await _printService.ProcessPrintJobAsync(request);
+                            _logger.LogInfo($"Procesamiento de PrintJobRequest para JobId: {request.JobId} completado con estado: {printResult.Status}. Enviando resultado al cliente.");
+                            await SendPrintJobResultToAllClientsAsync(printResult);
                         }
                     }
                     catch (JsonException jex)

@@ -46,17 +46,7 @@ namespace ConsoleApp
             };
             _webSocketService.OnPrintJobReceived += (sender, request) =>
             {
-                _logger.LogInfo($"[WebSocket] PrintJobRequest recibido para JobId: {request.JobId}");
-                try
-                {
-                    var options = new JsonSerializerOptions { WriteIndented = true };
-                    var jsonString = JsonSerializer.Serialize(request, options);
-                    _logger.LogInfo($"[WebSocket] Contenido recibido: \n{jsonString}");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Error al serializar PrintJobRequest para mostrar: {ex.Message}", ex);
-                }
+                _logger.LogInfo($"[WebSocket] PrintJobRequest recibido para JobId: {request.JobId}. Delegando procesamiento.");
                 return Task.CompletedTask;
             };
         }

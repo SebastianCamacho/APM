@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:UI.ViewModels"
+             xmlns:converters="clr-namespace:UI.Converters"
+             x:Class="UI.Views.PrinterDetailPage"
+             Title="Detalle de Impresora"
+             x:DataType="viewmodels:PrinterDetailViewModel">
+
+    <ContentPage.Resources>
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+        <converters:NumericToStringConverter x:Key="NumericToStringConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="*, Auto, *"
+              RowSpacing="20" ColumnSpacing="0" Padding="20">
+
+            <!-- Título de la Página -->
+            <Label Grid.Row="0" Grid.ColumnSpan="3" Text="Configuración de Impresora"
+                   FontSize="Title" HorizontalOptions="Center" VerticalOptions="Center"
+                   Margin="0,0,0,10" />
+
+            <!-- Contenedor Principal Centrado para los Campos -->
+            <Border Grid.Row="1" Grid.Column="1" Padding="20" StrokeShape="RoundRectangle 10"
+                    BackgroundColor="{AppThemeBinding Light=White, Dark=DarkGray}"
+                    HorizontalOptions="Center" VerticalOptions="Start">
+                <VerticalStackLayout Spacing="15" WidthRequest="300">
+
+                    <Label Text="ID de Impresora:" FontAttributes="Bold" />
+                    <Entry Text="{Binding Printer.PrinterId}" />
+
+                    <Label Text="Dirección IP:" FontAttributes="Bold" />
+                    <Entry Text="{Binding Printer.IpAddress}" Keyboard="Text" />
+
+                    <Label Text="Puerto:" FontAttributes="Bold" />
+                    <Entry Text="{Binding Printer.Port, Converter={StaticResource NumericToStringConverter}}" Keyboard="Numeric" />
+
+                    <Label Text="Ancho Papel (mm):" FontAttributes="Bold" />
+                    <Entry Text="{Binding Printer.PaperWidthMm, Converter={StaticResource NumericToStringConverter}}" Keyboard="Numeric" />
+
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                        <Label Text="Beep al imprimir:" VerticalOptions="Center" />
+                        <Switch IsToggled="{Binding Printer.BeepOnPrint}" HorizontalOptions="End" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                        <Label Text="Abrir cajón después de imprimir:" VerticalOptions="Center" />
+                        <Switch IsToggled="{Binding Printer.OpenCashDrawerAfterPrint}" HorizontalOptions="End" />
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                        <Label Text="Abrir cajón sin imprimir:" VerticalOptions="Center" />
+                        <Switch IsToggled="{Binding Printer.OpenCashDrawerWithoutPrint}" HorizontalOptions="End" />
+                    </HorizontalStackLayout>
+
+                    <!-- Aquí se podría añadir una sección para CopyToPrinterIds si se requiere UI para gestionarlos -->
+
+                    <Button Text="Guardar Impresora" Command="{Binding SavePrinterCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                            Margin="0,10,0,0" HorizontalOptions="Center" WidthRequest="200" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Activity Indicator Centrado -->
+            <ActivityIndicator Grid.Row="2" Grid.ColumnSpan="3"
+                               IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                               VerticalOptions="Center" HorizontalOptions="Center"
+                               Color="{StaticResource Primary}" />
+        </Grid>
+    </ScrollView>
+</ContentPage>
