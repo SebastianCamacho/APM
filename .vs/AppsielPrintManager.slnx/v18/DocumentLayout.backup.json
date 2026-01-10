@@ -3,48 +3,104 @@
   "WorkspaceRootPath": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\infraestructure\\services\\ticketrendererservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|solutionrelative:infraestructure\\services\\ticketrendererservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\interfaces\\iticketrenderer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\interfaces\\iticketrenderer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\printjobrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\printjobrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\interfaces\\iprintservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\interfaces\\iprintservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\interfaces\\iwebsocketservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\interfaces\\iwebsocketservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\infraestructure\\services\\escposgeneratorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|solutionrelative:infraestructure\\services\\escposgeneratorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\ui\\viewmodels\\printersviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|solutionrelative:ui\\viewmodels\\printersviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\infraestructure\\services\\tcpipprinterclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|solutionrelative:infraestructure\\services\\tcpipprinterclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\infraestructure\\services\\ticketrendererservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|solutionrelative:infraestructure\\services\\ticketrendererservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\commanddocumentdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\commanddocumentdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\infraestructure\\services\\printservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|solutionrelative:infraestructure\\services\\printservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\ui\\views\\printerspage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|solutionrelative:ui\\views\\printerspage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+      "AbsoluteMoniker": "D:0:0:{B8A3FBFD-A877-AB3A-3856-A3E51268C209}|ConsoleApp\\ConsoleApp.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B8A3FBFD-A877-AB3A-3856-A3E51268C209}|ConsoleApp\\ConsoleApp.csproj|solutionrelative:consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B8A3FBFD-A877-AB3A-3856-A3E51268C209}|ConsoleApp\\ConsoleApp.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\consoleapp\\consoleapphostedservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B8A3FBFD-A877-AB3A-3856-A3E51268C209}|ConsoleApp\\ConsoleApp.csproj|solutionrelative:consoleapp\\consoleapphostedservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\interfaces\\iticketrenderer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\interfaces\\iticketrenderer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\ticketcontent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\ticketcontent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\renderedelement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\renderedelement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\ui\\mauiprogram.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|solutionrelative:ui\\mauiprogram.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\interfaces\\iprintservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\interfaces\\iprintservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\electronicinvoicedocumentdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\electronicinvoicedocumentdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\barcodestickerdocumentdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\barcodestickerdocumentdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\barcodeproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\barcodeproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\printjobrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\printjobrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\printjobresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\printjobresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\interfaces\\iescposgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\interfaces\\iescposgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{48D1988F-AA1B-3E5B-C53F-B584F25BB2F7}|WorkerService\\WorkerService.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\workerservice\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{48D1988F-AA1B-3E5B-C53F-B584F25BB2F7}|WorkerService\\WorkerService.csproj|solutionrelative:workerservice\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{48D1988F-AA1B-3E5B-C53F-B584F25BB2F7}|WorkerService\\WorkerService.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\workerservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{48D1988F-AA1B-3E5B-C53F-B584F25BB2F7}|WorkerService\\WorkerService.csproj|solutionrelative:workerservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\interfaces\\iwebsocketservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\interfaces\\iwebsocketservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\infraestructure\\services\\websocketserverservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|solutionrelative:infraestructure\\services\\websocketserverservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B8A3FBFD-A877-AB3A-3856-A3E51268C209}|ConsoleApp\\ConsoleApp.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B8A3FBFD-A877-AB3A-3856-A3E51268C209}|ConsoleApp\\ConsoleApp.csproj|solutionrelative:consoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{48D1988F-AA1B-3E5B-C53F-B584F25BB2F7}|WorkerService\\WorkerService.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\workerservice\\workerservice.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{48D1988F-AA1B-3E5B-C53F-B584F25BB2F7}|WorkerService\\WorkerService.csproj|solutionrelative:workerservice\\workerservice.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\ui\\viewmodels\\printersviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|solutionrelative:ui\\viewmodels\\printersviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\ui\\views\\printerspage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|solutionrelative:ui\\views\\printerspage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\ui\\appshell.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -67,16 +123,8 @@
       "RelativeMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|solutionrelative:ui\\views\\logspage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\ui\\mauiprogram.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|solutionrelative:ui\\mauiprogram.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\interfaces\\iscaleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\interfaces\\iscaleservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\interfaces\\iescposgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\interfaces\\iescposgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\ui\\views\\printerdetailpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
@@ -111,18 +159,6 @@
       "RelativeMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|solutionrelative:ui\\views\\printerspage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\infraestructure\\services\\tcpipprinterclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|solutionrelative:infraestructure\\services\\tcpipprinterclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{48D1988F-AA1B-3E5B-C53F-B584F25BB2F7}|WorkerService\\WorkerService.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\workerservice\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{48D1988F-AA1B-3E5B-C53F-B584F25BB2F7}|WorkerService\\WorkerService.csproj|solutionrelative:workerservice\\worker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{48D1988F-AA1B-3E5B-C53F-B584F25BB2F7}|WorkerService\\WorkerService.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\workerservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{48D1988F-AA1B-3E5B-C53F-B584F25BB2F7}|WorkerService\\WorkerService.csproj|solutionrelative:workerservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\ui\\services\\stubplatformservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{44DA8534-ED12-4CD0-9574-F88ACEF06183}|UI\\UI.csproj|solutionrelative:ui\\services\\stubplatformservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -154,48 +190,20 @@
       "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\printersettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B8A3FBFD-A877-AB3A-3856-A3E51268C209}|ConsoleApp\\ConsoleApp.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\consoleapp\\consoleapphostedservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B8A3FBFD-A877-AB3A-3856-A3E51268C209}|ConsoleApp\\ConsoleApp.csproj|solutionrelative:consoleapp\\consoleapphostedservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\infraestructure\\infraestructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{ABA3F542-59E7-CDD3-52A7-C71F658301AE}|Infraestructure\\Infraestructure.csproj|solutionrelative:infraestructure\\infraestructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\ticketcontent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\ticketcontent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\scaledata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\scaledata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\saleitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\saleitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\saleinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\saleinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\qrproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\qrproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\printjobresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\printjobresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\imageproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\imageproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\companyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\companyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|e:\\escritorio\\proyectos appsiel\\apm - appsiel print manager\\appsielprintmanager\\core\\models\\barcodeproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5ED06CAD-956C-C94D-BC0C-E89E30A887C2}|Core\\Core.csproj|solutionrelative:core\\models\\barcodeproperties.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -205,7 +213,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 10,
           "Children": [
             {
               "$type": "Bookmark",
@@ -237,80 +245,306 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "IPrintService.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IPrintService.cs",
-              "RelativeDocumentMoniker": "Core\\Interfaces\\IPrintService.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IPrintService.cs",
-              "RelativeToolTip": "Core\\Interfaces\\IPrintService.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAAABEAAABBAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-06T17:42:34.094Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "IWebSocketService.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IWebSocketService.cs",
-              "RelativeDocumentMoniker": "Core\\Interfaces\\IWebSocketService.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IWebSocketService.cs",
-              "RelativeToolTip": "Core\\Interfaces\\IWebSocketService.cs",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAowBsAAAA3AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-06T19:07:29.525Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "TicketRendererService.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\TicketRendererService.cs",
               "RelativeDocumentMoniker": "Infraestructure\\Services\\TicketRendererService.cs",
               "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\TicketRendererService.cs",
               "RelativeToolTip": "Infraestructure\\Services\\TicketRendererService.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAAACIAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAJwAAAAAAAAAAAAswLUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-06T16:22:42.279Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 7,
               "Title": "ITicketRenderer.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\ITicketRenderer.cs",
               "RelativeDocumentMoniker": "Core\\Interfaces\\ITicketRenderer.cs",
               "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\ITicketRenderer.cs",
               "RelativeToolTip": "Core\\Interfaces\\ITicketRenderer.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAjAAAAAAAAAA==",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAAABMAAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-06T20:04:27.328Z"
+              "WhenOpened": "2026-01-06T20:04:27.328Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "PrintService.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\PrintService.cs",
+              "RelativeDocumentMoniker": "Infraestructure\\Services\\PrintService.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\PrintService.cs",
+              "RelativeToolTip": "Infraestructure\\Services\\PrintService.cs",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAswGkAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-06T16:24:28.134Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "EscPosGeneratorService.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\EscPosGeneratorService.cs",
+              "RelativeDocumentMoniker": "Infraestructure\\Services\\EscPosGeneratorService.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\EscPosGeneratorService.cs*",
+              "RelativeToolTip": "Infraestructure\\Services\\EscPosGeneratorService.cs*",
+              "ViewState": "AgIAAHoAAAAAAAAAAAAswIAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-06T16:10:53.291Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ConsoleAppHostedService.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\ConsoleApp\\ConsoleAppHostedService.cs",
+              "RelativeDocumentMoniker": "ConsoleApp\\ConsoleAppHostedService.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\ConsoleApp\\ConsoleAppHostedService.cs",
+              "RelativeToolTip": "ConsoleApp\\ConsoleAppHostedService.cs",
+              "ViewState": "AgIAAIcAAAAAAAAAAAAIwHAAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-23T16:56:40.032Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\ConsoleApp\\Program.cs",
+              "RelativeDocumentMoniker": "ConsoleApp\\Program.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\ConsoleApp\\Program.cs",
+              "RelativeToolTip": "ConsoleApp\\Program.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAUwB4AAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-22T21:52:20.611Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CommandDocumentData.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\CommandDocumentData.cs",
+              "RelativeDocumentMoniker": "Core\\Models\\CommandDocumentData.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\CommandDocumentData.cs",
+              "RelativeToolTip": "Core\\Models\\CommandDocumentData.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAxwCEAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-10T19:45:39.234Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TcpIpPrinterClient.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\TcpIpPrinterClient.cs",
+              "RelativeDocumentMoniker": "Infraestructure\\Services\\TcpIpPrinterClient.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\TcpIpPrinterClient.cs",
+              "RelativeToolTip": "Infraestructure\\Services\\TcpIpPrinterClient.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAAgwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-06T16:24:13.392Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "TicketContent.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\TicketContent.cs",
+              "RelativeDocumentMoniker": "Core\\Models\\TicketContent.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\TicketContent.cs",
+              "RelativeToolTip": "Core\\Models\\TicketContent.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAqwAkAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-22T20:42:12.106Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 9,
+              "Title": "RenderedElement.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\RenderedElement.cs",
+              "RelativeDocumentMoniker": "Core\\Models\\RenderedElement.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\RenderedElement.cs",
+              "RelativeToolTip": "Core\\Models\\RenderedElement.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAIAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-10T19:50:16.67Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "MauiProgram.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\MauiProgram.cs",
+              "RelativeDocumentMoniker": "UI\\MauiProgram.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\MauiProgram.cs",
+              "RelativeToolTip": "UI\\MauiProgram.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAIAwwCcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-30T22:34:04.909Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "IPrintService.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IPrintService.cs",
+              "RelativeDocumentMoniker": "Core\\Interfaces\\IPrintService.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IPrintService.cs",
+              "RelativeToolTip": "Core\\Interfaces\\IPrintService.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAQwB0AAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-06T17:42:34.094Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "ElectronicInvoiceDocumentData.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\ElectronicInvoiceDocumentData.cs",
+              "RelativeDocumentMoniker": "Core\\Models\\ElectronicInvoiceDocumentData.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\ElectronicInvoiceDocumentData.cs",
+              "RelativeToolTip": "Core\\Models\\ElectronicInvoiceDocumentData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-10T19:45:43.903Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "BarcodeStickerDocumentData.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\BarcodeStickerDocumentData.cs",
+              "RelativeDocumentMoniker": "Core\\Models\\BarcodeStickerDocumentData.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\BarcodeStickerDocumentData.cs",
+              "RelativeToolTip": "Core\\Models\\BarcodeStickerDocumentData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-10T19:45:35.68Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "IEscPosGenerator.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IEscPosGenerator.cs",
+              "RelativeDocumentMoniker": "Core\\Interfaces\\IEscPosGenerator.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IEscPosGenerator.cs",
+              "RelativeToolTip": "Core\\Interfaces\\IEscPosGenerator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-06T16:10:46.919Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "PrintJobResult.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\PrintJobResult.cs",
+              "RelativeDocumentMoniker": "Core\\Models\\PrintJobResult.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\PrintJobResult.cs",
+              "RelativeToolTip": "Core\\Models\\PrintJobResult.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-22T20:42:08.421Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "PrintJobRequest.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\PrintJobRequest.cs",
+              "RelativeDocumentMoniker": "Core\\Models\\PrintJobRequest.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\PrintJobRequest.cs",
+              "RelativeToolTip": "Core\\Models\\PrintJobRequest.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAA5wCUAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-22T20:42:07.867Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "BarcodeProperties.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\BarcodeProperties.cs",
+              "RelativeDocumentMoniker": "Core\\Models\\BarcodeProperties.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\BarcodeProperties.cs",
+              "RelativeToolTip": "Core\\Models\\BarcodeProperties.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAxwBcAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-22T20:42:05.528Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Worker.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\WorkerService\\Worker.cs",
+              "RelativeDocumentMoniker": "WorkerService\\Worker.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\WorkerService\\Worker.cs",
+              "RelativeToolTip": "WorkerService\\Worker.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-06T16:14:49.783Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\WorkerService\\Program.cs",
+              "RelativeDocumentMoniker": "WorkerService\\Program.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\WorkerService\\Program.cs",
+              "RelativeToolTip": "WorkerService\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-06T16:14:46.38Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "IWebSocketService.cs",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IWebSocketService.cs",
+              "RelativeDocumentMoniker": "Core\\Interfaces\\IWebSocketService.cs",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IWebSocketService.cs",
+              "RelativeToolTip": "Core\\Interfaces\\IWebSocketService.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAsAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-06T19:07:29.525Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
               "Title": "WebSocketServerService.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\WebSocketServerService.cs",
               "RelativeDocumentMoniker": "Infraestructure\\Services\\WebSocketServerService.cs",
               "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\WebSocketServerService.cs",
               "RelativeToolTip": "Infraestructure\\Services\\WebSocketServerService.cs",
-              "ViewState": "AgIAABsAAAAAAAAAAAAowCsAAAA4AAAAAAAAAA==",
+              "ViewState": "AgIAACkAAAAAAAAAAAAQwDsAAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T20:44:05.312Z"
+              "WhenOpened": "2025-12-22T20:44:05.312Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "EscPosGeneratorService.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\EscPosGeneratorService.cs",
-              "RelativeDocumentMoniker": "Infraestructure\\Services\\EscPosGeneratorService.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\EscPosGeneratorService.cs",
-              "RelativeToolTip": "Infraestructure\\Services\\EscPosGeneratorService.cs",
-              "ViewState": "AgIAAD4AAAAAAAAAAAAswDgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-06T16:10:53.291Z"
+              "DocumentIndex": 22,
+              "Title": "WorkerService",
+              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\WorkerService\\WorkerService.csproj",
+              "RelativeDocumentMoniker": "WorkerService\\WorkerService.csproj",
+              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\WorkerService\\WorkerService.csproj",
+              "RelativeToolTip": "WorkerService\\WorkerService.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-01-10T18:52:34.124Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 23,
               "Title": "PrintersViewModel.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\ViewModels\\PrintersViewModel.cs",
               "RelativeDocumentMoniker": "UI\\ViewModels\\PrintersViewModel.cs",
@@ -322,43 +556,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "PrintJobRequest.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\PrintJobRequest.cs",
-              "RelativeDocumentMoniker": "Core\\Models\\PrintJobRequest.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\PrintJobRequest.cs",
-              "RelativeToolTip": "Core\\Models\\PrintJobRequest.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T20:42:07.867Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "PrintService.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\PrintService.cs",
-              "RelativeDocumentMoniker": "Infraestructure\\Services\\PrintService.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\PrintService.cs",
-              "RelativeToolTip": "Infraestructure\\Services\\PrintService.cs",
-              "ViewState": "AgIAAHEAAAAAAAAAAAAowIYAAAAyAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-06T16:24:28.134Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "MauiProgram.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\MauiProgram.cs",
-              "RelativeDocumentMoniker": "UI\\MauiProgram.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\MauiProgram.cs",
-              "RelativeToolTip": "UI\\MauiProgram.cs",
-              "ViewState": "AgIAABMAAAAAAAAAAAAAACkAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-30T22:34:04.909Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 24,
               "Title": "PrintersPage.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Views\\PrintersPage.xaml",
               "RelativeDocumentMoniker": "UI\\Views\\PrintersPage.xaml",
@@ -370,7 +568,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 31,
               "Title": "PrinterDetailPage.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Views\\PrinterDetailPage.xaml",
               "RelativeDocumentMoniker": "UI\\Views\\PrinterDetailPage.xaml",
@@ -382,7 +580,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 30,
               "Title": "IScaleService.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IScaleService.cs",
               "RelativeDocumentMoniker": "Core\\Interfaces\\IScaleService.cs",
@@ -394,19 +592,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Program.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\ConsoleApp\\Program.cs",
-              "RelativeDocumentMoniker": "ConsoleApp\\Program.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\ConsoleApp\\Program.cs",
-              "RelativeToolTip": "ConsoleApp\\Program.cs",
-              "ViewState": "AgIAAAQAAAAAAAAAAAAUwBcAAABBAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T21:52:20.611Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 28,
               "Title": "LogsPage.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Views\\LogsPage.xaml",
               "RelativeDocumentMoniker": "UI\\Views\\LogsPage.xaml",
@@ -418,7 +604,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 29,
               "Title": "LogsPage.xaml.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Views\\LogsPage.xaml.cs",
               "RelativeDocumentMoniker": "UI\\Views\\LogsPage.xaml.cs",
@@ -430,7 +616,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 27,
               "Title": "App.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\App.xaml",
               "RelativeDocumentMoniker": "UI\\App.xaml",
@@ -442,7 +628,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 26,
               "Title": "App.xaml.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\App.xaml.cs",
               "RelativeDocumentMoniker": "UI\\App.xaml.cs",
@@ -454,7 +640,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 25,
               "Title": "AppShell.xaml.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\AppShell.xaml.cs",
               "RelativeDocumentMoniker": "UI\\AppShell.xaml.cs",
@@ -466,7 +652,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 32,
               "Title": "Styles.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Resources\\Styles\\Styles.xaml",
               "RelativeDocumentMoniker": "UI\\Resources\\Styles\\Styles.xaml",
@@ -478,7 +664,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 34,
               "Title": "LoginViewModel.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\ViewModels\\LoginViewModel.cs",
               "RelativeDocumentMoniker": "UI\\ViewModels\\LoginViewModel.cs",
@@ -490,19 +676,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
-              "Title": "IEscPosGenerator.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IEscPosGenerator.cs",
-              "RelativeDocumentMoniker": "Core\\Interfaces\\IEscPosGenerator.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Interfaces\\IEscPosGenerator.cs",
-              "RelativeToolTip": "Core\\Interfaces\\IEscPosGenerator.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-06T16:10:46.919Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 37,
               "Title": "AppShell.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\AppShell.xaml",
               "RelativeDocumentMoniker": "UI\\AppShell.xaml",
@@ -514,7 +688,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 33,
               "Title": "Colors.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Resources\\Styles\\Colors.xaml",
               "RelativeDocumentMoniker": "UI\\Resources\\Styles\\Colors.xaml",
@@ -526,7 +700,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 35,
               "Title": "LoginView.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Views\\LoginView.xaml",
               "RelativeDocumentMoniker": "UI\\Views\\LoginView.xaml",
@@ -538,7 +712,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 38,
               "Title": "PrintersPage.xaml.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Views\\PrintersPage.xaml.cs",
               "RelativeDocumentMoniker": "UI\\Views\\PrintersPage.xaml.cs",
@@ -550,7 +724,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 36,
               "Title": "PrinterDetailPage.xaml.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Views\\PrinterDetailPage.xaml.cs",
               "RelativeDocumentMoniker": "UI\\Views\\PrinterDetailPage.xaml.cs",
@@ -562,43 +736,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
-              "Title": "Program.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\WorkerService\\Program.cs",
-              "RelativeDocumentMoniker": "WorkerService\\Program.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\WorkerService\\Program.cs",
-              "RelativeToolTip": "WorkerService\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-06T16:14:46.38Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 27,
-              "Title": "TcpIpPrinterClient.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\TcpIpPrinterClient.cs",
-              "RelativeDocumentMoniker": "Infraestructure\\Services\\TcpIpPrinterClient.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Services\\TcpIpPrinterClient.cs",
-              "RelativeToolTip": "Infraestructure\\Services\\TcpIpPrinterClient.cs",
-              "ViewState": "AgIAADAAAAAAAAAAAAAowAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-06T16:24:13.392Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 28,
-              "Title": "Worker.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\WorkerService\\Worker.cs",
-              "RelativeDocumentMoniker": "WorkerService\\Worker.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\WorkerService\\Worker.cs",
-              "RelativeToolTip": "WorkerService\\Worker.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-06T16:14:49.783Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 40,
               "Title": "LoginView.xaml.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Views\\LoginView.xaml.cs",
               "RelativeDocumentMoniker": "UI\\Views\\LoginView.xaml.cs",
@@ -610,7 +748,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 39,
               "Title": "StubPlatformService.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Services\\StubPlatformService.cs",
               "RelativeDocumentMoniker": "UI\\Services\\StubPlatformService.cs",
@@ -622,7 +760,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 42,
               "Title": "AboutPage.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Views\\AboutPage.xaml",
               "RelativeDocumentMoniker": "UI\\Views\\AboutPage.xaml",
@@ -634,7 +772,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 45,
               "Title": "ReadMe.txt",
               "DocumentMoniker": "C:\\Users\\juan_\\.nuget\\packages\\communitytoolkit.maui\\9.1.1\\ReadMe.txt",
               "ToolTip": "C:\\Users\\juan_\\.nuget\\packages\\communitytoolkit.maui\\9.1.1\\ReadMe.txt",
@@ -644,7 +782,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 41,
               "Title": "HomePage.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Views\\HomePage.xaml",
               "RelativeDocumentMoniker": "UI\\Views\\HomePage.xaml",
@@ -656,19 +794,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 38,
-              "Title": "ConsoleAppHostedService.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\ConsoleApp\\ConsoleAppHostedService.cs",
-              "RelativeDocumentMoniker": "ConsoleApp\\ConsoleAppHostedService.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\ConsoleApp\\ConsoleAppHostedService.cs",
-              "RelativeToolTip": "ConsoleApp\\ConsoleAppHostedService.cs",
-              "ViewState": "AgIAAGMAAAAAAAAAAAAawHAAAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-23T16:56:40.032Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 43,
               "Title": "UI.csproj",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\UI.csproj",
               "RelativeDocumentMoniker": "UI\\UI.csproj",
@@ -676,11 +802,12 @@
               "RelativeToolTip": "UI\\UI.csproj",
               "ViewState": "AgIAACoAAAAAAAAAAAAAAEIAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-12-30T22:30:12.492Z"
+              "WhenOpened": "2025-12-30T22:30:12.492Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 44,
               "Title": "App.xaml",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\UI\\Platforms\\Windows\\App.xaml",
               "RelativeDocumentMoniker": "UI\\Platforms\\Windows\\App.xaml",
@@ -692,7 +819,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 47,
               "Title": "Infraestructure.csproj",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Infraestructure\\Infraestructure.csproj",
               "RelativeDocumentMoniker": "Infraestructure\\Infraestructure.csproj",
@@ -700,23 +827,12 @@
               "RelativeToolTip": "Infraestructure\\Infraestructure.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-12-23T01:28:09.038Z"
+              "WhenOpened": "2025-12-23T01:28:09.038Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
-              "Title": "TicketContent.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\TicketContent.cs",
-              "RelativeDocumentMoniker": "Core\\Models\\TicketContent.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\TicketContent.cs",
-              "RelativeToolTip": "Core\\Models\\TicketContent.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T20:42:12.106Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 46,
               "Title": "PrinterSettings.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\PrinterSettings.cs",
               "RelativeDocumentMoniker": "Core\\Models\\PrinterSettings.cs",
@@ -728,7 +844,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 48,
               "Title": "ScaleData.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\ScaleData.cs",
               "RelativeDocumentMoniker": "Core\\Models\\ScaleData.cs",
@@ -740,31 +856,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 42,
-              "Title": "SaleItem.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\SaleItem.cs",
-              "RelativeDocumentMoniker": "Core\\Models\\SaleItem.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\SaleItem.cs",
-              "RelativeToolTip": "Core\\Models\\SaleItem.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T20:42:10.925Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 43,
-              "Title": "SaleInfo.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\SaleInfo.cs",
-              "RelativeDocumentMoniker": "Core\\Models\\SaleInfo.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\SaleInfo.cs",
-              "RelativeToolTip": "Core\\Models\\SaleInfo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T20:42:09.628Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 44,
+              "DocumentIndex": 49,
               "Title": "QRProperties.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\QRProperties.cs",
               "RelativeDocumentMoniker": "Core\\Models\\QRProperties.cs",
@@ -776,43 +868,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 45,
-              "Title": "PrintJobResult.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\PrintJobResult.cs",
-              "RelativeDocumentMoniker": "Core\\Models\\PrintJobResult.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\PrintJobResult.cs",
-              "RelativeToolTip": "Core\\Models\\PrintJobResult.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T20:42:08.421Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 47,
-              "Title": "CompanyInfo.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\CompanyInfo.cs",
-              "RelativeDocumentMoniker": "Core\\Models\\CompanyInfo.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\CompanyInfo.cs",
-              "RelativeToolTip": "Core\\Models\\CompanyInfo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T20:42:06.171Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 48,
-              "Title": "BarcodeProperties.cs",
-              "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\BarcodeProperties.cs",
-              "RelativeDocumentMoniker": "Core\\Models\\BarcodeProperties.cs",
-              "ToolTip": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\BarcodeProperties.cs",
-              "RelativeToolTip": "Core\\Models\\BarcodeProperties.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-22T20:42:05.528Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 46,
+              "DocumentIndex": 50,
               "Title": "ImageProperties.cs",
               "DocumentMoniker": "E:\\Escritorio\\PROYECTOS APPSIEL\\APM - Appsiel Print Manager\\AppsielPrintManager\\Core\\Models\\ImageProperties.cs",
               "RelativeDocumentMoniker": "Core\\Models\\ImageProperties.cs",

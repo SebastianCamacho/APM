@@ -100,65 +100,90 @@ const templates = {
         "StationId": "CAJA_1",
         "PrinterId": "printHambuger",
         "DocumentType": "ticket_venta",
-        "Data": {
-            "company": { "Name": "Supermercado Demo", "Nit": "900123456", "Address": "Calle Principal #123" },
+        "Document": {
+            "company": { "Name": "Supermercado Demo", "Nit": "900123456", "Address": "Calle Principal #123", "Phone": "555-1234" },
             "sale": { 
                 "Number": "FV-1001", 
                 "Date": new Date().toISOString(), 
                 "Items": [
-                    { "Name": "Leche Entera", "Qty": 2, "Total": 5000 },
-                    { "Name": "Pan Tajado", "Qty": 1, "Total": 3500 }
+                    { "Name": "Leche Entera", "Qty": 2, "UnitPrice": 2500, "Total": 5000 },
+                    { "Name": "Pan Tajado", "Qty": 1, "UnitPrice": 3500, "Total": 3500 }
                 ],
+                "Subtotal": 8500,
+                "iva": 0,
                 "Total": 8500
             },
             "footer": ["Gracias por su compra"]
-        },
-        "Images": [], "Barcodes": [], "QRs": []
+        }
     },
     comanda: {
         "JobId": "CMD-001",
         "StationId": "COCINA",
         "PrinterId": "printHambuger",
         "DocumentType": "comanda",
-        "Data": {
+        "Document": {
             "order": { 
                 "Number": "CMD-001",
                 "Table": "Mesa 5", 
                 "Waiter": "Carlos", 
                 "Date": new Date().toISOString(),
+                "RestaurantName": "Restaurant Tremendo Chuzo",
                 "Items": [
                     { "Name": "Hamburguesa Doble", "Qty": 1, "Notes": "Sin cebolla" },
                     { "Name": "Papas Fritas", "Qty": 1, "Notes": "Extra crocantes" },
-                    { "Name": "Gaseosa", "Qty": 2 }
-                ]
-            }
-        },
-        "Images": [], "Barcodes": [], "QRs": []
+                    { "Name": "Gaseosa", "Qty": 2, "Notes": "" }
+                ],
+                "GeneratedDate": new Date().toISOString(),
+                "CreatedBy": "Jose Reyes"
+            },
+            "Detail": "Todoterreno sin piña, full arepa sin maíz y la salchipapa sin lechuga" // Detalle global
+        }
     },
     factura: {
         "JobId": "FE-2025",
         "StationId": "ADMIN",
         "PrinterId": "printHambuger",
         "DocumentType": "factura_electronica",
-        "Data": {
+        "Document": {
             "header": { "Title": "FACTURA ELECTRÓNICA DE VENTA", "Number": "FE-2025" },
             "customer": { "Name": "Empresa Cliente S.A.S", "Nit": "800.111.222-3", "Address": "Av. Empresarial 55" },
             "totals": { "Subtotal": 100000, "Tax": 19000, "Total": 119000 },
             "cufe": "abc1234567890def..."
-        },
-        "Images": [], "Barcodes": [], "QRs": []
+        }
     },
-    barcodes: {
-        "JobId": "BAR-001",
-        "StationId": "BODEGA",
-        "PrinterId": "printHambuger",
-        "DocumentType": "codigos_barra",
-        "Data": { "Label": "Etiqueta de Inventario" },
-        "Images": [],
-        "Barcodes": [
-            { "Type": "CODE128", "Value": "PROD-12345", "Height": 60, "Hri": true, "Align": "center" }
-        ],
-        "QRs": []
+    sticker: { // Nuevo tipo de documento
+        "JobId": "STICKER-001",
+        "StationId": "ALMACEN",
+        "PrinterId": "printHambuger", // Usar una impresora configurada
+        "DocumentType": "sticker_codigo_barras",
+        "Document": {
+            "stickers": [
+                {
+                    "ProductName": "Manzana Roja",
+                    "ProductCode": "MZN-001",
+                    "BarcodeValue": "1234567890128", // EAN-13
+                    "BarcodeType": "EAN13"
+                },
+                {
+                    "ProductName": "Pera Verde",
+                    "ProductCode": "PER-002",
+                    "BarcodeValue": "0987654321093", // EAN-13
+                    "BarcodeType": "EAN13"
+                },
+                {
+                    "ProductName": "Uvas Importadas",
+                    "ProductCode": "UVA-003",
+                    "BarcodeValue": "9876543210987", // EAN-13
+                    "BarcodeType": "EAN13"
+                },
+                {
+                    "ProductName": "Banano Nacional",
+                    "ProductCode": "BAN-004",
+                    "BarcodeValue": "1122334455667", // EAN-13
+                    "BarcodeType": "EAN13"
+                }
+            ]
+        }
     }
 };
 
@@ -167,17 +192,10 @@ window.openTab = function(tabName) {
     // Actualizar botones
     const buttons = document.querySelectorAll('.tab-button');
     buttons.forEach(btn => btn.classList.remove('active'));
-    // Buscar el botón que llamó a la función (esto es un poco hacky si se llama programáticamente, pero funciona con onclick)
-    const clickedBtn = Array.from(buttons).find(b => b.textContent.toLowerCase().includes(tabName.replace('ticket', 'ticket').replace('barcodes', 'códigos')));
-    if(clickedBtn) clickedBtn.classList.add('active'); // Fallback simple
+    // Encontrar el botón específico por texto o índice
+    const clickedBtn = Array.from(buttons).find(b => b.dataset.tab === tabName);
+    if(clickedBtn) clickedBtn.classList.add('active');
     
-    // Encontrar el botón específico por texto o índice sería más robusto, pero para este script simple:
-    // Vamos a confiar en que el usuario hace click. Para hacerlo visualmente correcto:
-    if (event && event.target) {
-        buttons.forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-    }
-
     // Actualizar Textareas
     const contents = document.querySelectorAll('.tab-content');
     contents.forEach(content => content.classList.remove('active'));
@@ -189,19 +207,30 @@ window.openTab = function(tabName) {
 
 // Conectar automáticamente cuando la página se carga y adjuntar listeners al DOM
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM Content Loaded. Initializing WebSocket client script."); // Added for debugging
     connectWebSocket();
 
     // Inicializar los textareas con los JSONs
     document.getElementById('payloadTicket').value = JSON.stringify(templates.ticket, null, 4);
     document.getElementById('payloadComanda').value = JSON.stringify(templates.comanda, null, 4);
     document.getElementById('payloadFactura').value = JSON.stringify(templates.factura, null, 4);
-    document.getElementById('payloadBarcodes').value = JSON.stringify(templates.barcodes, null, 4);
+    document.getElementById('payloadSticker').value = JSON.stringify(templates.sticker, null, 4); // Nuevo
 
+    // Attach event listeners for tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            window.openTab(button.dataset.tab);
+        });
+    });
     const sendPayloadButton = document.getElementById('sendPayloadButton');
     const reconnectButton = document.getElementById('reconnectButton'); // Obtener el botón de reconexión
 
     if (sendPayloadButton) {
-        sendPayloadButton.addEventListener('click', () => {
+        console.log("sendPayloadButton found."); // Added for debugging
+        sendPayloadButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            console.log("Send button clicked. Active payload ID:", activePayloadId);
             const activeTextarea = document.getElementById(activePayloadId);
             if (activeTextarea) {
                 const payload = activeTextarea.value;
@@ -211,12 +240,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     } else {
+        console.error('CRITICAL ERROR: Element with ID "sendPayloadButton" not found.'); // Changed to console.error
         logMessage('Error: No se encontraron los elementos HTML para enviar el payload.', 'error');
     }
 
     if (reconnectButton) {
+        console.log("reconnectButton found."); // Added for debugging
         reconnectButton.addEventListener('click', reconnectWebSocket);
     } else {
+        console.error('CRITICAL ERROR: Element with ID "reconnectButton" not found.'); // Changed to console.error
         logMessage('Error: No se encontró el botón de reconexión.', 'error');
     }
+
+    // Activar la primera pestaña por defecto
+    window.openTab('ticket'); // Abre la pestaña de Ticket por defecto
 });

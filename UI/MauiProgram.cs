@@ -4,9 +4,9 @@ using AppsielPrintManager.Infraestructure.Services;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.DependencyInjection; // Added for service registration
 using Microsoft.Extensions.Logging;
+using UI.Converters; // Añadir esta línea
 using UI.Services;
 using UI.ViewModels;
-using UI.Converters; // Añadir esta línea
 
 namespace UI
 {
@@ -36,6 +36,8 @@ namespace UI
             builder.Services.AddSingleton<TcpIpPrinterClient>(); // Nuevo registro
             builder.Services.AddSingleton<IPrintService, PrintService>(); // Nuevo registro
             builder.Services.AddSingleton<IPlatformService, StubPlatformService>(); // Registra StubPlatformService
+            builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>();
+
 
             // ViewModels
             builder.Services.AddTransient<PrintersViewModel>();

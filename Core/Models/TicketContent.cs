@@ -5,45 +5,51 @@ namespace AppsielPrintManager.Core.Models
     /// <summary>
     /// Representa el contenido estructurado de un ticket después de ser parseado
     /// y antes de ser convertido a comandos ESC/POS para la impresión.
-    /// Este modelo abstrae la disposición visual del ticket.
+    /// Este modelo abstrae la disposición visual del ticket y utiliza elementos ya renderizados.
     /// </summary>
     public class TicketContent
     {
         /// <summary>
-        /// Lista de elementos que conforman el encabezado del ticket.
-        /// Pueden ser textos, imágenes, etc.
+        /// El tipo de documento original para el que se generó este TicketContent.
+        /// Útil para la lógica de renderizado específica del generador ESC/POS.
         /// </summary>
-        public List<object> HeaderElements { get; set; } = new List<object>();
+        public string DocumentType { get; set; }
 
         /// <summary>
-        /// Lista de filas de la tabla de ítems del ticket.
-        /// Cada fila puede contener celdas con texto o datos.
+        /// Lista de elementos ya renderizados que conforman la sección de detalles (ej. para comandas).
         /// </summary>
-        public List<List<object>> ItemTableRows { get; set; } = new List<List<object>>();
+        public List<RenderedElement> Details { get; set; } = new List<RenderedElement>();
+        /// <summary>
+        /// Lista de elementos ya renderizados que conforman el encabezado del ticket.
+        /// </summary>
+        public List<RenderedElement> HeaderElements { get; set; } = new List<RenderedElement>();
 
         /// <summary>
-        /// Lista de elementos que muestran los totales de la venta.
+        /// Lista de filas de la tabla de ítems del ticket, cada fila contiene elementos ya renderizados.
         /// </summary>
-        public List<object> TotalsElements { get; set; } = new List<object>();
+        public List<List<RenderedElement>> ItemTableRows { get; set; } = new List<List<RenderedElement>>();
 
         /// <summary>
-        /// Lista de elementos que conforman el pie de página del ticket.
+        /// Lista de elementos ya renderizados que muestran los totales de la venta.
         /// </summary>
-        public List<object> FooterElements { get; set; } = new List<object>();
+        public List<RenderedElement> TotalsElements { get; set; } = new List<RenderedElement>();
 
         /// <summary>
-        /// Lista de imágenes incrustadas en el ticket.
+        /// Lista de elementos ya renderizados que conforman el pie de página del ticket.
         /// </summary>
-        public List<ImageProperties> Images { get; set; } = new List<ImageProperties>();
+        public List<RenderedElement> FooterElements { get; set; } = new List<RenderedElement>();
 
         /// <summary>
-        /// Lista de códigos de barras incrustados en el ticket.
+        /// Lista de filas de contenido repetitivo (ej. stickers de códigos de barras),
+        /// donde cada fila puede contener múltiples elementos ya renderizados.
         /// </summary>
-        public List<BarcodeProperties> Barcodes { get; set; } = new List<BarcodeProperties>();
+        public List<List<RenderedElement>> RepeatedContent { get; set; } = new List<List<RenderedElement>>();
 
         /// <summary>
-        /// Lista de códigos QR incrustados en el ticket.
+        /// Indica cuántos elementos se deben mostrar por fila en el RepeatedContent.
+        /// Útil para la disposición de stickers (ej. 1 o 2 por fila).
         /// </summary>
-        public List<QRProperties> QRs { get; set; } = new List<QRProperties>();
+        public int RepeatedContentColumns { get; set; } = 1;
     }
 }
+

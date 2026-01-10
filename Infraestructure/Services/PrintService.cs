@@ -1,5 +1,6 @@
 using AppsielPrintManager.Core.Interfaces;
 using AppsielPrintManager.Core.Models;
+using System.Text.Json; // Agregado para JsonSerializer
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,10 +54,55 @@ namespace AppsielPrintManager.Infraestructure.Services
                     return result;
                 }
 
-                // 2. Renderizar el TicketContent
-                var ticketContent = await _ticketRenderer.RenderTicketAsync(request);
+                // 2. Deserializar el documento
+                object documentData = null;
+                try
+                {
+                    var jsonDocument = JsonSerializer.Serialize(request.Document); // request.Document es un objeto, lo serializamos a string para luego deserializarlo al tipo correcto
+                    switch (request.DocumentType)
+                    {
+                        case "ticket_venta":
+                            documentData = JsonSerializer.Deserialize<SaleTicketDocumentData>(jsonDocument, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            break;
+                        case "comanda":
+                            documentData = JsonSerializer.Deserialize<CommandDocumentData>(jsonDocument, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            break;
+                        case "factura_electronica":
+                            documentData = JsonSerializer.Deserialize<ElectronicInvoiceDocumentData>(jsonDocument, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            break;
+                        case "sticker_codigo_barras":
+                            documentData = JsonSerializer.Deserialize<BarcodeStickerDocumentData>(jsonDocument, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            break;
+                        default:
+                            result.ErrorMessage = $"DocumentType '{request.DocumentType}' no soportado para deserialización.";
+                            _logger.LogError(result.ErrorMessage);
+                            return result;
+                    }
 
-                // 3. Generar comandos ESC/POS
+                    if (documentData == null)
+                    {
+                        result.ErrorMessage = $"Error al deserializar el documento para DocumentType '{request.DocumentType}'.";
+                        _logger.LogError(result.ErrorMessage);
+                        return result;
+                    }
+                }
+                catch (JsonException jex)
+                {
+                    result.ErrorMessage = $"Error de formato JSON al deserializar el documento para DocumentType '{request.DocumentType}': {jex.Message}";
+                    _logger.LogError(result.ErrorMessage, jex);
+                    return result;
+                }
+                catch (System.Exception ex)
+                {
+                    result.ErrorMessage = $"Error inesperado al deserializar el documento para DocumentType '{request.DocumentType}': {ex.Message}";
+                    _logger.LogError(result.ErrorMessage, ex);
+                    return result;
+                }
+
+                // 3. Renderizar el TicketContent (pasando el request original para media y el documento tipado)
+                var ticketContent = await _ticketRenderer.RenderTicketAsync(request, documentData);
+
+                // 4. Generar comandos ESC/POS
                 var escPosCommands = await _escPosGenerator.GenerateEscPosCommandsAsync(ticketContent, printerSettings);
 
                 // 4. Enviar a la impresora principal

@@ -31,17 +31,17 @@
     <h2>Enviar Mensaje de Prueba (PrintJobRequest)</h2>
     
     <div class="tab-container">
-        <button class="tab-button active" onclick="openTab('ticket')">Ticket Venta</button>
-        <button class="tab-button" onclick="openTab('comanda')">Comanda</button>
-        <button class="tab-button" onclick="openTab('factura')">Factura Electrónica</button>
-        <button class="tab-button" onclick="openTab('barcodes')">Códigos de Barra</button>
+        <button class="tab-button" data-tab="ticket">Ticket Venta</button>
+        <button class="tab-button" data-tab="comanda">Comanda</button>
+        <button class="tab-button" data-tab="factura">Factura Electrónica</button>
+        <button class="tab-button" data-tab="sticker">Sticker Códigos</button> <!-- Nuevo botón -->
     </div>
 
     <div style="margin-top: 10px;">
-        <textarea id="payloadTicket" class="tab-content active" rows="15" cols="80"></textarea>
+        <textarea id="payloadTicket" class="tab-content" rows="15" cols="80"></textarea>
         <textarea id="payloadComanda" class="tab-content" rows="15" cols="80"></textarea>
         <textarea id="payloadFactura" class="tab-content" rows="15" cols="80"></textarea>
-        <textarea id="payloadBarcodes" class="tab-content" rows="15" cols="80"></textarea>
+        <textarea id="payloadSticker" class="tab-content" rows="15" cols="80"></textarea> <!-- Nuevo textarea -->
     </div>
 
     <button id="sendPayloadButton" style="margin-top: 10px; padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; cursor: pointer;">Enviar JSON Seleccionado</button>

@@ -30,11 +30,10 @@ namespace AppsielPrintManager.Core.Models
         public string DocumentType { get; set; }
 
         /// <summary>
-        /// Contiene los datos principales del documento a imprimir.
-        /// Es un diccionario flexible para acomodar diferentes estructuras según el DocumentType.
-        /// Puede contener, por ejemplo, información de empresa (CompanyInfo) o venta (SaleInfo).
+        /// Contiene los datos principales del documento a imprimir, tipados fuertemente
+        /// después de la deserialización inicial en el PrintService.
         /// </summary>
-        public Dictionary<string, object> Data { get; set; }
+        public object Document { get; set; }
 
         /// <summary>
         /// Lista de imágenes a insertar en el ticket, cada una con sus propiedades.

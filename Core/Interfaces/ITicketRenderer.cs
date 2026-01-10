@@ -17,6 +17,6 @@ namespace AppsielPrintManager.Core.Interfaces
         /// </summary>
         /// <param name="request">El objeto PrintJobRequest que contiene los datos del ticket.</param>
         /// <returns>Un objeto TicketContent que representa la estructura del ticket listo para ser convertido a comandos de impresora.</returns>
-        Task<TicketContent> RenderTicketAsync(PrintJobRequest request);
+        Task<TicketContent> RenderTicketAsync(PrintJobRequest request, object documentData);
     }
 }
