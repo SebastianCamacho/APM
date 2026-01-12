@@ -36,7 +36,15 @@ namespace UI
             builder.Services.AddSingleton<TcpIpPrinterClient>(); // Nuevo registro
             builder.Services.AddSingleton<IPrintService, PrintService>(); // Nuevo registro
             builder.Services.AddSingleton<IPlatformService, StubPlatformService>(); // Registra StubPlatformService
-            builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>();
+            //builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>(); // REMOVED: Duplicate registration
+
+            // Register WorkerServiceManager conditionally for Windows
+#if WINDOWS
+            builder.Services.AddSingleton<IWorkerServiceManager, WindowsWorkerServiceManager>();
+#else
+            // For other platforms, register a no-op or throw an exception if WorkerServiceManager is attempted to be used.
+            builder.Services.AddSingleton<IWorkerServiceManager, NoOpWorkerServiceManager>();
+#endif
 
 
             // ViewModels
@@ -51,5 +59,13 @@ namespace UI
 
             return builder.Build();
         }
+    }
+    // No-op implementation for IWorkerServiceManager on non-Windows platforms
+    // This prevents compilation errors on other platforms where WindowsWorkerServiceManager is not available
+    public class NoOpWorkerServiceManager : IWorkerServiceManager
+    {
+        public bool IsWorkerServiceRunning => false;
+        public Task<bool> StartWorkerServiceAsync() => Task.FromResult(false);
+        public Task<bool> StopWorkerServiceAsync() => Task.FromResult(false);
     }
 }
