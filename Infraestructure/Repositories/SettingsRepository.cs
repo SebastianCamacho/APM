@@ -27,9 +27,9 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         public SettingsRepository(ILoggingService logger)
         {
             _logger = logger;
-            
+
             // Obtener el directorio de datos de la aplicación local del usuario
-            string appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
             // Crear una subcarpeta específica para nuestra aplicación
             string appSpecificDirectory = Path.Combine(appDataDirectory, "AppsielPrintManager");
 

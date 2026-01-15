@@ -25,32 +25,63 @@
             <Border Grid.Row="1" Grid.Column="1" Padding="20" StrokeShape="RoundRectangle 10"
                     BackgroundColor="{AppThemeBinding Light=White, Dark=DarkGray}"
                     HorizontalOptions="Center" VerticalOptions="Start">
-                <VerticalStackLayout Spacing="15" WidthRequest="300">
+                <VerticalStackLayout Spacing="10" WidthRequest="300">
 
                     <Label Text="ID de Impresora:" FontAttributes="Bold" />
-                    <Entry Text="{Binding Printer.PrinterId}" />
+                    <VerticalStackLayout Spacing="0">
+                        <Entry Text="{Binding Printer.PrinterId}" Placeholder="Ej: ImpresoraCocina" Margin="0"  />
+                        <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
+                    </VerticalStackLayout>
 
                     <Label Text="Dirección IP:" FontAttributes="Bold" />
-                    <Entry Text="{Binding Printer.IpAddress}" Keyboard="Text" />
+                    <Grid ColumnDefinitions="*,5,*,5,*,5,*" ColumnSpacing="0">
+                        <VerticalStackLayout Grid.Column="0" Spacing="0">
+                            <Entry Text="{Binding IpSegment1}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" Margin="0" />
+                            <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="." VerticalOptions="Center" HorizontalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="2" Spacing="0">
+                            <Entry Text="{Binding IpSegment2}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" Margin="0"  />
+                            <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="3" Text="." VerticalOptions="Center" HorizontalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="4" Spacing="0">
+                            <Entry Text="{Binding IpSegment3}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" Margin="0"  />
+                            <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="5" Text="." VerticalOptions="Center" HorizontalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="6" Spacing="0">
+                            <Entry Text="{Binding IpSegment4}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" Margin="0"  />
+                            <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
+                        </VerticalStackLayout>
+                    </Grid>
 
                     <Label Text="Puerto:" FontAttributes="Bold" />
-                    <Entry Text="{Binding Printer.Port, Converter={StaticResource NumericToStringConverter}}" Keyboard="Numeric" />
+                    <VerticalStackLayout Spacing="0">
+                        <Entry Text="{Binding Printer.Port, Converter={StaticResource NumericToStringConverter}}" Keyboard="Numeric" Margin="0"  />
+                        <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
+                    </VerticalStackLayout>
 
                     <Label Text="Ancho Papel (mm):" FontAttributes="Bold" />
-                    <Entry Text="{Binding Printer.PaperWidthMm, Converter={StaticResource NumericToStringConverter}}" Keyboard="Numeric" />
+                    <Border StrokeShape="RoundRectangle 5" StrokeThickness="1" Stroke="{StaticResource Primary}" Padding="0" HorizontalOptions="FillAndExpand">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Picker Grid.Column="0" SelectedItem="{Binding SelectedPaperWidthMm}" ItemsSource="{Binding AvailablePaperWidths}" HorizontalOptions="Fill" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="▼" VerticalOptions="Center" HorizontalOptions="End" Margin="0,0,10,0" FontAttributes="Bold" FontSize="14" />
+                        </Grid>
+                    </Border>
 
-                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
-                        <Label Text="Beep al imprimir:" VerticalOptions="Center" />
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="FillAndExpand">
+                        <Label Text="Beep al imprimir:" VerticalOptions="Center" HorizontalOptions="StartAndExpand" />
                         <Switch IsToggled="{Binding Printer.BeepOnPrint}" HorizontalOptions="End" />
                     </HorizontalStackLayout>
 
-                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
-                        <Label Text="Abrir cajón después de imprimir:" VerticalOptions="Center" />
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="FillAndExpand">
+                        <Label Text="Abrir cajón después de imprimir:" VerticalOptions="Center" HorizontalOptions="StartAndExpand" />
                         <Switch IsToggled="{Binding Printer.OpenCashDrawerAfterPrint}" HorizontalOptions="End" />
                     </HorizontalStackLayout>
 
-                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
-                        <Label Text="Abrir cajón sin imprimir:" VerticalOptions="Center" />
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="FillAndExpand">
+                        <Label Text="Abrir cajón sin imprimir:" VerticalOptions="Center" HorizontalOptions="StartAndExpand" />
                         <Switch IsToggled="{Binding Printer.OpenCashDrawerWithoutPrint}" HorizontalOptions="End" />
                     </HorizontalStackLayout>
 

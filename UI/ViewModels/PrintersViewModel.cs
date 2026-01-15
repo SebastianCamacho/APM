@@ -88,10 +88,12 @@ namespace UI.ViewModels
                     await _printService.DeletePrinterSettingsAsync(printer.PrinterId);
                     Printers.Remove(printer);
                     _logger.LogInfo($"Impresora '{printer.PrinterId}' eliminada exitosamente.");
+                    await Shell.Current.DisplayAlert("Éxito", $"La impresora '{printer.PrinterId}' ha sido eliminada.", "OK"); // Mensaje de éxito añadido
                 }
                 catch (System.Exception ex)
                 {
                     _logger.LogError($"Error al eliminar impresora '{printer.PrinterId}': {ex.Message}", ex);
+                    await Shell.Current.DisplayAlert("Error", $"No se pudo eliminar la impresora '{printer.PrinterId}': {ex.Message}", "OK"); // Añadir mensaje de error
                 }
                 finally
                 {

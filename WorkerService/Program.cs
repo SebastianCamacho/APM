@@ -3,19 +3,23 @@ using AppsielPrintManager.Infraestructure.Repositories;
 using AppsielPrintManager.Infraestructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using WorkerService;
+using Microsoft.Extensions.Hosting.WindowsServices; // Added for UseWindowsService()
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = Host.CreateDefaultBuilder(args) // Changed to CreateDefaultBuilder
+    .UseWindowsService() // Configure the host to run as a Windows Service
+    .ConfigureServices((hostContext, services) =>
+    {
+        // Registro de servicios de Core e Infraestructure
+        services.AddSingleton<ILoggingService, Logger>();
+        services.AddSingleton<IWebSocketService, WebSocketServerService>();
+        services.AddSingleton<ISettingsRepository, SettingsRepository>();
+        services.AddSingleton<ITicketRenderer, TicketRendererService>();
+        services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>();
+        services.AddSingleton<TcpIpPrinterClient>();
+        services.AddSingleton<IPrintService, PrintService>();
 
-// Registro de servicios de Core e Infraestructure
-builder.Services.AddSingleton<ILoggingService, Logger>();
-builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>();
-builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
-builder.Services.AddSingleton<ITicketRenderer, TicketRendererService>();
-builder.Services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>();
-builder.Services.AddSingleton<TcpIpPrinterClient>();
-builder.Services.AddSingleton<IPrintService, PrintService>();
-
-builder.Services.AddHostedService<Worker>();
+        services.AddHostedService<Worker>();
+    });
 
 var host = builder.Build();
 host.Run();

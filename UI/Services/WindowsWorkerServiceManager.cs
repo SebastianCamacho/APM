@@ -1,11 +1,12 @@
 #if WINDOWS
 using AppsielPrintManager.Core.Interfaces;
-using AppsielPrintManager.Infraestructure.Services; // Assuming Logger is in Infraestructure.Services
+using AppsielPrintManager.Infraestructure.Services;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.ServiceProcess;
 
 namespace UI.Services
 {
@@ -13,18 +14,18 @@ namespace UI.Services
     {
         private readonly ILoggingService _logger;
         private Process _workerProcess;
-        private const string WorkerServiceName = "WorkerService"; // Nombre del proyecto del Worker Service
-        private const string WorkerExeName = "WorkerService.exe"; // Nombre del ejecutable del Worker Service
+        private const string WorkerServiceName = "WorkerService"; // Nombre del proceso/servicio
+        private const string WorkerExeName = "WorkerService.exe"; // Nombre del ejecutable
 
         public WindowsWorkerServiceManager(ILoggingService logger)
         {
             _logger = logger;
-            // Intentar encontrar un proceso existente del WorkerService al iniciar la UI.
-            // Esto es crucial para reengancharse a un servicio ya en ejecución si la UI se reinicia.
+            
+            // Intentar reengancharse si el proceso ya existe
             var existingProcesses = Process.GetProcessesByName(WorkerServiceName);
             if (existingProcesses.Any())
             {
-                _workerProcess = existingProcesses.First(); // Tomar el primero si hay múltiples (debería ser único)
+                _workerProcess = existingProcesses.First();
                 _logger.LogInfo($"[WorkerServiceManager] WorkerService '{WorkerServiceName}' ya en ejecución con PID: {_workerProcess.Id}");
             }
             else
@@ -45,106 +46,91 @@ namespace UI.Services
 
             try
             {
-                string appDirectory = AppContext.BaseDirectory; // UI's base directory
+                string appDirectory = AppContext.BaseDirectory;
                 string workerExePath = string.Empty;
 
-                // Navigate up from the UI's bin/Debug/net10.0-windows10.0.19041.0/win-x64/
-                // Then navigate down to WorkerService/bin/Debug/net10.0/
-                // This is a common pattern when UI and WorkerService are sibling projects in a solution.
-                string solutionRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..", "..", "..", "..")); // Ajusta basado en tu profundidad real
-                _logger.LogInfo($"[WorkerServiceManager] Directorio raíz de la solución inferido: '{solutionRoot}'");
+                // 1. RUTA DE PRODUCCIÓN (Instalador): El worker suele estar en una subcarpeta /worker
+                string productionPath = Path.Combine(appDirectory, "worker", WorkerExeName);
 
-                // Assuming WorkerService is at [SolutionRoot]/WorkerService/
+                // 2. RUTAS DE DESARROLLO (Tu lógica original)
+                string solutionRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..", "..", "..", ".."));
                 string workerProjectBase = Path.Combine(solutionRoot, WorkerServiceName);
-
-                // Try Debug path first
                 string debugPath = Path.Combine(workerProjectBase, "bin", "Debug", "net10.0", WorkerExeName);
-                // Then Release path
                 string releasePath = Path.Combine(workerProjectBase, "bin", "Release", "net10.0", WorkerExeName);
 
-                _logger.LogInfo($"[WorkerServiceManager] Intentando ruta Debug: '{debugPath}'");
-                _logger.LogInfo($"[WorkerServiceManager] Intentando ruta Release: '{releasePath}'");
-
-                if (File.Exists(debugPath))
+                if (File.Exists(productionPath))
+                {
+                    workerExePath = productionPath;
+                    _logger.LogInfo($"[WorkerServiceManager] Usando ruta de producción: '{workerExePath}'");
+                }
+                else if (File.Exists(debugPath))
                 {
                     workerExePath = debugPath;
+                    _logger.LogInfo($"[WorkerServiceManager] Usando ruta Debug: '{workerExePath}'");
                 }
                 else if (File.Exists(releasePath))
                 {
                     workerExePath = releasePath;
+                    _logger.LogInfo($"[WorkerServiceManager] Usando ruta Release: '{workerExePath}'");
                 }
                 else
                 {
-                    _logger.LogError($"[WorkerServiceManager] No se pudo encontrar el ejecutable del WorkerService en ninguna de las rutas esperadas.");
+                    _logger.LogError($"[WorkerServiceManager] No se pudo encontrar el ejecutable en ninguna ruta.");
                     return Task.FromResult(false);
                 }
-                
-                _logger.LogInfo($"[WorkerServiceManager] Ruta final del ejecutable del WorkerService: '{workerExePath}'");
 
                 _workerProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = workerExePath,
-                        UseShellExecute = false, // Necesario para no abrir ventana de consola si el worker es un WinUI app.
-                        RedirectStandardOutput = true, // Redirigir la salida para que no aparezca en la consola de la UI.
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
                         RedirectStandardError = true,
-                        CreateNoWindow = true // No crear una ventana para el proceso.
+                        CreateNoWindow = true
                     }
                 };
 
                 _workerProcess.OutputDataReceived += (sender, e) =>
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        _logger.LogInfo($"[WorkerService OUT] {e.Data}");
-                    }
+                    if (!string.IsNullOrEmpty(e.Data)) _logger.LogInfo($"[WorkerService OUT] {e.Data}");
                 };
                 _workerProcess.ErrorDataReceived += (sender, e) =>
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        _logger.LogError($"[WorkerService ERR] {e.Data}");
-                    }
+                    if (!string.IsNullOrEmpty(e.Data)) _logger.LogError($"[WorkerService ERR] {e.Data}");
                 };
 
                 _workerProcess.Start();
                 _workerProcess.BeginOutputReadLine();
                 _workerProcess.BeginErrorReadLine();
-                _logger.LogInfo($"[WorkerServiceManager] WorkerService '{WorkerServiceName}' iniciado con PID: {_workerProcess.Id}");
+                
+                _logger.LogInfo($"[WorkerServiceManager] WorkerService iniciado con PID: {_workerProcess.Id}");
                 return Task.FromResult(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[WorkerServiceManager] Error al iniciar WorkerService: {ex.Message}", ex);
+                _logger.LogError($"[WorkerServiceManager] Error al iniciar: {ex.Message}", ex);
                 return Task.FromResult(false);
             }
         }
 
         public async Task<bool> StopWorkerServiceAsync()
         {
-            if (!IsWorkerServiceRunning)
-            {
-                _logger.LogInfo($"[WorkerServiceManager] WorkerService '{WorkerServiceName}' no está en ejecución.");
-                return true;
-            }
+            if (!IsWorkerServiceRunning) return true;
 
             try
             {
-                _logger.LogInfo($"[WorkerServiceManager] Intentando detener WorkerService con PID: {_workerProcess.Id}");
-                // Cerrar las redirecciones de salida antes de terminar el proceso
+                _logger.LogInfo($"[WorkerServiceManager] Deteniendo PID: {_workerProcess.Id}");
                 _workerProcess.CancelOutputRead();
                 _workerProcess.CancelErrorRead();
-                
-                _workerProcess.Kill(); // Forzar la detención del proceso.
+                _workerProcess.Kill();
                 await _workerProcess.WaitForExitAsync();
-                _logger.LogInfo($"[WorkerServiceManager] WorkerService '{WorkerServiceName}' detenido.");
                 _workerProcess = null;
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[WorkerServiceManager] Error al detener WorkerService: {ex.Message}", ex);
+                _logger.LogError($"[WorkerServiceManager] Error al detener: {ex.Message}", ex);
                 return false;
             }
         }
