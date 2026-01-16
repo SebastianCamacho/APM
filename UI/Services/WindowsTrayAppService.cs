@@ -48,47 +48,43 @@ namespace UI.Services
                 string appDirectory = AppContext.BaseDirectory;
                 string trayAppExePath = string.Empty;
 
-                // Construir la ruta al ejecutable de TrayApp
-                // Asumiendo que TrayApp.exe está en el mismo directorio que UI.exe en el despliegue
-                // o en una ruta relativa predecible en desarrollo.
-                // Basado en la inspección previa, el ejecutable está en el mismo nivel de 'net10.0-windows'
-                string productionPath = Path.Combine(appDirectory, TrayAppExeName);
+                // --- Lógica de Rutas de Producción ---
+                
 
-                // Para desarrollo, podríamos necesitar buscar en las carpetas bin/Debug/net10.0-windows
-                // Sin embargo, para la mayoría de los escenarios de publicación y ejecución de la UI,
-                // el TrayApp.exe debería estar en un directorio accesible relativo a la UI.exe.
-                // Para el propósito de esta tarea, la ruta de producción es la más relevante,
-                // ya que la aplicación MAUI se ejecutará desde su directorio de publicación.
+                //TrayApp.exe está en una subcarpeta 'tray' o 'trayapp' dentro del directorio de la UI.exe
+                string productionPath = Path.Combine(appDirectory, "trayapp", TrayAppExeName);
+                
+                
 
-                if (File.Exists(productionPath))
+
+                // --- Lógica de Rutas de Desarrollo ---
+                // Si no lo encuentra en la ruta de producción, intentaremos buscarlo en rutas de desarrollo
+                string solutionRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..", "..", "..", ".."));
+                string trayAppProjectBase = Path.Combine(solutionRoot, "AppsielPrintManager", "TrayApp"); // Ruta al proyecto TrayApp
+                string debugPath = Path.Combine(trayAppProjectBase, "bin", "Debug", "net10.0-windows", TrayAppExeName); // Asumiendo net10.0-windows para TrayApp
+                string releasePath = Path.Combine(trayAppProjectBase, "bin", "Release", "net10.0-windows", TrayAppExeName);
+
+
+                
+                 if (File.Exists(productionPath))
                 {
                     trayAppExePath = productionPath;
-                    _logger.LogInfo($"[TrayAppService] Usando ruta de producción: '{trayAppExePath}'");
+                    _logger.LogInfo($"[TrayAppService] Usando ruta de producción (subdirectorio 'tray'): '{trayAppExePath}'");
+                }
+                else if (File.Exists(debugPath))
+                {
+                    trayAppExePath = debugPath;
+                    _logger.LogInfo($"[TrayAppService] Usando ruta de desarrollo (Debug): '{trayAppExePath}'");
+                }
+                else if (File.Exists(releasePath))
+                {
+                    trayAppExePath = releasePath;
+                    _logger.LogInfo($"[TrayAppService] Usando ruta de desarrollo (Release): '{trayAppExePath}'");
                 }
                 else
                 {
-                     // Si no lo encuentra en la ruta de producción, intentaremos buscarlo en una ruta de desarrollo
-                    // Similar a cómo lo hace WindowsWorkerServiceManager
-                    string solutionRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..", "..", "..", ".."));
-                    string trayAppProjectBase = Path.Combine(solutionRoot, "TrayApp"); // Ajustar la ruta del proyecto TrayApp
-                    string debugPath = Path.Combine(trayAppProjectBase, "bin", "Debug", "net10.0-windows", TrayAppExeName);
-                    string releasePath = Path.Combine(trayAppProjectBase, "bin", "Release", "net10.0-windows", TrayAppExeName);
-
-                    if (File.Exists(debugPath))
-                    {
-                        trayAppExePath = debugPath;
-                        _logger.LogInfo($"[TrayAppService] Usando ruta Debug: '{trayAppExePath}'");
-                    }
-                    else if (File.Exists(releasePath))
-                    {
-                        trayAppExePath = releasePath;
-                        _logger.LogInfo($"[TrayAppService] Usando ruta Release: '{trayAppExePath}'");
-                    }
-                    else
-                    {
-                        _logger.LogError($"[TrayAppService] No se pudo encontrar el ejecutable '{TrayAppExeName}' en ninguna ruta conocida.");
-                        return Task.FromResult(false);
-                    }
+                    _logger.LogError($"[TrayAppService] No se pudo encontrar el ejecutable '{TrayAppExeName}' en ninguna ruta conocida.");
+                    return Task.FromResult(false);
                 }
 
 

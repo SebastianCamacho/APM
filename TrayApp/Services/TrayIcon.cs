@@ -115,17 +115,11 @@ public class TrayIcon : IDisposable
         string workerExeFullName = WorkerExeName + ".exe"; // Nombre completo del ejecutable
 
         // --- Lógica de Rutas de Producción ---
-        // Escenario 1: WorkerService.exe está en una carpeta 'worker' junto a TrayApp.exe
-        // Ejemplo: C:\Program Files\Appsiel PM\TrayApp\worker\WorkerService.exe
-        string productionPath1 = Path.Combine(appDirectory, "worker", workerExeFullName);
-        
-        // Escenario 2: TrayApp.exe y WorkerService.exe son hermanos en la raíz de la instalación
-        // Ejemplo: C:\Program Files\Appsiel PM\TrayApp\TrayApp.exe
-        //          C:\Program Files\Appsiel PM\WorkerService\WorkerService.exe
-        // Desde el appDirectory de TrayApp: E:\...\TrayApp\bin\Debug\net10.0-windows\
-        // Subir dos niveles para llegar a AppsielPrintManager (si la estructura es así)
-        string commonInstallRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..")); // Ajuste tentativo, subir dos niveles
-        string productionPath2 = Path.Combine(commonInstallRoot, "WorkerService", workerExeFullName);
+        // Escenario: WorkerService.exe está en una subcarpeta 'worker' que es hermana de 'trayapp'
+        // Desde [Carpeta de instalación de la UI]/trayapp/, subimos un nivel a [Carpeta de instalación de la UI]/
+        string installRoot = Path.GetFullPath(Path.Combine(appDirectory, ".."));
+        // Luego bajamos a 'worker'
+        string productionPath = Path.Combine(installRoot, "worker", workerExeFullName);
 
         // --- Lógica de Rutas de Desarrollo ---
         // Desde appDirectory: E:\...\AppsielPrintManager\TrayApp\bin\Debug\net10.0-windows\
@@ -133,24 +127,13 @@ public class TrayIcon : IDisposable
         string solutionRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..", "..", "..", "..")); // 6 ".."
         string workerProjectBase = Path.Combine(solutionRoot, "AppsielPrintManager", "WorkerService"); // Ruta al proyecto WorkerService
         string debugPath = Path.Combine(workerProjectBase, "bin", "Debug", "net10.0", workerExeFullName);
-        string releasePath = Path.Combine(workerProjectBase, "bin", "Release", "net10.0", workerExeFullName);
-
-
-        if (File.Exists(productionPath1))
+        if (File.Exists(productionPath))
         {
-            return productionPath1;
-        }
-        else if (File.Exists(productionPath2))
-        {
-            return productionPath2;
+            return productionPath;
         }
         else if (File.Exists(debugPath))
         {
             return debugPath;
-        }
-        else if (File.Exists(releasePath))
-        {
-            return releasePath;
         }
         
         return null; // Ejecutable no encontrado en ninguna de las rutas esperadas.
@@ -166,13 +149,10 @@ public class TrayIcon : IDisposable
         string uiExeFullName = MauiUIExeName + ".exe";
 
         // --- Lógica de Rutas de Producción ---
-        // Escenario 1: UI.exe está en una carpeta 'ui' junto a TrayApp.exe
-        string productionPath1 = Path.Combine(appDirectory, "ui", uiExeFullName);
-        
-        // Escenario 2: TrayApp.exe y UI.exe son hermanos en la raíz de la instalación
-        // E.g. TrayApp.exe en C:\Program Files\Appsiel PM\TrayApp\ y UI.exe en C:\Program Files\Appsiel PM\UI\
-        string commonInstallRoot = Path.GetFullPath(Path.Combine(appDirectory, "..")); // Subir un nivel desde la carpeta de TrayApp
-        string productionPath2 = Path.Combine(commonInstallRoot, "UI", uiExeFullName);
+        // Escenario: UI.exe está un nivel arriba del directorio de TrayApp.exe
+        // Desde [Carpeta de instalación de la UI]/trayapp/, subimos un nivel a [Carpeta de instalación de la UI]/
+        // y allí está UI.exe
+        string productionPath = Path.GetFullPath(Path.Combine(appDirectory, "..", uiExeFullName));
 
         // --- Lógica de Rutas de Desarrollo ---
         // Desde appDirectory: E:\...\AppsielPrintManager\TrayApp\bin\Debug\net10.0-windows\
@@ -183,13 +163,9 @@ public class TrayIcon : IDisposable
         string releasePath = Path.Combine(uiProjectBase, "bin", "Release", "net10.0-windows10.0.19041.0", "win-x64", uiExeFullName);
 
 
-        if (File.Exists(productionPath1))
+        if (File.Exists(productionPath))
         {
-            return productionPath1;
-        }
-        else if (File.Exists(productionPath2))
-        {
-            return productionPath2;
+            return productionPath;
         }
         else if (File.Exists(debugPath))
         {
