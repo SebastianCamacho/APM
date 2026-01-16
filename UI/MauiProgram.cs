@@ -41,9 +41,11 @@ namespace UI
             // Register WorkerServiceManager conditionally for Windows
 #if WINDOWS
             builder.Services.AddSingleton<IWorkerServiceManager, WindowsWorkerServiceManager>();
+            builder.Services.AddSingleton<ITrayAppService, WindowsTrayAppService>(); // Nuevo registro para TrayApp
 #else
             // For other platforms, register a no-op or throw an exception if WorkerServiceManager is attempted to be used.
             builder.Services.AddSingleton<IWorkerServiceManager, NoOpWorkerServiceManager>();
+            builder.Services.AddSingleton<ITrayAppService, NoOpTrayAppService>(); // Nuevo registro para TrayApp
 #endif
 
 
@@ -67,5 +69,11 @@ namespace UI
         public bool IsWorkerServiceRunning => false;
         public Task<bool> StartWorkerServiceAsync() => Task.FromResult(false);
         public Task<bool> StopWorkerServiceAsync() => Task.FromResult(false);
+    }
+    // No-op implementation for ITrayAppService on non-Windows platforms
+    public class NoOpTrayAppService : ITrayAppService
+    {
+        public bool IsTrayAppRunning => false;
+        public Task<bool> StartTrayAppAsync() => Task.FromResult(false);
     }
 }

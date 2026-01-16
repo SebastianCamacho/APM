@@ -10,7 +10,8 @@ namespace UI
     public partial class App : Application
     {
         private readonly IServiceProvider _serviceProvider;
-        private IWorkerServiceManager _workerServiceManager; // Store it for potential future access
+        private IWorkerServiceManager _workerServiceManager;
+        private ITrayAppService _trayAppService; // Nuevo: para el servicio TrayApp
 
         public App(IServiceProvider serviceProvider)
         {
@@ -26,7 +27,7 @@ namespace UI
                 Application.Current.MainPage = new AppShell();
             });
 
-            // Try to start WorkerService when the MAUI app initializes (on Windows only)
+            // Try to start WorkerService and TrayApp when the MAUI app initializes (on Windows only)
 #if WINDOWS
             _workerServiceManager = _serviceProvider.GetService<IWorkerServiceManager>();
             if (_workerServiceManager != null)
@@ -34,6 +35,15 @@ namespace UI
                 Task.Run(async () =>
                 {
                     await _workerServiceManager.StartWorkerServiceAsync();
+                });
+            }
+
+            _trayAppService = _serviceProvider.GetService<ITrayAppService>();
+            if (_trayAppService != null)
+            {
+                Task.Run(async () =>
+                {
+                    await _trayAppService.StartTrayAppAsync();
                 });
             }
 #endif
