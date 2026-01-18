@@ -1,4 +1,4 @@
-//#if WINDOWS
+#if WINDOWS
 using AppsielPrintManager.Core.Interfaces;
 using AppsielPrintManager.Infraestructure.Services; // Para ILoggingService
 using System;
@@ -112,4 +112,4 @@ namespace UI.Services
         }
     }
 }
-//#endif
+#endif
