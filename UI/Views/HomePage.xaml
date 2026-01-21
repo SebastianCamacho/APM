@@ -1,12 +1,50 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:UI.ViewModels"
+             x:DataType="viewmodels:HomeViewModel"
              x:Class="UI.Views.HomePage"
              Title="Inicio">
-    <VerticalStackLayout>
-        <Label 
-            Text="¡Bienvenido a Appsiel Print Manager!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    <ScrollView>
+        <VerticalStackLayout Spacing="25" Padding="30,0" VerticalOptions="Center">
+
+            <Image
+                Source="dotnet_bot.png"
+                SemanticProperties.Description="Dotnet bot in a circle"
+                HeightRequest="200"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="¡Bienvenido a Appsiel Print Manager!"
+                SemanticProperties.HeadingLevel="Level1"
+                FontSize="32"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="Estado del Servicio:"
+                SemanticProperties.HeadingLevel="Level2"
+                FontSize="18"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="{Binding ServiceStatus}"
+                SemanticProperties.HeadingLevel="Level3"
+                FontSize="24"
+                FontAttributes="Bold"
+                HorizontalOptions="Center" />
+
+            <Button
+                Text="Iniciar Foreground Service"
+                Command="{Binding StartForegroundServiceCommand}"
+                IsEnabled="{Binding IsServiceRunning, Converter={StaticResource InverseBoolConverter} }"
+                HorizontalOptions="Center" />
+
+            <Button
+                Text="Detener Foreground Service"
+                Command="{Binding StopForegroundServiceCommand}"
+                IsEnabled="{Binding IsServiceRunning}"
+                HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

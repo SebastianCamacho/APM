@@ -12,6 +12,7 @@ namespace UI
         private readonly IServiceProvider _serviceProvider;
         private IWorkerServiceManager _workerServiceManager;
         private ITrayAppService _trayAppService; // Nuevo: para el servicio TrayApp
+        private IPlatformService _platformService; // Nuevo: para el servicio de plataforma
 
         public App(IServiceProvider serviceProvider)
         {
@@ -44,6 +45,18 @@ namespace UI
                 Task.Run(async () =>
                 {
                     await _trayAppService.StartTrayAppAsync();
+                });
+            }
+#elif ANDROID // For Android, start the foreground service
+            _platformService = _serviceProvider.GetService<IPlatformService>();
+            if (_platformService != null)
+            {
+                Task.Run(async () =>
+                {
+                    if (!_platformService.IsBackgroundServiceRunning)
+                    {
+                        await _platformService.StartBackgroundServiceAsync();
+                    }
                 });
             }
 #endif

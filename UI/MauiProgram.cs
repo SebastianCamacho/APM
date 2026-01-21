@@ -35,7 +35,11 @@ namespace UI
             builder.Services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>(); // Nuevo registro
             builder.Services.AddSingleton<TcpIpPrinterClient>(); // Nuevo registro
             builder.Services.AddSingleton<IPrintService, PrintService>(); // Nuevo registro
-            builder.Services.AddSingleton<IPlatformService, StubPlatformService>(); // Registra StubPlatformService
+#if ANDROID
+            builder.Services.AddSingleton<IPlatformService, UI.Platforms.Android.Services.AndroidPlatformService>(); // Registra AndroidPlatformService
+#else
+            builder.Services.AddSingleton<IPlatformService, StubPlatformService>(); // Registra StubPlatformService (para otras plataformas, incluyendo iOS)
+#endif
             //builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>(); // REMOVED: Duplicate registration
 
             // Register WorkerServiceManager conditionally for Windows
@@ -43,13 +47,13 @@ namespace UI
             builder.Services.AddSingleton<IWorkerServiceManager, WindowsWorkerServiceManager>();
             builder.Services.AddSingleton<ITrayAppService, WindowsTrayAppService>(); // Nuevo registro para TrayApp
 #else
-            // For other platforms, register a no-op or throw an exception if WorkerServiceManager is attempted to be used.
-            builder.Services.AddSingleton<IWorkerServiceManager, NoOpWorkerServiceManager>();
-            builder.Services.AddSingleton<ITrayAppService, NoOpTrayAppService>(); // Nuevo registro para TrayApp
+            // Para otras plataformas, se utilizará la implementación de IPlatformService o se gestionará la ausencia del servicio.
+            // No se registran NoOpWorkerServiceManager ni NoOpTrayAppService ya que IPlatformService gestionará la interacción.
 #endif
 
 
             // ViewModels
+            builder.Services.AddTransient<HomeViewModel>(); // Nuevo registro para HomePage
             builder.Services.AddTransient<PrintersViewModel>();
             builder.Services.AddTransient<PrinterDetailViewModel>(); // Nuevo registro
             builder.Services.AddTransient<LogsViewModel>(); // Nuevo registro
@@ -59,21 +63,11 @@ namespace UI
             builder.Services.AddSingleton<NumericToStringConverter>(); // Nuevo registro
             builder.Services.AddSingleton<LogLevelToColorConverter>(); // Nuevo registro
 
-            return builder.Build();
+            var app = builder.Build();
+            Services = app.Services; // Expose the service provider
+            return app;
         }
-    }
-    // No-op implementation for IWorkerServiceManager on non-Windows platforms
-    // This prevents compilation errors on other platforms where WindowsWorkerServiceManager is not available
-    public class NoOpWorkerServiceManager : IWorkerServiceManager
-    {
-        public bool IsWorkerServiceRunning => false;
-        public Task<bool> StartWorkerServiceAsync() => Task.FromResult(false);
-        public Task<bool> StopWorkerServiceAsync() => Task.FromResult(false);
-    }
-    // No-op implementation for ITrayAppService on non-Windows platforms
-    public class NoOpTrayAppService : ITrayAppService
-    {
-        public bool IsTrayAppRunning => false;
-        public Task<bool> StartTrayAppAsync() => Task.FromResult(false);
+
+        public static IServiceProvider Services { get; private set; } // Static property to hold the service provider
     }
 }
