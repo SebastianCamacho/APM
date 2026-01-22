@@ -91,7 +91,7 @@ namespace UI.Platforms.Android.Services
             var notificationBuilder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .SetContentTitle("Appsiel Print Manager")
                 .SetContentText("Servicio en segundo plano ejecutándose...")
-                .SetSmallIcon(Resource.Mipmap.appicon) // Use your app's icon
+                .SetSmallIcon(Resource.Drawable.notification_icon) // Usar el nuevo icono de notificación
                 .SetContentIntent(pendingIntent)
                 .SetOngoing(true) // Makes the notification persistent
                 .SetAutoCancel(false); // Do not auto cancel when tapped

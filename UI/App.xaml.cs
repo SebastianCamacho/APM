@@ -13,7 +13,6 @@ namespace UI
         private IWorkerServiceManager _workerServiceManager;
         private ITrayAppService _trayAppService;
         private IPlatformService _platformService;
-        private bool _isClosing = false;
 
         public App(IServiceProvider serviceProvider)
         {
@@ -22,27 +21,29 @@ namespace UI
             _serviceProvider = serviceProvider;
             UserAppTheme = AppTheme.Light;
 
+            // Establecer LoginView como MainPage inicial
+            MainPage = new LoginView();
+
             // Suscribirse al mensaje de login exitoso
             WeakReferenceMessenger.Default.Register<LoginSuccessMessage>(this, (r, m) =>
             {
-                // Solo cambiar MainPage si la app no se está cerrando
-                if (!_isClosing && Application.Current != null)
+                try
                 {
-                    try
+                    var appShell = _serviceProvider.GetService<AppShell>();
+                    if (appShell != null)  // ← Solo esta verificación  
                     {
-                        var appShell = _serviceProvider.GetService<AppShell>();
-                        if (appShell != null)
+                        MainThread.BeginInvokeOnMainThread(() =>
                         {
-                            MainThread.BeginInvokeOnMainThread(() =>
+                            if (Application.Current?.MainPage is LoginView)  // ← Solo si aún estamos en login
                             {
-                                Application.Current.MainPage = appShell;
-                            });
-                        }
+                                MainPage = appShell;
+                            }
+                        });
                     }
-                    catch (ObjectDisposedException)
-                    {
-                        System.Diagnostics.Debug.WriteLine("ServiceProvider disposado - login fallido");
-                    }
+                }
+                catch (ObjectDisposedException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"App cerrándose: {ex.Message}");
                 }
             });
 
@@ -103,25 +104,16 @@ namespace UI
         protected override void OnStart()
         {
             base.OnStart();
-            _isClosing = false;
         }
 
         protected override void OnSleep()
         {
-            _isClosing = true;
             base.OnSleep();
         }
 
         protected override void OnResume()
         {
-            _isClosing = false;
             base.OnResume();
-        }
-
-        protected override Window CreateWindow(IActivationState? activationState)
-        {
-            var window = new Window(new LoginView());
-            return window;
         }
     }
 

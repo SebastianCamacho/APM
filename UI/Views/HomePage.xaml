@@ -9,8 +9,8 @@
         <VerticalStackLayout Spacing="25" Padding="30,0" VerticalOptions="Center">
 
             <Image
-                Source="dotnet_bot.png"
-                SemanticProperties.Description="Dotnet bot in a circle"
+                Source="logo_apm.svg"
+                SemanticProperties.Description="Logo APM in a circle"
                 HeightRequest="200"
                 HorizontalOptions="Center" />
 
