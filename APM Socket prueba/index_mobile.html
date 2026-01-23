@@ -24,8 +24,17 @@
 </head>
 <body>
     <h1>Cliente de Prueba APM WebSocket - Versión Móvil</h1>
+    
+    <div style="margin-bottom: 15px; padding: 10px; background-color: #eee; border-radius: 5px;">
+        <label for="wsUrlInput" style="font-weight: bold;">URL del WebSocket:</label>
+        <input type="text" id="wsUrlInput" value="ws://localhost:7000/" style="width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box;">
+        <div style="margin-top: 10px;">
+            <button id="connectButton" style="padding: 8px 15px; background-color: #28a745; color: white; border: none; cursor: pointer;">Conectar</button>
+            <button id="disconnectButton" style="padding: 8px 15px; background-color: #dc3545; color: white; border: none; cursor: pointer;">Desconectar</button>
+        </div>
+    </div>
+
     <p>Estado de la conexión: <span id="status">Desconectado</span></p>
-    <button id="reconnectButton" style="margin-top: 10px; padding: 5px 10px;">Reconectar</button>
     <p>Mensajes del Cliente:</p>
     <div id="messages"></div>
 
@@ -51,10 +60,10 @@
         // Script incrustado para probar la conexión WebSocket al APM
         // Este archivo funciona sin necesidad de referencias externas
 
-        const websocketUrl = 'ws://localhost:7000/websocket/';
         let socket;
         const statusSpan = document.getElementById('status');
         const messagesDiv = document.getElementById('messages');
+        const wsUrlInput = document.getElementById('wsUrlInput');
         let activePayloadId = 'payloadTicket';
 
         function logMessage(message, type = 'info') {
@@ -67,16 +76,17 @@
 
         function connectWebSocket() {
             if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
-                logMessage('Ya existe una conexión WebSocket activa o en proceso. No se intentará una nueva conexión.', 'warning');
+                logMessage('Ya existe una conexión activa. Desconecta primero para cambiar la URL.', 'warning');
                 return;
             }
 
+            const url = wsUrlInput.value;
             statusSpan.textContent = 'Intentando conectar...';
             statusSpan.style.color = 'orange';
-            logMessage('Intentando establecer conexión WebSocket con: ' + websocketUrl, 'info');
+            logMessage('Intentando conectar a: ' + url, 'info');
 
             try {
-                socket = new WebSocket(websocketUrl);
+                socket = new WebSocket(url);
 
                 socket.onopen = (event) => {
                     statusSpan.textContent = 'Conectado';
@@ -263,7 +273,8 @@
             });
 
             const sendPayloadButton = document.getElementById('sendPayloadButton');
-            const reconnectButton = document.getElementById('reconnectButton');
+            const connectButton = document.getElementById('connectButton');
+            const disconnectButton = document.getElementById('disconnectButton');
 
             if (sendPayloadButton) {
                 sendPayloadButton.addEventListener('click', (event) => {
@@ -278,8 +289,19 @@
                 });
             }
 
-            if (reconnectButton) {
-                reconnectButton.addEventListener('click', reconnectWebSocket);
+            if (connectButton) {
+                connectButton.addEventListener('click', connectWebSocket);
+            }
+            
+            if (disconnectButton) {
+                disconnectButton.addEventListener('click', () => {
+                   if (socket) {
+                       logMessage('Desconectando por solicitud del usuario...', 'info');
+                       socket.close(1000, "User disconnected");
+                   } else {
+                       logMessage('No hay conexión activa para desconectar.', 'warning');
+                   }
+                });
             }
 
             logMessage('Cliente listo. Prueba las pestañas para ver los diferentes JSONs.', 'success');

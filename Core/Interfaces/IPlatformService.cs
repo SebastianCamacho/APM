@@ -35,5 +35,15 @@ namespace AppsielPrintManager.Core.Interfaces
         /// Obtiene o establece si el servicio en segundo plano está actualmente en ejecución.
         /// </summary>
         bool IsBackgroundServiceRunning { get; }
+
+        /// <summary>
+        /// Obtiene si el servidor WebSocket está actualmente en ejecución.
+        /// </summary>
+        bool IsWebSocketServerRunning { get; }
+
+        /// <summary>
+        /// Obtiene el número actual de clientes conectados al servidor WebSocket.
+        /// </summary>
+        int CurrentClientCount { get; }
     }
 }

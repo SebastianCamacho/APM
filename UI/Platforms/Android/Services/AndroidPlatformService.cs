@@ -58,5 +58,23 @@ namespace UI.Platforms.Android.Services
             // If we want to show additional, non-persistent notifications, we would implement it here.
             // For now, let's just log it.
         }
+
+        public bool IsWebSocketServerRunning
+        {
+            get
+            {
+                // Consultar el estado del WebSocket desde el Foreground Service
+                return AppsielPrintManagerForegroundService.IsWebSocketRunning;
+            }
+        }
+
+        public int CurrentClientCount
+        {
+            get
+            {
+                // Consultar el número de clientes desde el Foreground Service
+                return AppsielPrintManagerForegroundService.ConnectedClients;
+            }
+        }
     }
 }

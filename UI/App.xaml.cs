@@ -79,25 +79,25 @@ namespace UI
                     }
                 });
             }
-#elif ANDROID
-            _platformService = _serviceProvider.GetService<IPlatformService>();
-            if (_platformService != null)
-            {
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        if (!_platformService.IsBackgroundServiceRunning)
-                        {
-                            await _platformService.StartBackgroundServiceAsync();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Error starting background service: {ex}");
-                    }
-                });
-            }
+//#elif ANDROID
+//            _platformService = _serviceProvider.GetService<IPlatformService>();
+//            if (_platformService != null)
+//            {
+//                Task.Run(async () =>
+//                {
+//                    try
+//                    {
+//                        if (!_platformService.IsBackgroundServiceRunning)
+//                        {
+//                            await _platformService.StartBackgroundServiceAsync();
+//                        }
+//                    }
+//                    catch (Exception ex)
+//                    {
+//                        System.Diagnostics.Debug.WriteLine($"Error starting background service: {ex}");
+//                    }
+//                });
+//            }
 #endif
         }
 

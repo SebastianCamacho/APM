@@ -30,16 +30,18 @@ namespace UI
 #endif
 
             builder.Services.AddSingleton<ILoggingService, Logger>();
-            builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>();
             builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
             builder.Services.AddSingleton<ITicketRenderer, TicketRendererService>();
             builder.Services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>();
             builder.Services.AddSingleton<TcpIpPrinterClient>();
             builder.Services.AddSingleton<IPrintService, PrintService>();
+
 #if ANDROID
             builder.Services.AddSingleton<IPlatformService, UI.Platforms.Android.Services.AndroidPlatformService>();
+            builder.Services.AddSingleton<IWebSocketService, AndroidWebSocketService>();
 #else
             builder.Services.AddSingleton<IPlatformService, StubPlatformService>();
+            builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>();
 #endif
 
 #if WINDOWS

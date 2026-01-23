@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging; // Using the MAUI's ILogger for now
 using System.Threading;
 using System.Threading.Tasks;
+using AppsielPrintManager.Core.Models;
+using Microsoft.Maui.ApplicationModel; // For Platform.Current
 
 namespace UI.Platforms.Android.Services
 {
@@ -16,16 +18,39 @@ namespace UI.Platforms.Android.Services
         private const int SERVICE_NOTIFICATION_ID = 10001;
         private const string NOTIFICATION_CHANNEL_ID = "AppsielPrintManagerChannel";
         private const string NOTIFICATION_CHANNEL_NAME = "Appsiel Print Manager Notifications";
+        private const int WEBSOCKET_PORT = 7000; // Puerto para el servidor WebSocket
 
-        private ILoggingService _logger; // Will be resolved later
-        private CancellationTokenSource _cts;
+        private ILoggingService? _logger;
+        private IWebSocketService? _webSocketService;
+        private IPrintService? _printService;
+        private CancellationTokenSource? _cts;
+
+        // Campos estáticos para compartir estado con AndroidPlatformService
+        public static bool IsWebSocketRunning { get; private set; } = false;
+        public static int ConnectedClients { get; private set; } = 0;
 
         public override void OnCreate()
         {
             base.OnCreate();
-            // TODO: Resolve ILoggingService safely here. This will be addressed in Phase 3.
-            _logger = global::Microsoft.Maui.MauiApplication.Current.Services.GetService<ILoggingService>();
-            _logger?.LogInfo("Foreground Service: OnCreate called.");
+
+            // Resolver servicios desde el contenedor de DI
+            // Usar IPlatformApplication.Current.Services para evitar advertencias y posibles problemas de ciclo de vida
+            var services = IPlatformApplication.Current?.Services;
+            if (services != null)
+            {
+                _logger = services.GetService<ILoggingService>();
+                _webSocketService = services.GetService<IWebSocketService>();
+                _printService = services.GetService<IPrintService>();
+                _logger?.LogInfo("Foreground Service: OnCreate called. Services resolved via IPlatformApplication.");
+            }
+            else
+            {
+                // Fallback por si IPlatformApplication.Current es null (raro en MAUI app iniciada)
+                _logger = global::Microsoft.Maui.MauiApplication.Current.Services.GetService<ILoggingService>();
+                _webSocketService = global::Microsoft.Maui.MauiApplication.Current.Services.GetService<IWebSocketService>();
+                _printService = global::Microsoft.Maui.MauiApplication.Current.Services.GetService<IPrintService>();
+                _logger?.LogInfo("Foreground Service: OnCreate called. Services resolved via MauiApplication (Fallback).");
+            }
         }
 
         [return: GeneratedEnum]
@@ -41,19 +66,35 @@ namespace UI.Platforms.Android.Services
             // Start the service in the foreground
             StartForeground(SERVICE_NOTIFICATION_ID, notification);
 
-            // TODO: Start WebSocketServerService and other long-running tasks here.
-            // This will be implemented in Phase 4, after dependency resolution in Phase 3.
+            // Iniciar WebSocket Server automáticamente
             Task.Run(async () =>
             {
-                // Placeholder for actual work
-                while (!_cts.Token.IsCancellationRequested)
+                try
                 {
-                    _logger?.LogInfo("Foreground Service: Working in background...");
-                    await Task.Delay(5000, _cts.Token);
+                    if (_webSocketService != null)
+                    {
+                        // Suscribir a eventos del WebSocket
+                        _webSocketService.OnClientConnected += WebSocketService_OnClientConnected;
+                        _webSocketService.OnClientDisconnected += WebSocketService_OnClientDisconnected;
+                        _webSocketService.OnPrintJobReceived += WebSocketService_OnPrintJobReceived;
+
+                        // Iniciar servidor WebSocket
+                        await _webSocketService.StartServerAsync(WEBSOCKET_PORT);
+                        IsWebSocketRunning = true;
+                        _logger?.LogInfo($"Foreground Service: WebSocket Server iniciado en puerto {WEBSOCKET_PORT}");
+                    }
+                    else
+                    {
+                        _logger?.LogError("Foreground Service: IWebSocketService no pudo ser resuelto.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError($"Foreground Service: Error al iniciar WebSocket Server: {ex.Message}", ex);
                 }
             });
 
-            return StartCommandResult.Sticky; // Service will be restarted if killed by the system
+            return StartCommandResult.Sticky;
         }
 
         public override IBinder OnBind(Intent intent)
@@ -65,11 +106,33 @@ namespace UI.Platforms.Android.Services
         public override void OnDestroy()
         {
             _logger?.LogInfo("Foreground Service: OnDestroy called.");
+
+            // Detener WebSocket Server si está ejecutándose
+            if (_webSocketService != null && IsWebSocketRunning)
+            {
+                try
+                {
+                    // Desuscribir eventos para evitar fugas de memoria
+                    _webSocketService.OnClientConnected -= WebSocketService_OnClientConnected;
+                    _webSocketService.OnClientDisconnected -= WebSocketService_OnClientDisconnected;
+                    _webSocketService.OnPrintJobReceived -= WebSocketService_OnPrintJobReceived;
+
+                    _webSocketService.StopServerAsync().Wait();
+                    IsWebSocketRunning = false;
+                    ConnectedClients = 0;
+                    _logger?.LogInfo("Foreground Service: WebSocket Server detenido.");
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError($"Foreground Service: Error al detener WebSocket Server: {ex.Message}", ex);
+                }
+            }
+
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = null;
 
-            StopForeground(true); // Remove notification
+            StopForeground(true);
             base.OnDestroy();
         }
 
@@ -97,6 +160,66 @@ namespace UI.Platforms.Android.Services
                 .SetAutoCancel(false); // Do not auto cancel when tapped
 
             return notificationBuilder.Build();
+        }
+
+        // --- Event Handlers para IWebSocketService ---
+
+        /// <summary>
+        /// Manejador del evento OnClientConnected del WebSocket.
+        /// </summary>
+        private Task WebSocketService_OnClientConnected(object sender, string clientId)
+        {
+            ConnectedClients++;
+            _logger?.LogInfo($"[WebSocket] Cliente conectado: {clientId}. Total clientes: {ConnectedClients}");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Manejador del evento OnClientDisconnected del WebSocket.
+        /// </summary>
+        private Task WebSocketService_OnClientDisconnected(object sender, string clientId)
+        {
+            ConnectedClients--;
+            if (ConnectedClients < 0) ConnectedClients = 0;
+            _logger?.LogInfo($"[WebSocket] Cliente desconectado: {clientId}. Total clientes: {ConnectedClients}");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Manejador del evento OnPrintJobReceived del WebSocket.
+        /// Procesa la solicitud de impresión y envía el resultado de vuelta CLIENTE ESPECÍFICO.
+        /// </summary>
+        private async Task WebSocketService_OnPrintJobReceived(object sender, WebSocketMessageReceivedEventArgs<PrintJobRequest> e)
+        {
+            try
+            {
+                var request = e.Message;
+                var clientId = e.ClientId;
+                _logger?.LogInfo($"[WebSocket] PrintJobRequest recibido de {clientId} para JobId: {request.JobId}. Procesando impresión.");
+
+                if (_printService != null)
+                {
+                    // Procesar el trabajo de impresión
+                    var printResult = await _printService.ProcessPrintJobAsync(request);
+                    _logger?.LogInfo($"[WebSocket] PrintJob {request.JobId} procesado con estado: {printResult.Status}");
+
+                    // Enviar resultado de vuelta SOLO al cliente que lo solicitó
+                    if (_webSocketService != null)
+                    {
+                        // Usar el nuevo método Unicast
+                        await _webSocketService.SendPrintJobResultToClientAsync(clientId, printResult);
+                        _logger?.LogInfo($"[WebSocket] Resultado del PrintJob {request.JobId} enviado al cliente {clientId}.");
+                    }
+                }
+                else
+                {
+                    _logger?.LogError("[WebSocket] IPrintService no está disponible para procesar el PrintJobRequest.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"[WebSocket] Error al procesar PrintJobRequest: {ex.Message}", ex);
+            }
         }
     }
 }

@@ -45,6 +45,68 @@
                 IsEnabled="{Binding IsServiceRunning}"
                 HorizontalOptions="Center" />
 
+            <!-- Sección de WebSocket Server (solo Android) -->
+            <OnPlatform x:TypeArguments="x:Boolean">
+                <On Platform="Android" Value="True" />
+            </OnPlatform>
+           
+            <Label
+                Text="Estado del WebSocket Server:"
+                SemanticProperties.HeadingLevel="Level2"
+                FontSize="18"
+                HorizontalOptions="Center"
+                Margin="0,20,0,0">
+                <Label.IsVisible>
+                    <OnPlatform x:TypeArguments="x:Boolean">
+                        <On Platform="Android" Value="True" />
+                        <On Platform="WinUI" Value="False" />
+                        <On Platform="iOS" Value="False" />
+                        <On Platform="MacCatalyst" Value="False" />
+                    </OnPlatform>
+                </Label.IsVisible>
+            </Label>
+
+            <Label
+                FontSize="20"
+                FontAttributes="Bold"
+                HorizontalOptions="Center">
+                <Label.IsVisible>
+                    <OnPlatform x:TypeArguments="x:Boolean">
+                        <On Platform="Android" Value="True" />
+                        <On Platform="WinUI" Value="False" />
+                        <On Platform="iOS" Value="False" />
+                        <On Platform="MacCatalyst" Value="False" />
+                    </OnPlatform>
+                </Label.IsVisible>
+                <Label.Text>
+                    <MultiBinding StringFormat="{}{0}">
+                        <Binding Path="IsWebSocketServerRunning" />
+                    </MultiBinding>
+                </Label.Text>
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label" Binding="{Binding IsWebSocketServerRunning}" Value="True">
+                        <Setter Property="Text" Value="En ejecución" />
+                    </DataTrigger>
+                    <DataTrigger TargetType="Label" Binding="{Binding IsWebSocketServerRunning}" Value="False">
+                        <Setter Property="Text" Value="Detenido" />
+                    </DataTrigger>
+                </Label.Triggers>
+            </Label>
+
+            <Label
+                Text="{Binding CurrentClientCount, StringFormat='Clientes conectados: {0}'}"
+                FontSize="16"
+                HorizontalOptions="Center">
+                <Label.IsVisible>
+                    <OnPlatform x:TypeArguments="x:Boolean">
+                        <On Platform="Android" Value="True" />
+                        <On Platform="WinUI" Value="False" />
+                        <On Platform="iOS" Value="False" />
+                        <On Platform="MacCatalyst" Value="False" />
+                    </OnPlatform>
+                </Label.IsVisible>
+            </Label>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

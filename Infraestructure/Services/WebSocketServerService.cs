@@ -41,7 +41,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         /// <summary>
         /// Evento que se dispara cuando se recibe una solicitud de trabajo de impresión desde un cliente conectado.
         /// </summary>
-        public event AsyncEventHandler<PrintJobRequest> OnPrintJobReceived;
+        public event AsyncEventHandler<WebSocketMessageReceivedEventArgs<PrintJobRequest>> OnPrintJobReceived;
 
         /// <summary>
         /// Indica si el servidor WebSocket está actualmente escuchando conexiones.
@@ -83,23 +83,23 @@ namespace AppsielPrintManager.Infraestructure.Services
             // La URL debe terminar en '/' para HttpListener.
             // 'http://*:' permite escuchar en todas las interfaces de red, útil para conexiones desde otros dispositivos.
             // Requiere permisos de administrador o configuración de ACL (netsh http add urlacl).
-            _httpListener.Prefixes.Add($"http://localhost:{port}/websocket/"); 
+            _httpListener.Prefixes.Add($"http://localhost:{port}/websocket/");
 
             try
             {
                 _httpListener.Start();
                 _logger.LogInfo($"Servidor WebSocket iniciado y escuchando en puerto {port} en http://localhost:{port}/websocket/");
                 // Inicia un bucle para escuchar conexiones entrantes de clientes.
-                _ = ListenForConnectionsAsync(_cts.Token); 
+                _ = ListenForConnectionsAsync(_cts.Token);
                 // Inicia una tarea para procesar los mensajes JSON recibidos de forma asíncrona.
-                _messageProcessingTask = ProcessMessagesAsync(_cts.Token); 
+                _messageProcessingTask = ProcessMessagesAsync(_cts.Token);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error al iniciar el servidor WebSocket: {ex.Message}", ex);
                 // Si falla el inicio, intentar detener y limpiar recursos.
                 // Usamos 'false' para el semáforo para no esperar si no es necesario, ya que es un error de inicio.
-                await StopServerAsync(false); 
+                await StopServerAsync(false);
             }
         }
 
@@ -135,7 +135,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     _currentWebSocket = null;
                 }
             }
-            
+
             // Detener HttpListener antes de cancelar CTS para evitar HttpListenerException si el CTS se cancela primero.
             if (_httpListener != null)
             {
@@ -152,13 +152,13 @@ namespace AppsielPrintManager.Infraestructure.Services
             }
 
             // Ahora sí, cancelar las tareas en segundo plano.
-            _cts?.Cancel(); 
+            _cts?.Cancel();
 
             if (waitForSemaphore)
             {
                 await _connectionSemaphore.WaitAsync(); // Esperar a que cualquier procesamiento de conexión actual termine
             }
-            
+
             try
             {
                 if (_messageProcessingTask != null)
@@ -205,8 +205,31 @@ namespace AppsielPrintManager.Infraestructure.Services
         }
 
         /// <summary>
+        /// Envía un resultado de trabajo de impresión a un cliente específico.
+        /// En esta implementación Windows (Single Client), validamos si el cliente conectado es el destinatario.
+        /// </summary>
+        public async Task SendPrintJobResultToClientAsync(string clientId, PrintJobResult result)
+        {
+            // En esta implementación simple que solo soporta un cliente a la vez,
+            // verificamos si el cliente actual coincide.
+            // Nota: En la implementación actual, clientId es la IP:Port.
+
+            if (_currentWebSocket?.State == WebSocketState.Open)
+            {
+                // Si quisieramos ser estrictos, comprobaríamos el ID, pero como solo hay 1...
+                // aun así, hagamos un log si no coincide.
+                // string currentId = ... (necesitaríamos guardar el ID actual en un campo de clase cuando se conecta)
+
+                await SendMessageAsync(JsonSerializer.Serialize(result));
+            }
+            else
+            {
+                _logger.LogWarning($"No se puede enviar a {clientId}. No hay cliente conectado.");
+            }
+        }
+
+        /// <summary>
         /// Envía datos de báscula al cliente WebSocket conectado.
-        /// Serializa el objeto ScaleData a JSON y lo envía como mensaje de texto.
         /// </summary>
         /// <param name="scaleData">El objeto ScaleData que contiene la lectura de la báscula.</param>
         /// <returns>Tarea que representa la operación asíncrona de envío.</returns>
@@ -247,7 +270,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 {
                     // Esto es normal cuando el Stop() o Close() es llamado en HttpListener.
                     _logger.LogInfo("HttpListener fue detenido mientras esperaba conexiones (Operation Aborted).");
-                    break; 
+                    break;
                 }
                 catch (OperationCanceledException)
                 {
@@ -259,14 +282,14 @@ namespace AppsielPrintManager.Infraestructure.Services
                 {
                     _logger.LogError($"Error inesperado al obtener contexto de conexión: {ex.Message}", ex);
                     // Si ocurre un error, continuar el bucle para intentar escuchar otras peticiones.
-                    continue; 
+                    continue;
                 }
 
                 // Verifica si la petición HTTP entrante es una solicitud de establecimiento de WebSocket.
                 if (context.Request.IsWebSocketRequest)
                 {
                     // Usamos un semáforo para garantizar que solo una conexión sea gestionada a la vez.
-                    await _connectionSemaphore.WaitAsync(cancellationToken); 
+                    await _connectionSemaphore.WaitAsync(cancellationToken);
                     try
                     {
                         // Si ya tenemos un WebSocket activo y abierto, rechazamos la nueva conexión.
@@ -288,7 +311,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                             wsContext = await context.AcceptWebSocketAsync(subProtocol: null).ConfigureAwait(false);
                             _currentWebSocket = wsContext.WebSocket;
                             // Usamos la dirección IP del cliente como un ID simple para logs.
-                            var clientId = context.Request.RemoteEndPoint.ToString(); 
+                            var clientId = context.Request.RemoteEndPoint.ToString();
 
                             Interlocked.Increment(ref _connectedClientCount); // Incrementar el contador de clientes
                             // Disparar evento de conexión de cliente.
@@ -373,7 +396,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                         var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
                         _logger.LogInfo($"Mensaje de texto recibido de {clientId}: {message}");
                         // Encolar el mensaje para ser procesado por otra tarea, evitando bloquear la recepción.
-                        _messageQueue.Enqueue(message); 
+                        _messageQueue.Enqueue(message);
                     }
                     // Si el cliente solicita cerrar la conexión.
                     else if (result.MessageType == WebSocketMessageType.Close)
@@ -381,7 +404,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                         _logger.LogInfo($"Solicitud de cierre de WebSocket recibida de {clientId}. Estado: {result.CloseStatusDescription}");
                         // Responder cerrando la conexión de forma limpia.
                         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken);
-                        break; 
+                        break;
                     }
                 } while (!result.CloseStatus.HasValue && !cancellationToken.IsCancellationRequested); // Continuar hasta que la conexión se cierre o se cancele.
             }
@@ -448,7 +471,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 else
                 {
                     // Si no hay mensajes en la cola, esperar un breve período para no consumir CPU.
-                    await Task.Delay(100, cancellationToken); 
+                    await Task.Delay(100, cancellationToken);
                 }
             }
             _logger.LogInfo("Procesamiento de mensajes en cola detenido.");

@@ -19,6 +19,12 @@ namespace UI.ViewModels
         [ObservableProperty]
         private bool isBusy;
 
+        [ObservableProperty]
+        private bool isWebSocketServerRunning;
+
+        [ObservableProperty]
+        private int currentClientCount;
+
         public HomeViewModel(IPlatformService platformService, ILoggingService logger)
         {
             _platformService = platformService;
@@ -82,10 +88,35 @@ namespace UI.ViewModels
 
         public void UpdateServiceStatus()
         {
-
             IsServiceRunning = _platformService.IsBackgroundServiceRunning;
             ServiceStatus = IsServiceRunning ? "En ejecución" : "Detenido";
-            _logger.LogInfo($"HomeViewModel: Service status updated to: {ServiceStatus}");
+
+            // Actualizar estado del WebSocket
+            IsWebSocketServerRunning = _platformService.IsWebSocketServerRunning;
+            CurrentClientCount = _platformService.CurrentClientCount;
+
+            _logger.LogInfo($"HomeViewModel: Service status updated to: {ServiceStatus}, WebSocket: {(IsWebSocketServerRunning ? "Running" : "Stopped")}, Clients: {CurrentClientCount}");
+        }
+
+        private bool _isMonitoring;
+
+        public async void StartMonitoring()
+        {
+            if (_isMonitoring) return;
+            _isMonitoring = true;
+            _logger.LogInfo("HomeViewModel: Monitoring started.");
+            while (_isMonitoring)
+            {
+                UpdateServiceStatus();
+                // Check status every 2 seconds
+                await Task.Delay(2000);
+            }
+        }
+
+        public void StopMonitoring()
+        {
+            _isMonitoring = false;
+            _logger.LogInfo("HomeViewModel: Monitoring stopped.");
         }
     }
 }
