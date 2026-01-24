@@ -25,11 +25,12 @@ namespace WorkerService
                 _logger.LogInformation($"[WebSocket] Cliente desconectado: {clientId}");
                 return Task.CompletedTask;
             };
-            _webSocketService.OnPrintJobReceived += async (sender, request) =>
+            _webSocketService.OnPrintJobReceived += async (sender, args) =>
             {
-                _logger.LogInformation($"[WebSocket] PrintJobRequest recibido para JobId: {request.JobId} en WorkerService.");
-                // The PrintService is already processing this via WebSocketServerService's ProcessMessagesAsync,
-                // so we just log here. If WorkerService were to directly process, this is where we'd trigger it.
+                var request = args.Message;
+                var clientId = args.ClientId;
+                _logger.LogInformation($"[WebSocket] PrintJobRequest recibido de {clientId} para JobId: {request.JobId} en WorkerService.");
+                // The PrintService is already processing this via WebSocketServerService's ProcessMessagesAsync.
             };
         }
 
@@ -40,7 +41,7 @@ namespace WorkerService
             try
             {
                 await _webSocketService.StartServerAsync(WebSocketPort);
-                _logger.LogInformation($"Servidor WebSocket {( _webSocketService.IsRunning ? "iniciado" : "falló al iniciar")} en puerto {WebSocketPort}.");
+                _logger.LogInformation($"Servidor WebSocket {(_webSocketService.IsRunning ? "iniciado" : "falló al iniciar")} en puerto {WebSocketPort}.");
             }
             catch (Exception ex)
             {

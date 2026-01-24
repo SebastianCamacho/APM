@@ -8,104 +8,87 @@
     <ScrollView>
         <VerticalStackLayout Spacing="25" Padding="30,0" VerticalOptions="Center">
 
-            <Image
-                Source="logo_apm.svg"
-                SemanticProperties.Description="Logo APM in a circle"
-                HeightRequest="200"
-                HorizontalOptions="Center" />
+            <!-- Controles exclusivos para Android -->
+            <VerticalStackLayout Spacing="20" IsVisible="{OnPlatform Android=True, Default=False}">
+                
+                <Image
+                    Source="logo_apm.svg"
+                    SemanticProperties.Description="Logo APM in a circle"
+                    HeightRequest="200"
+                    HorizontalOptions="Center" />
 
-            <Label
-                Text="¡Bienvenido a Appsiel Print Manager!"
-                SemanticProperties.HeadingLevel="Level1"
-                FontSize="32"
-                HorizontalOptions="Center" />
+                <Label
+                    Text="¡Bienvenido a Appsiel Print Manager!"
+                    SemanticProperties.HeadingLevel="Level1"
+                    FontSize="32"
+                    HorizontalOptions="Center" />
+                
+                <Label
+                    Text="Estado del Servicio:"
+                    SemanticProperties.HeadingLevel="Level2"
+                    FontSize="18"
+                    HorizontalOptions="Center" />
 
-            <Label
-                Text="Estado del Servicio:"
-                SemanticProperties.HeadingLevel="Level2"
-                FontSize="18"
-                HorizontalOptions="Center" />
+                <Label
+                    Text="{Binding ServiceStatus}"
+                    SemanticProperties.HeadingLevel="Level3"
+                    FontSize="24"
+                    FontAttributes="Bold"
+                    HorizontalOptions="Center" />
 
-            <Label
-                Text="{Binding ServiceStatus}"
-                SemanticProperties.HeadingLevel="Level3"
-                FontSize="24"
-                FontAttributes="Bold"
-                HorizontalOptions="Center" />
+                <Button
+                    Text="Iniciar Foreground Service"
+                    Command="{Binding StartForegroundServiceCommand}"
+                    IsEnabled="{Binding IsServiceRunning, Converter={StaticResource InverseBoolConverter} }"
+                    HorizontalOptions="Center" />
 
-            <Button
-                Text="Iniciar Foreground Service"
-                Command="{Binding StartForegroundServiceCommand}"
-                IsEnabled="{Binding IsServiceRunning, Converter={StaticResource InverseBoolConverter} }"
-                HorizontalOptions="Center" />
+                <Button
+                    Text="Detener Foreground Service"
+                    Command="{Binding StopForegroundServiceCommand}"
+                    IsEnabled="{Binding IsServiceRunning}"
+                    HorizontalOptions="Center" />
 
-            <Button
-                Text="Detener Foreground Service"
-                Command="{Binding StopForegroundServiceCommand}"
-                IsEnabled="{Binding IsServiceRunning}"
-                HorizontalOptions="Center" />
+                <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
 
-            <!-- Sección de WebSocket Server (solo Android) -->
-            <OnPlatform x:TypeArguments="x:Boolean">
-                <On Platform="Android" Value="True" />
-            </OnPlatform>
-           
-            <Label
-                Text="Estado del WebSocket Server:"
-                SemanticProperties.HeadingLevel="Level2"
-                FontSize="18"
-                HorizontalOptions="Center"
-                Margin="0,20,0,0">
-                <Label.IsVisible>
-                    <OnPlatform x:TypeArguments="x:Boolean">
-                        <On Platform="Android" Value="True" />
-                        <On Platform="WinUI" Value="False" />
-                        <On Platform="iOS" Value="False" />
-                        <On Platform="MacCatalyst" Value="False" />
-                    </OnPlatform>
-                </Label.IsVisible>
-            </Label>
+                <Label
+                    Text="Estado del WebSocket Server:"
+                    SemanticProperties.HeadingLevel="Level2"
+                    FontSize="18"
+                    HorizontalOptions="Center" />
 
-            <Label
-                FontSize="20"
-                FontAttributes="Bold"
-                HorizontalOptions="Center">
-                <Label.IsVisible>
-                    <OnPlatform x:TypeArguments="x:Boolean">
-                        <On Platform="Android" Value="True" />
-                        <On Platform="WinUI" Value="False" />
-                        <On Platform="iOS" Value="False" />
-                        <On Platform="MacCatalyst" Value="False" />
-                    </OnPlatform>
-                </Label.IsVisible>
-                <Label.Text>
-                    <MultiBinding StringFormat="{}{0}">
-                        <Binding Path="IsWebSocketServerRunning" />
-                    </MultiBinding>
-                </Label.Text>
-                <Label.Triggers>
-                    <DataTrigger TargetType="Label" Binding="{Binding IsWebSocketServerRunning}" Value="True">
-                        <Setter Property="Text" Value="En ejecución" />
-                    </DataTrigger>
-                    <DataTrigger TargetType="Label" Binding="{Binding IsWebSocketServerRunning}" Value="False">
-                        <Setter Property="Text" Value="Detenido" />
-                    </DataTrigger>
-                </Label.Triggers>
-            </Label>
+                <Label
+                    FontSize="20"
+                    FontAttributes="Bold"
+                    HorizontalOptions="Center">
+                    <Label.Text>
+                        <MultiBinding StringFormat="{}{0}">
+                            <Binding Path="IsWebSocketServerRunning" />
+                        </MultiBinding>
+                    </Label.Text>
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsWebSocketServerRunning}" Value="True">
+                            <Setter Property="Text" Value="En ejecución" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsWebSocketServerRunning}" Value="False">
+                            <Setter Property="Text" Value="Detenido" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
 
-            <Label
-                Text="{Binding CurrentClientCount, StringFormat='Clientes conectados: {0}'}"
-                FontSize="16"
-                HorizontalOptions="Center">
-                <Label.IsVisible>
-                    <OnPlatform x:TypeArguments="x:Boolean">
-                        <On Platform="Android" Value="True" />
-                        <On Platform="WinUI" Value="False" />
-                        <On Platform="iOS" Value="False" />
-                        <On Platform="MacCatalyst" Value="False" />
-                    </OnPlatform>
-                </Label.IsVisible>
-            </Label>
+                <Label
+                    Text="{Binding CurrentClientCount, StringFormat='Clientes conectados: {0}'}"
+                    FontSize="16"
+                    HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <!-- Placeholder para controles futuros de Windows -->
+            <VerticalStackLayout Spacing="20" IsVisible="{OnPlatform WinUI=True, Default=False}">
+                <Label 
+                    Text="Controles de Windows próximamente..." 
+                    HorizontalOptions="Center" 
+                    FontAttributes="Italic"
+                    TextColor="Gray"/>
+            </VerticalStackLayout>
 
         </VerticalStackLayout>
     </ScrollView>

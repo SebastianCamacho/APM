@@ -46,7 +46,7 @@ namespace ConsoleApp
             };
             _webSocketService.OnPrintJobReceived += (sender, request) =>
             {
-                _logger.LogInfo($"[WebSocket] PrintJobRequest recibido para JobId: {request.JobId}. Delegando procesamiento.");
+                _logger.LogInfo($"[WebSocket] PrintJobRequest recibido para JobId: {request.Message.JobId}. Delegando procesamiento.");
                 return Task.CompletedTask;
             };
         }
