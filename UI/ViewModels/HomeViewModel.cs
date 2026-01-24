@@ -2,6 +2,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AppsielPrintManager.Core.Interfaces;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
+using System;
 
 namespace UI.ViewModels
 {
@@ -38,6 +40,21 @@ namespace UI.ViewModels
             IsBusy = true;
             try
             {
+                // Request Notification Permission for Android 13+
+                if (OperatingSystem.IsAndroidVersionAtLeast(33))
+                {
+                    var status = await Permissions.CheckStatusAsync<Permissions.PostNotifications>();
+                    if (status != PermissionStatus.Granted)
+                    {
+                        status = await Permissions.RequestAsync<Permissions.PostNotifications>();
+                        if (status != PermissionStatus.Granted)
+                        {
+                            _logger.LogWarning("HomeViewModel: Notification permission denied. Foreground Service notification might not show.");
+                            // We can choose to return here, or proceed (service will run but notification suppressed)
+                        }
+                    }
+                }
+
                 if (!_platformService.IsBackgroundServiceRunning)
                 {
                     await _platformService.StartBackgroundServiceAsync();
