@@ -1,4 +1,4 @@
-#if WINDOWS
+//#if WINDOWS
 using AppsielPrintManager.Core.Interfaces;
 using AppsielPrintManager.Infraestructure.Services;
 using System;
@@ -20,7 +20,7 @@ namespace UI.Services
         public WindowsWorkerServiceManager(ILoggingService logger)
         {
             _logger = logger;
-            
+
             // Intentar reengancharse si el proceso ya existe
             var existingProcesses = Process.GetProcessesByName(WorkerServiceName);
             if (existingProcesses.Any())
@@ -58,21 +58,22 @@ namespace UI.Services
                 string debugPath = Path.Combine(workerProjectBase, "bin", "Debug", "net10.0", WorkerExeName);
                 string releasePath = Path.Combine(workerProjectBase, "bin", "Release", "net10.0", WorkerExeName);
 
-                if (File.Exists(productionPath))
-                {
-                    workerExePath = productionPath;
-                    _logger.LogInfo($"[WorkerServiceManager] Usando ruta de producción: '{workerExePath}'");
-                }
-                else if (File.Exists(debugPath))
+                //if (File.Exists(productionPath))
+                //{
+                //    workerExePath = productionPath;
+                //    _logger.LogInfo($"[WorkerServiceManager] Usando ruta de producción: '{workerExePath}'");
+                //}
+                //else
+                if (File.Exists(debugPath))
                 {
                     workerExePath = debugPath;
                     _logger.LogInfo($"[WorkerServiceManager] Usando ruta Debug: '{workerExePath}'");
                 }
-                else if (File.Exists(releasePath))
-                {
-                    workerExePath = releasePath;
-                    _logger.LogInfo($"[WorkerServiceManager] Usando ruta Release: '{workerExePath}'");
-                }
+                //else if (File.Exists(releasePath))
+                //{
+                //    workerExePath = releasePath;
+                //    _logger.LogInfo($"[WorkerServiceManager] Usando ruta Release: '{workerExePath}'");
+                //}
                 else
                 {
                     _logger.LogError($"[WorkerServiceManager] No se pudo encontrar el ejecutable en ninguna ruta.");
@@ -84,6 +85,7 @@ namespace UI.Services
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = workerExePath,
+                        WorkingDirectory = Path.GetDirectoryName(workerExePath), // Asegura que el worker encuentre su hostpolicy.dll y dependencias
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
@@ -103,7 +105,7 @@ namespace UI.Services
                 _workerProcess.Start();
                 _workerProcess.BeginOutputReadLine();
                 _workerProcess.BeginErrorReadLine();
-                
+
                 _logger.LogInfo($"[WorkerServiceManager] WorkerService iniciado con PID: {_workerProcess.Id}");
                 return Task.FromResult(true);
             }
@@ -136,4 +138,4 @@ namespace UI.Services
         }
     }
 }
-#endif
+//#endif

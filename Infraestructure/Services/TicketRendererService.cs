@@ -1,290 +1,186 @@
 using AppsielPrintManager.Core.Interfaces;
 using AppsielPrintManager.Core.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace AppsielPrintManager.Infraestructure.Services
 {
-    /// <summary>
-    /// Implementación de ITicketRenderer.
-    /// Es responsable de tomar los datos de un PrintJobRequest y transformarlos
-    /// en una estructura de TicketContent que representa la disposición visual del ticket
-    /// utilizando plantillas predefinidas.
-    /// </summary>
     public class TicketRendererService : ITicketRenderer
     {
         private readonly ILoggingService _logger;
-        public TicketRendererService(ILoggingService logger)
+        private readonly ITemplateRepository _templateRepository;
+
+        public TicketRendererService(ILoggingService logger, ITemplateRepository templateRepository)
         {
             _logger = logger;
+            _templateRepository = templateRepository;
         }
 
-
-
-        public Task<TicketContent> RenderTicketAsync(PrintJobRequest request, object documentData)
+        public async Task<TicketContent> RenderTicketAsync(PrintJobRequest request, object documentData)
         {
-            _logger.LogInfo($"Iniciando renderizado de ticket para JobId: {request.JobId} (DocumentType: {request.DocumentType})");
+            _logger.LogInfo($"Iniciando renderizado dinámico para JobId: {request.JobId} ({request.DocumentType})");
 
-            var ticketContent = new TicketContent();
+            var template = await _templateRepository.GetTemplateByTypeAsync(request.DocumentType);
 
-            switch (request.DocumentType)
+            if (template == null)
             {
-                case "ticket_venta":
-                    if (documentData is SaleTicketDocumentData saleData)
+                _logger.LogWarning($"No se encontró plantilla para '{request.DocumentType}'. Usando renderizado básico de error.");
+                return CreateErrorTicket(request.JobId, $"Falta plantilla para {request.DocumentType}");
+            }
+
+            var ticketContent = new TicketContent { DocumentType = request.DocumentType };
+
+            // 1. Ordenar secciones
+            var orderedSections = template.Sections
+                .OrderBy(s => s.Order ?? 999)
+                .ThenBy(s => template.Sections.IndexOf(s)); // Mantener orden original si no hay Order
+
+            // 2. Procesar secuencialmente
+            foreach (var section in orderedSections)
+            {
+                try
+                {
+                    var renderedSection = await ProcessSection(section, documentData);
+                    if (renderedSection != null)
                     {
-                        return RenderSaleTicket(request, saleData);
+                        ticketContent.Sections.Add(renderedSection);
                     }
-                    else
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error al procesar sección '{section.Name}': {ex.Message}", ex);
+                }
+            }
+
+            // Añadir media del request original al final (por compatibilidad)
+            AddPrintJobMediaToTicketContent(request, ticketContent);
+
+            return ticketContent;
+        }
+
+        private async Task<RenderedSection?> ProcessSection(TemplateSection section, object data)
+        {
+            var renderedSection = new RenderedSection { Name = section.Name, Type = section.Type ?? "Static" };
+
+            switch (section.Type?.ToLower())
+            {
+                case "table":
+                    var listData = GetValueFromPath(data, section.DataSource ?? string.Empty) as IEnumerable;
+                    if (listData != null)
                     {
-                        _logger.LogError($"Tipo de datos incorrecto para 'ticket_venta'. Se esperaba SaleTicketDocumentData.");
-                        ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "ERROR: Datos de venta incorrectos.", Format = "Bold", Align = "Center" });
+                        // Encabezados de tabla
+                        var headers = section.Elements.Select(e => new RenderedElement
+                        {
+                            Type = "Text",
+                            TextValue = e.Label ?? string.Empty,
+                            Format = e.Format ?? section.Format ?? "Bold",
+                            Align = e.Align ?? section.Align ?? "Left",
+                            WidthPercentage = e.WidthPercentage
+                        }).ToList();
+
+                        renderedSection.TableRows.Add(headers);
+
+                        // Filas de datos
+                        foreach (var item in listData)
+                        {
+                            var row = section.Elements.Select(e => new RenderedElement
+                            {
+                                Type = "Text",
+                                TextValue = GetValueFromPath(item, e.Source ?? string.Empty)?.ToString() ?? string.Empty,
+                                Align = e.Align ?? section.Align ?? "Left",
+                                Format = e.Format ?? section.Format,
+                                WidthPercentage = e.WidthPercentage
+                            }).ToList();
+                            renderedSection.TableRows.Add(row);
+                        }
                     }
                     break;
-                case "comanda":
-                    if (documentData is CommandDocumentData commandData)
-                    {
-                        return RenderCommandDocument(request, commandData);
-                    }
-                    else
-                    {
-                        _logger.LogError($"Tipo de datos incorrecto para 'comanda'. Se esperaba CommandDocumentData.");
-                        ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "ERROR: Datos de comanda incorrectos.", Format = "Bold", Align = "Center" });
-                    }
-                    break;
-                case "factura_electronica":
-                    if (documentData is ElectronicInvoiceDocumentData invoiceData)
-                    {
-                        return RenderElectronicInvoiceDocument(request, invoiceData);
-                    }
-                    else
-                    {
-                        _logger.LogError($"Tipo de datos incorrecto para 'factura_electronica'. Se esperaba ElectronicInvoiceDocumentData.");
-                        ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "ERROR: Datos de factura incorrectos.", Format = "Bold", Align = "Center" });
-                    }
-                    break;
-                case "sticker_codigo_barras":
-                    if (documentData is BarcodeStickerDocumentData stickerData)
-                    {
-                        return RenderBarcodeStickerDocument(request, stickerData);
-                    }
-                    else
-                    {
-                        _logger.LogError($"Tipo de datos incorrecto para 'sticker_codigo_barras'. Se esperaba BarcodeStickerDocumentData.");
-                        ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "ERROR: Datos de sticker incorrectos.", Format = "Bold", Align = "Center" });
-                    }
-                    break;
+
+                case "static":
                 default:
-                    _logger.LogError($"DocumentType '{request.DocumentType}' no soportado.");
-                    ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"ERROR: Tipo de documento '{request.DocumentType}' no soportado.", Format = "Bold", Align = "Center" });
+                    foreach (var element in section.Elements)
+                    {
+                        var val = !string.IsNullOrEmpty(element.Source)
+                            ? GetValueFromPath(data, element.Source!)?.ToString()
+                            : element.StaticValue;
+
+                        var textValue = $"{(element.Label ?? string.Empty)}{val}";
+
+                        renderedSection.Elements.Add(new RenderedElement
+                        {
+                            Type = element.Type ?? "Text",
+                            TextValue = textValue,
+                            Align = element.Align ?? section.Align,
+                            Format = element.Format ?? section.Format
+                        });
+                    }
                     break;
             }
 
-            _logger.LogInfo($"Renderizado de ticket finalizado para JobId: {request.JobId}.");
-            return Task.FromResult(ticketContent);
+            return renderedSection;
         }
 
-
-        // Métodos de renderizado específicos por tipo de documento
-        private Task<TicketContent> RenderSaleTicket(PrintJobRequest request, SaleTicketDocumentData data)
+        private object? GetValueFromPath(object data, string path)
         {
-            var ticketContent = new TicketContent();
-            ticketContent.DocumentType = request.DocumentType;
+            if (string.IsNullOrEmpty(path) || data == null) return data;
 
-            // HEADER
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = data.Company.Name, Format = "Bold", Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"NIT: {data.Company.Nit}", Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = data.Company.Address, Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = data.Company.Phone, Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "--------------------------------", Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "TICKET DE VENTA", Format = "Bold", Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"Fecha: {data.Sale.Date:yyyy-MM-dd HH:mm:ss}", Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"No. Venta: {data.Sale.Number}", Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "--------------------------------", Align = "Center" });
+            var parts = path.Split('.');
+            object current = data;
 
-            // ITEMS
-            ticketContent.ItemTableRows.Add(new List<RenderedElement>
+            foreach (var part in parts)
             {
-                new RenderedElement { Type = "Text", TextValue = "Producto", Format = "Bold" },
-                new RenderedElement { Type = "Text", TextValue = "Cant.", Format = "Bold" },
-                new RenderedElement { Type = "Text", TextValue = "P.Unitario", Format = "Bold" },
-                new RenderedElement { Type = "Text", TextValue = "Total", Format = "Bold" }
-            });
-            foreach (var item in data.Sale.Items)
-            {
-                ticketContent.ItemTableRows.Add(new List<RenderedElement>
+                if (current == null) return null;
+
+                var type = current.GetType();
+                var prop = type.GetProperty(part, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
+                if (prop == null)
                 {
-                    new RenderedElement { Type = "Text", TextValue = item.Name },
-                    new RenderedElement { Type = "Text", TextValue = item.Qty.ToString() },
-                    new RenderedElement { Type = "Text", TextValue = item.UnitPrice.ToString("N2") }, // Añadido P.Unitario
-                    new RenderedElement { Type = "Text", TextValue = item.Total.ToString("N2") }
-                });
-            }
-
-            // TOTALS
-            ticketContent.TotalsElements.Add(new RenderedElement { Type = "Text", TextValue = $"Subtotal: {data.Sale.Subtotal:N2}", Align = "Right" });
-            ticketContent.TotalsElements.Add(new RenderedElement { Type = "Text", TextValue = $"IVA: {data.Sale.Tax:N2}", Align = "Right" });
-            ticketContent.TotalsElements.Add(new RenderedElement { Type = "Text", TextValue = $"TOTAL: {data.Sale.Total:N2}", Format = "Bold", Align = "Right" });
-
-            // FOOTER
-            foreach (var footerLine in data.Footer)
-            {
-                ticketContent.FooterElements.Add(new RenderedElement { Type = "Text", TextValue = footerLine, Align = "Center" });
-            }
-            ticketContent.FooterElements.Add(new RenderedElement { Type = "Text", TextValue = "Gracias por su compra!", Align = "Center" });
-
-            AddPrintJobMediaToTicketContent(request, ticketContent);
-            return Task.FromResult(ticketContent);
-        }
-
-        private Task<TicketContent> RenderCommandDocument(PrintJobRequest request, CommandDocumentData data)
-        {
-            var ticketContent = new TicketContent();
-            ticketContent.DocumentType = request.DocumentType;
-
-            // HEADER
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "COMANDA DE PEDIDO", Format = "Bold", Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"Pedido No. {data.Order.Number}", Align = "Left" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"Fecha: {data.Order.Date:dd MMM yyyy}", Align = "Left" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"Cliente: {data.Order.Table}", Align = "Left" }); // Mapeamos Table a Cliente
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"Atendido por: {data.Order.Waiter}", Align = "Left" }); // Mapeamos Waiter a Atendido por
-
-            // ITEMS TABLE
-            ticketContent.ItemTableRows.Add(new List<RenderedElement>
-            {
-                new RenderedElement { Type = "Text", TextValue = "Producto", Format = "Bold" },
-                new RenderedElement { Type = "Text", TextValue = "Cant", Format = "Bold" },
-                new RenderedElement { Type = "Text", TextValue = "Notas", Format = "Bold" } // Mantener Notes para que EscPosGeneratorService la procese
-            });
-            foreach (var item in data.Order.Items)
-            {
-                ticketContent.ItemTableRows.Add(new List<RenderedElement>
+                    var field = type.GetField(part, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                    if (field == null) return null;
+                    current = field.GetValue(current);
+                }
+                else
                 {
-                    new RenderedElement { Type = "Text", TextValue = item.Name },
-                    new RenderedElement { Type = "Text", TextValue = item.Qty.ToString() },
-                    new RenderedElement { Type = "Text", TextValue = item.Notes }
-                });
+                    current = prop.GetValue(current);
+                }
             }
-
-            // DETALLE
-            if (!string.IsNullOrEmpty(data.Detail))
-            {
-                ticketContent.Details.Add(new RenderedElement { Type = "Text", TextValue = "Detalle:", Align = "Left", Format = "Bold" });
-                ticketContent.Details.Add(new RenderedElement { Type = "Text", TextValue = data.Detail, Align = "Left" });
-            }
-
-            // FOOTER
-            ticketContent.FooterElements.Add(new RenderedElement { Type = "Text", TextValue = $"{data.Order.RestaurantName}", Align = "Left" });
-            ticketContent.FooterElements.Add(new RenderedElement { Type = "Text", TextValue = $"Generado: {data.Order.GeneratedDate:yyyy-MM-dd HH:mm:ss}", Align = "Left" });
-            ticketContent.FooterElements.Add(new RenderedElement { Type = "Text", TextValue = $"Creado por: {data.Order.CreatedBy}", Align = "Left" });
-
-            AddPrintJobMediaToTicketContent(request, ticketContent);
-            return Task.FromResult(ticketContent);
+            return current;
         }
 
-        private Task<TicketContent> RenderElectronicInvoiceDocument(PrintJobRequest request, ElectronicInvoiceDocumentData data)
+        private TicketContent CreateErrorTicket(string jobId, string message)
         {
-            var ticketContent = new TicketContent();
-            ticketContent.DocumentType = request.DocumentType;
-
-            // HEADER
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = data.Header.Title, Format = "Bold", Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"No. {data.Header.Number}", Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "--------------------------------", Align = "Center" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "CLIENTE", Format = "Bold", Align = "Left" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"Nombre: {data.Customer.Name}", Align = "Left" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"NIT: {data.Customer.Nit}", Align = "Left" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = $"Dirección: {data.Customer.Address}", Align = "Left" });
-            ticketContent.HeaderElements.Add(new RenderedElement { Type = "Text", TextValue = "--------------------------------", Align = "Center" });
-
-            // TOTALS (para factura los totales suelen ir después de los ítems, pero como no tenemos ítems aquí, los pondremos directos)
-            ticketContent.TotalsElements.Add(new RenderedElement { Type = "Text", TextValue = $"Subtotal: {data.Totals.Subtotal:N2}", Align = "Right" });
-            ticketContent.TotalsElements.Add(new RenderedElement { Type = "Text", TextValue = $"IVA: {data.Totals.Tax:N2}", Align = "Right" });
-            ticketContent.TotalsElements.Add(new RenderedElement { Type = "Text", TextValue = $"TOTAL: {data.Totals.Total:N2}", Format = "Bold", Align = "Right" });
-            ticketContent.TotalsElements.Add(new RenderedElement { Type = "Text", TextValue = "--------------------------------", Align = "Center" });
-
-
-            // FOOTER
-            ticketContent.FooterElements.Add(new RenderedElement { Type = "Text", TextValue = $"CUFE: {data.Cufe}", Align = "Center", Format = "Small" }); // Asumiendo que CUFE podría ser un texto más pequeño
-
-            AddPrintJobMediaToTicketContent(request, ticketContent);
-            return Task.FromResult(ticketContent);
-        }
-
-        private Task<TicketContent> RenderBarcodeStickerDocument(PrintJobRequest request, BarcodeStickerDocumentData data)
-        {
-            var ticketContent = new TicketContent();
-            ticketContent.DocumentType = request.DocumentType;
-
-            // La lógica de stickers es diferente, va en RepeatedContent
-            ticketContent.RepeatedContentColumns = 1; // Por defecto 1, el generador de ESC/POS decidirá si puede poner más.
-
-            foreach (var sticker in data.Stickers)
-            {
-                var stickerElements = new List<RenderedElement>
-                {
-                    new RenderedElement { Type = "Text", TextValue = sticker.ProductName, Align = "Center", Format = "Bold" },
-                    new RenderedElement { Type = "Text", TextValue = sticker.ProductCode, Align = "Center" },
-                    new RenderedElement { Type = "Barcode", BarcodeValue = sticker.BarcodeValue, BarcodeType = sticker.BarcodeType, Height = 50, Hri = true, Align = "Center" },
-                    new RenderedElement { Type = "Text", TextValue = " ", Align = "Center" } // Espacio extra entre stickers
-                };
-                ticketContent.RepeatedContent.Add(stickerElements);
-                ticketContent.RepeatedContent.Add(new List<RenderedElement> { new RenderedElement { Type = "Text", TextValue = "----------", Align = "Center" } }); // Separador entre stickers
-            }
-            
-            AddPrintJobMediaToTicketContent(request, ticketContent);
-            return Task.FromResult(ticketContent);
+            var content = new TicketContent();
+            var section = new RenderedSection { Name = "Error", Type = "Static" };
+            section.Elements.Add(new RenderedElement { Type = "Text", TextValue = "ERROR DE CONFIGURACIÓN", Format = "Bold", Align = "Center" });
+            section.Elements.Add(new RenderedElement { Type = "Text", TextValue = message, Align = "Center" });
+            content.Sections.Add(section);
+            return content;
         }
 
         private void AddPrintJobMediaToTicketContent(PrintJobRequest request, TicketContent ticketContent)
         {
-            // Añadir imágenes si existen
-            if (request.Images != null && request.Images.Any())
+            if (request.Images != null)
             {
                 foreach (var img in request.Images)
-                {
-                    ticketContent.FooterElements.Add(new RenderedElement
-                    {
-                        Type = "Image",
-                        Base64Image = img.Base64,
-                        Align = img.Align,
-                        WidthMm = img.WidthMm
-                    });
-                }
+                    ticketContent.ExtraMedia.Add(new RenderedElement { Type = "Image", Base64Image = img.Base64, Align = img.Align, WidthMm = img.WidthMm });
             }
 
-            // Añadir códigos de barras si existen
-            if (request.Barcodes != null && request.Barcodes.Any())
+            if (request.Barcodes != null)
             {
                 foreach (var bc in request.Barcodes)
-                {
-                    ticketContent.FooterElements.Add(new RenderedElement
-                    {
-                        Type = "Barcode",
-                        BarcodeValue = bc.Value,
-                        BarcodeType = bc.Type,
-                        Align = bc.Align,
-                        Height = bc.Height,
-                        Hri = bc.Hri
-                    });
-                }
+                    ticketContent.ExtraMedia.Add(new RenderedElement { Type = "Barcode", BarcodeValue = bc.Value, BarcodeType = bc.Type, Align = bc.Align, Height = bc.Height, Hri = bc.Hri });
             }
 
-            // Añadir códigos QR si existen
-            if (request.QRs != null && request.QRs.Any())
+            if (request.QRs != null)
             {
                 foreach (var qr in request.QRs)
-                {
-                    ticketContent.FooterElements.Add(new RenderedElement
-                    {
-                        Type = "QR",
-                        QrValue = qr.Value,
-                        Align = qr.Align,
-                        Size = qr.Size
-                    });
-                }
+                    ticketContent.ExtraMedia.Add(new RenderedElement { Type = "QR", QrValue = qr.Value, Align = qr.Align, Size = qr.Size });
             }
         }
     }

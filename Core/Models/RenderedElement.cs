@@ -14,6 +14,7 @@ namespace AppsielPrintManager.Core.Models
         public int? Height { get; set; } // For barcodes
         public bool? Hri { get; set; } // For barcodes
         public int? Size { get; set; } // For QR
+        public int? WidthPercentage { get; set; } // For dynamic table column width
 
         // Add any other properties that might be needed after rendering and before ESC/POS generation
     }

@@ -47,7 +47,7 @@ namespace UI
                 }
             });
 
-#if WINDOWS
+//#if WINDOWS
             _workerServiceManager = _serviceProvider.GetService<IWorkerServiceManager>();
             if (_workerServiceManager != null)
             {
@@ -79,7 +79,7 @@ namespace UI
                     }
                 });
             }
-//#elif ANDROID
+//#elif ANDROID 
 //            _platformService = _serviceProvider.GetService<IPlatformService>();
 //            if (_platformService != null)
 //            {
@@ -98,7 +98,7 @@ namespace UI
 //                    }
 //                });
 //            }
-#endif
+//#endif
         }
 
         protected override void OnStart()

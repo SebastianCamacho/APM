@@ -26,11 +26,12 @@ namespace UI
                 });
 
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
             builder.Services.AddSingleton<ILoggingService, Logger>();
             builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
+            builder.Services.AddSingleton<ITemplateRepository, TemplateRepository>();
             builder.Services.AddSingleton<ITicketRenderer, TicketRendererService>();
             builder.Services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>();
             builder.Services.AddSingleton<TcpIpPrinterClient>();
