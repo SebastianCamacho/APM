@@ -59,41 +59,35 @@ namespace AppsielPrintManager.Infraestructure.Services
                     {
                         if (row.Count == 0) continue;
 
-                        // Detectar fuente dominante en la fila para cálculos de ancho
-                        string rowFont = row[0].Format?.Contains("FontB", StringComparison.OrdinalIgnoreCase) == true ? "FontB" : "FontA";
-                        int baseCharsPerLine = GetCharsPerLine(printerSettings.PaperWidthMm, rowFont);
-
-                        int[] columnWidths = new int[row.Count];
                         int totalPctUsed = 0;
                         int colsWithoutPct = 0;
-
                         for (int i = 0; i < row.Count; i++)
                         {
                             if (row[i].WidthPercentage.HasValue) totalPctUsed += row[i].WidthPercentage!.Value;
                             else colsWithoutPct++;
                         }
-
                         int remainingPct = Math.Max(0, 100 - totalPctUsed);
                         int pctPerMissingCol = colsWithoutPct > 0 ? remainingPct / colsWithoutPct : 0;
 
-                        for (int i = 0; i < row.Count; i++)
-                        {
-                            // Truncamos al entero inferior para ser conservadores con el espacio
-                            columnWidths[i] = (int)(baseCharsPerLine * ((row[i].WidthPercentage ?? pctPerMissingCol) / 100.0));
-                        }
-
                         var columnLines = new List<List<string>>();
                         int maxLinesCount = 0;
-                        int[] multipliers = new int[row.Count];
+                        int[] wrapWidths = new int[row.Count];
+                        string[] cellFonts = new string[row.Count];
 
                         for (int i = 0; i < row.Count; i++)
                         {
-                            multipliers[i] = GetSizeMultiplier(row[i].Format);
-                            // wrapWidth es el ancho lógico disponible (ancho físico / multiplicador)
-                            int wrapWidth = Math.Max(1, columnWidths[i] / multipliers[i]);
+                            var element = row[i];
+                            cellFonts[i] = element.Format?.Contains("FontB", StringComparison.OrdinalIgnoreCase) == true ? "FontB" : "FontA";
+                            int charsPerLine = GetCharsPerLine(printerSettings.PaperWidthMm, cellFonts[i]);
+                            int multiplier = GetSizeMultiplier(element.Format);
 
-                            var text = row[i].TextValue ?? string.Empty;
-                            var wrappedBody = WrapText(text, wrapWidth);
+                            // Ancho lógico disponible en "slots" de la fuente actual para este % físico
+                            double pct = (element.WidthPercentage ?? pctPerMissingCol) / 100.0;
+                            wrapWidths[i] = (int)((charsPerLine * pct) / multiplier);
+                            if (wrapWidths[i] < 1) wrapWidths[i] = 1;
+
+                            var text = element.TextValue ?? string.Empty;
+                            var wrappedBody = WrapText(text, wrapWidths[i]);
                             columnLines.Add(wrappedBody);
                             if (wrappedBody.Count > maxLinesCount) maxLinesCount = wrappedBody.Count;
                         }
@@ -101,28 +95,37 @@ namespace AppsielPrintManager.Infraestructure.Services
                         // Imprimir cada línea física de la fila lógica
                         for (int lineIdx = 0; lineIdx < maxLinesCount; lineIdx++)
                         {
-                            // Forzamos la fuente de la fila al inicio para evitar desajustes por reseteos previos
-                            commands.AddRange(rowFont == "FontB" ? new byte[] { ESC, 0x4D, 0x01 } : new byte[] { ESC, 0x4D, 0x00 });
-
                             for (int colIdx = 0; colIdx < row.Count; colIdx++)
                             {
                                 var element = row[colIdx];
                                 var lineText = lineIdx < columnLines[colIdx].Count ? columnLines[colIdx][lineIdx] : "";
 
+                                // 1. Aplicar formato específico de la celda (incluyendo fuente)
                                 commands.AddRange(SetTextFormat(element.Format));
+                                if (cellFonts[colIdx] == "FontB") commands.AddRange(new byte[] { ESC, 0x4D, 0x01 });
+                                else commands.AddRange(new byte[] { ESC, 0x4D, 0x00 });
 
-                                int effectiveWidth = Math.Max(1, columnWidths[colIdx] / multipliers[colIdx]);
-
+                                // 2. Alinear y Padechar texto
+                                string paddedText;
                                 if (element.Align?.Equals("Right", StringComparison.OrdinalIgnoreCase) == true)
-                                    commands.AddRange(_encoding.GetBytes(lineText.PadLeft(effectiveWidth)));
+                                    paddedText = lineText.PadLeft(wrapWidths[colIdx]);
+                                else if (element.Align?.Equals("Center", StringComparison.OrdinalIgnoreCase) == true)
+                                {
+                                    int left = (wrapWidths[colIdx] - lineText.Length) / 2;
+                                    paddedText = lineText.PadLeft(lineText.Length + left).PadRight(wrapWidths[colIdx]);
+                                }
                                 else
-                                    commands.AddRange(_encoding.GetBytes(lineText.PadRight(effectiveWidth)));
+                                    paddedText = lineText.PadRight(wrapWidths[colIdx]);
 
+                                commands.AddRange(GetPosBytes(paddedText));
+
+                                // 3. Reset para la siguiente celda
                                 commands.AddRange(ResetTextFormat());
                             }
                             commands.Add(0x0A); // Salto de línea física
                         }
                     }
+                    commands.AddRange(ResetTextFormat());
                 }
                 else // Static (Default)
                 {

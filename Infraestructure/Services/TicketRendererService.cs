@@ -73,19 +73,19 @@ namespace AppsielPrintManager.Infraestructure.Services
                     var listData = GetValueFromPath(data, section.DataSource ?? string.Empty) as IEnumerable;
                     if (listData != null)
                     {
-                        // Encabezados de tabla
+                        // Encabezados de tabla: Heredan de la sección si no hay HeaderFormat
                         var headers = section.Elements.Select(e => new RenderedElement
                         {
                             Type = "Text",
                             TextValue = e.Label ?? string.Empty,
-                            Format = e.Format ?? section.Format ?? "Bold",
-                            Align = e.Align ?? section.Align ?? "Left",
+                            Format = e.HeaderFormat ?? section.Format,
+                            Align = e.HeaderAlign ?? e.Align ?? section.Align ?? "Left",
                             WidthPercentage = e.WidthPercentage
                         }).ToList();
 
                         renderedSection.TableRows.Add(headers);
 
-                        // Filas de datos
+                        // Filas de datos: Heredan de e.Format o section.Format
                         foreach (var item in listData)
                         {
                             var row = section.Elements.Select(e => new RenderedElement

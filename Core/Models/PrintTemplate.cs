@@ -39,6 +39,8 @@ namespace AppsielPrintManager.Core.Models
         public string? StaticValue { get; set; } // Valor fijo si Source es nulo
         public string? Format { get; set; } // "Bold", "Large", "Italic", etc.
         public string? Align { get; set; } // "Left", "Center", "Right"
+        public string? HeaderFormat { get; set; } // Nuevo: Formato específico para el encabezado
+        public string? HeaderAlign { get; set; } // Nuevo: Alineación específica para el encabezado
         public int? WidthPercentage { get; set; } // Para columnas de tabla
         public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
     }
