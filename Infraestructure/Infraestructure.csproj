@@ -5,6 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.2" />
     <PackageReference Include="WatsonWebsocket" Version="4.0.6" />
   </ItemGroup>
 

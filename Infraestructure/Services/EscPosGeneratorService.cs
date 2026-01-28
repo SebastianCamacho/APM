@@ -17,12 +17,26 @@ namespace AppsielPrintManager.Infraestructure.Services
     public class EscPosGeneratorService : IEscPosGenerator
     {
         private readonly ILoggingService _logger;
+        private readonly Encoding _encoding;
         private const byte ESC = 0x1B;
         private const byte GS = 0x1D;
 
         public EscPosGeneratorService(ILoggingService logger)
         {
             _logger = logger;
+            // Registrar proveedor para soportar Code Pages de Windows (como 1252)
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            try
+            {
+                // Usaremos Windows-1252 (WPC1252) que es un estándar muy común en impresoras POS
+                _encoding = Encoding.GetEncoding(1252);
+            }
+            catch
+            {
+                _logger.LogWarning("No se pudo cargar el Code Page 1252. Usando fallback.");
+                try { _encoding = Encoding.GetEncoding("ISO-8859-1"); }
+                catch { _encoding = Encoding.UTF8; } // Último recurso, pero el mapeo manual en GetPosBytes salvará el día
+            }
         }
 
         public Task<byte[]> GenerateEscPosCommandsAsync(TicketContent ticketContent, PrinterSettings printerSettings)
@@ -39,15 +53,15 @@ namespace AppsielPrintManager.Infraestructure.Services
             {
                 if (section.Type?.Equals("Table", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    // Lógica de Renderizado de Tablas
                     commands.AddRange(SetAlignment("Left"));
 
                     foreach (var row in section.TableRows)
                     {
                         if (row.Count == 0) continue;
 
-                        string font = row[0].Format?.Contains("FontB", StringComparison.OrdinalIgnoreCase) == true ? "FontB" : "FontA";
-                        int baseCharsPerLine = GetCharsPerLine(printerSettings.PaperWidthMm, font);
+                        // Detectar fuente dominante en la fila para cálculos de ancho
+                        string rowFont = row[0].Format?.Contains("FontB", StringComparison.OrdinalIgnoreCase) == true ? "FontB" : "FontA";
+                        int baseCharsPerLine = GetCharsPerLine(printerSettings.PaperWidthMm, rowFont);
 
                         int[] columnWidths = new int[row.Count];
                         int totalPctUsed = 0;
@@ -64,6 +78,7 @@ namespace AppsielPrintManager.Infraestructure.Services
 
                         for (int i = 0; i < row.Count; i++)
                         {
+                            // Truncamos al entero inferior para ser conservadores con el espacio
                             columnWidths[i] = (int)(baseCharsPerLine * ((row[i].WidthPercentage ?? pctPerMissingCol) / 100.0));
                         }
 
@@ -74,28 +89,38 @@ namespace AppsielPrintManager.Infraestructure.Services
                         for (int i = 0; i < row.Count; i++)
                         {
                             multipliers[i] = GetSizeMultiplier(row[i].Format);
+                            // wrapWidth es el ancho lógico disponible (ancho físico / multiplicador)
                             int wrapWidth = Math.Max(1, columnWidths[i] / multipliers[i]);
+
                             var text = row[i].TextValue ?? string.Empty;
                             var wrappedBody = WrapText(text, wrapWidth);
                             columnLines.Add(wrappedBody);
                             if (wrappedBody.Count > maxLinesCount) maxLinesCount = wrappedBody.Count;
                         }
 
+                        // Imprimir cada línea física de la fila lógica
                         for (int lineIdx = 0; lineIdx < maxLinesCount; lineIdx++)
                         {
+                            // Forzamos la fuente de la fila al inicio para evitar desajustes por reseteos previos
+                            commands.AddRange(rowFont == "FontB" ? new byte[] { ESC, 0x4D, 0x01 } : new byte[] { ESC, 0x4D, 0x00 });
+
                             for (int colIdx = 0; colIdx < row.Count; colIdx++)
                             {
                                 var element = row[colIdx];
                                 var lineText = lineIdx < columnLines[colIdx].Count ? columnLines[colIdx][lineIdx] : "";
+
                                 commands.AddRange(SetTextFormat(element.Format));
+
                                 int effectiveWidth = Math.Max(1, columnWidths[colIdx] / multipliers[colIdx]);
+
                                 if (element.Align?.Equals("Right", StringComparison.OrdinalIgnoreCase) == true)
-                                    commands.AddRange(Encoding.UTF8.GetBytes(lineText.PadLeft(effectiveWidth)));
+                                    commands.AddRange(_encoding.GetBytes(lineText.PadLeft(effectiveWidth)));
                                 else
-                                    commands.AddRange(Encoding.UTF8.GetBytes(lineText.PadRight(effectiveWidth)));
+                                    commands.AddRange(_encoding.GetBytes(lineText.PadRight(effectiveWidth)));
+
                                 commands.AddRange(ResetTextFormat());
                             }
-                            commands.Add(0x0A);
+                            commands.Add(0x0A); // Salto de línea física
                         }
                     }
                 }
@@ -108,7 +133,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
             }
 
-            // --- MEDIA ADICIONAL ---
+            // --- MEDIA ADICIONAL (Logo, etc) ---
             foreach (var element in ticketContent.ExtraMedia)
             {
                 commands.AddRange(ProcessRenderedElement(element, printerSettings));
@@ -123,7 +148,27 @@ namespace AppsielPrintManager.Infraestructure.Services
             return Task.FromResult(commands.ToArray());
         }
 
-        private byte[] InitializePrinter() => new byte[] { ESC, 0x40 };
+        private byte[] InitializePrinter()
+        {
+            var cmd = new List<byte>();
+            cmd.AddRange(new byte[] { ESC, 0x40 }); // ESC @ - Inicializar
+
+            // 1. DESACTIVACIÓN DE MODOS MULTIBYTE (Crucial para evitar símbolos chinos/gráficos)
+            cmd.AddRange(new byte[] { 0x1C, 0x2E }); // FS . - Cancelar modo Kanji
+            cmd.AddRange(new byte[] { ESC, 0x39, 0x00 }); // ESC 9 0 - Desactivar modo de caracteres chinos en algunos modelos
+
+            // 2. SET DE CARACTERES INTERNACIONALES (España)
+            // ESC R n - Selecciona el set de caracteres internacionales (n=7 es España)
+            cmd.AddRange(new byte[] { ESC, 0x52, 0x07 });
+
+            cmd.AddRange(new byte[] { ESC, 0x4D, 0x00 }); // Font A por defecto
+
+            // 3. SELECCIÓN DE TABLA DE CARACTERES (Code Page)
+            // n = 16 (0x10) suele ser WPC1252 (Windows-1252) que mapea con Encoding 1252
+            cmd.AddRange(new byte[] { ESC, 0x74, 0x10 });
+
+            return cmd.ToArray();
+        }
 
         private byte[] SetAlignment(string? align)
         {
@@ -140,6 +185,7 @@ namespace AppsielPrintManager.Infraestructure.Services
 
             if (string.IsNullOrEmpty(format)) return cmd.ToArray();
 
+            // Solo cambiamos la fuente si el formato lo pide explícitamente
             if (format.Contains("FontB", StringComparison.OrdinalIgnoreCase))
                 cmd.AddRange(new byte[] { ESC, 0x4D, 0x01 });
             else if (format.Contains("FontA", StringComparison.OrdinalIgnoreCase))
@@ -168,7 +214,11 @@ namespace AppsielPrintManager.Infraestructure.Services
             return cmd.ToArray();
         }
 
-        private byte[] ResetTextFormat() => new byte[] { ESC, 0x45, 0x00, ESC, 0x2D, 0x00, GS, 0x21, 0x00, ESC, 0x4D, 0x00 };
+        private byte[] ResetTextFormat()
+        {
+            // NOTA: NO reseteamos la fuente aquí (ESC M) para evitar solapamientos en tablas
+            return new byte[] { ESC, 0x45, 0x00, ESC, 0x2D, 0x00, GS, 0x21, 0x00 };
+        }
 
         private byte[] FeedLines(int lines) => new byte[] { ESC, 0x64, (byte)Math.Clamp(lines, 1, 255) };
 
@@ -187,13 +237,13 @@ namespace AppsielPrintManager.Infraestructure.Services
                 case "Text":
                     if (!string.IsNullOrEmpty(element.TextValue))
                     {
-                        elementCommands.AddRange(Encoding.UTF8.GetBytes(element.TextValue));
+                        elementCommands.AddRange(GetPosBytes(element.TextValue));
                         elementCommands.Add(0x0A);
                     }
                     break;
                 case "Line":
                     int chars = GetCharsPerLine(printerSettings.PaperWidthMm, element.Format?.Contains("FontB") == true ? "FontB" : "FontA");
-                    elementCommands.AddRange(Encoding.UTF8.GetBytes(new string('-', chars)));
+                    elementCommands.AddRange(GetPosBytes(new string('-', chars)));
                     elementCommands.Add(0x0A);
                     break;
                 case "Barcode":
@@ -208,8 +258,56 @@ namespace AppsielPrintManager.Infraestructure.Services
             return elementCommands.ToArray();
         }
 
+        /// <summary>
+        /// Método de seguridad que garantiza el envío de bytes correctos para el español.
+        /// Si la codificación actual es UTF-8 (error del provider), mapea manualmente a Windows-1252.
+        /// </summary>
+        private byte[] GetPosBytes(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return Array.Empty<byte>();
+
+            // Si detectamos que el sistema nos está dando UTF-8 o algo que no es 1252/850, 
+            // forzamos el mapeo de los bytes críticos del español.
+            if (_encoding.WebName.Contains("utf", StringComparison.OrdinalIgnoreCase) ||
+                _encoding.WebName.Equals("us-ascii", StringComparison.OrdinalIgnoreCase))
+            {
+                var bytes = new List<byte>();
+                foreach (char c in text)
+                {
+                    if (c < 128) bytes.Add((byte)c);
+                    else
+                    {
+                        // Mapeo manual a Windows-1252
+                        byte b = c switch
+                        {
+                            'ñ' => 0xF1,
+                            'Ñ' => 0xD1,
+                            'á' => 0xE1,
+                            'é' => 0xE9,
+                            'í' => 0xED,
+                            'ó' => 0xF3,
+                            'ú' => 0xFA,
+                            'Á' => 0xC1,
+                            'É' => 0xC9,
+                            'Í' => 0xCD,
+                            'Ó' => 0xD3,
+                            'Ú' => 0xDA,
+                            '¿' => 0xBF,
+                            '¡' => 0xA1,
+                            _ => 0x3F // ?
+                        };
+                        bytes.Add(b);
+                    }
+                }
+                return bytes.ToArray();
+            }
+
+            return _encoding.GetBytes(text);
+        }
+
         private int GetCharsPerLine(int paperWidthMm, string font = "FontA")
         {
+            // Basado en el reporte físico enviado: 48-A / 64-B para 80mm (72mm print width)
             if (font == "FontB") return paperWidthMm >= 80 ? 64 : 42;
             return paperWidthMm >= 80 ? 48 : 32;
         }
@@ -231,7 +329,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             var cmds = new List<byte>();
             cmds.AddRange(new byte[] { GS, 0x68, (byte)(element.Height ?? 50) });
             cmds.AddRange(new byte[] { GS, 0x48, (byte)(element.Hri == true ? 0x02 : 0x00) });
-            byte[] data = Encoding.UTF8.GetBytes(element.BarcodeValue ?? "");
+            byte[] data = GetPosBytes(element.BarcodeValue ?? "");
             cmds.AddRange(new byte[] { GS, 0x6B, 0x49, (byte)(data.Length + 2), 0x7B, 0x42 });
             cmds.AddRange(data);
             cmds.Add(0x0A);
@@ -241,7 +339,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         private byte[] HandleQR(RenderedElement element, PrinterSettings printerSettings)
         {
             var cmds = new List<byte>();
-            byte[] data = Encoding.UTF8.GetBytes(element.QrValue ?? "");
+            byte[] data = GetPosBytes(element.QrValue ?? "");
             cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00 });
             byte size = (byte)Math.Clamp(element.Size ?? 3, 1, 16);
             cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, size });

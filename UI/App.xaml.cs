@@ -47,7 +47,7 @@ namespace UI
                 }
             });
 
-//#if WINDOWS
+#if WINDOWS
             _workerServiceManager = _serviceProvider.GetService<IWorkerServiceManager>();
             if (_workerServiceManager != null)
             {
@@ -98,7 +98,7 @@ namespace UI
 //                    }
 //                });
 //            }
-//#endif
+#endif
         }
 
         protected override void OnStart()

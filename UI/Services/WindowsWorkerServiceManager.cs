@@ -1,4 +1,4 @@
-//#if WINDOWS
+#if WINDOWS
 using AppsielPrintManager.Core.Interfaces;
 using AppsielPrintManager.Infraestructure.Services;
 using System;
@@ -138,4 +138,4 @@ namespace UI.Services
         }
     }
 }
-//#endif
+#endif
