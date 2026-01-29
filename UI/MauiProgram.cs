@@ -54,12 +54,16 @@ namespace UI
             builder.Services.AddTransient<PrintersViewModel>();
             builder.Services.AddTransient<PrinterDetailViewModel>();
             builder.Services.AddTransient<LogsViewModel>();
+            builder.Services.AddTransient<SettingsViewModel>();
+            builder.Services.AddTransient<TemplateEditorViewModel>();
 
             builder.Services.AddTransient<LoginView>();
             builder.Services.AddSingleton<AppShell>();
             builder.Services.AddTransient<HomePage>();
             builder.Services.AddTransient<PrintersPage>();
             builder.Services.AddTransient<ScalesPage>();
+            builder.Services.AddTransient<SettingsPage>();
+            builder.Services.AddTransient<TemplateEditorPage>();
 
             builder.Services.AddSingleton<InverseBoolConverter>();
             builder.Services.AddSingleton<NumericToStringConverter>();

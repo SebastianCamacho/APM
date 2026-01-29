@@ -1,4 +1,4 @@
-using Microsoft.Maui.Controls; 
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices; // Necesario para DeviceInfo y DevicePlatform
 
 namespace UI
@@ -17,6 +17,7 @@ namespace UI
             }
 
             Routing.RegisterRoute("PrinterDetailView", typeof(Views.PrinterDetailPage));
+            Routing.RegisterRoute(nameof(Views.TemplateEditorPage), typeof(Views.TemplateEditorPage));
         }
     }
 }

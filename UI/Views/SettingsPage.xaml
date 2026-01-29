@@ -1,12 +1,41 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:UI.ViewModels"
+             xmlns:models="clr-namespace:AppsielPrintManager.Core.Models;assembly=Core"
              x:Class="UI.Views.SettingsPage"
-             Title="Configuración">
-    <VerticalStackLayout>
-        <Label 
-            Text="Configuración de la Aplicación"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             Title="Configuración"
+             x:DataType="viewmodels:SettingsViewModel">
+    <Grid RowDefinitions="Auto, *, Auto" Padding="20" Spacing="10">
+        <Label Grid.Row="0" Text="Plantillas de Impresión" Style="{StaticResource Headline}" HorizontalOptions="Center" />
+
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Templates}" SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
+                    <Label Text="No se encontraron plantillas." FontSize="Medium" TextColor="Gray" />
+                    <Button Text="Cargar Plantillas" Command="{Binding LoadTemplatesAsyncCommand}" Margin="10" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:PrintTemplate">
+                    <Border StrokeShape="RoundRectangle 10" Margin="0,5" Padding="15" BackgroundColor="{AppThemeBinding Light=White, Dark=#333}">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SettingsViewModel}}, Path=EditTemplateCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="*, Auto">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="Medium" />
+                                <Label Text="{Binding DocumentType, StringFormat='Tipo: {0}'}" TextColor="Gray" />
+                            </VerticalStackLayout>
+                            <Image Grid.Column="1" Source="icono_editar.png" HeightRequest="24" WidthRequest="24" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Grid.Row="2" Text="Refrescar Plantillas" Command="{Binding LoadTemplatesAsyncCommand}" />
+
+        <ActivityIndicator Grid.RowSpan="3" IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" />
+    </Grid>
 </ContentPage>
