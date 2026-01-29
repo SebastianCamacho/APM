@@ -18,6 +18,17 @@ namespace UI.ViewModels
         [NotifyPropertyChangedFor(nameof(IsTableSection))]
         private string type;
 
+        partial void OnTypeChanged(string value) => UpdateElementsTableStatus();
+
+        private void UpdateElementsTableStatus()
+        {
+            if (Elements != null)
+            {
+                foreach (var element in Elements)
+                    element.IsTableSection = this.IsTableSection;
+            }
+        }
+
         [ObservableProperty]
         private string dataSource;
 
@@ -36,8 +47,7 @@ namespace UI.ViewModels
         [ObservableProperty]
         private bool isBold;
 
-        [ObservableProperty]
-        private bool isItalic;
+
 
         public bool IsTableSection => Type == "Table";
 
@@ -56,7 +66,7 @@ namespace UI.ViewModels
             Order = model.Order ?? 0;
 
             Elements = new ObservableCollection<TemplateElementViewModel>(
-                model.Elements.Select(e => new TemplateElementViewModel(e))
+                model.Elements.Select(e => new TemplateElementViewModel(e) { IsTableSection = IsTableSection })
             );
 
             ParseFormat(model.Format);
@@ -67,7 +77,6 @@ namespace UI.ViewModels
             if (string.IsNullOrEmpty(format)) return;
 
             IsBold = format.Contains("Bold", StringComparison.OrdinalIgnoreCase);
-            IsItalic = format.Contains("Italic", StringComparison.OrdinalIgnoreCase);
 
             if (format.Contains("Size1")) SelectedSizeIdx = 0;
             else if (format.Contains("Size2")) SelectedSizeIdx = 1;
@@ -95,7 +104,6 @@ namespace UI.ViewModels
             parts.Add(sizePart);
 
             if (IsBold) parts.Add("Bold");
-            if (IsItalic) parts.Add("Italic");
 
             return string.Join(" ", parts);
         }
@@ -103,7 +111,7 @@ namespace UI.ViewModels
         [RelayCommand]
         private void AddElement()
         {
-            Elements.Add(new TemplateElementViewModel(new TemplateElement { Type = "Text", Align = "Left" }));
+            Elements.Add(new TemplateElementViewModel(new TemplateElement { Type = "Text", Align = "Left" }) { IsTableSection = IsTableSection });
         }
 
         [RelayCommand]

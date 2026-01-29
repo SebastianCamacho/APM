@@ -160,7 +160,7 @@ namespace AppsielPrintManager.Core.Services
                             new TemplateElement { Type = "Line" },
                             new TemplateElement { Type = "Text", Label = "Notas: ", Source = "Detail",Format = "FontB Size3 " },
                             new TemplateElement { Type = "Text", Source = "Order.GeneratedDate" },
-                            new TemplateElement { Type = "Text", StaticValue = "Impreso por APM ", Format = "Italic" }
+                            new TemplateElement { Type = "Text", StaticValue = "Impreso por APM ", Format = "" }
                         }
                     }
                 }
