@@ -46,7 +46,6 @@ namespace AppsielPrintManager.Core.Services
                         {
                             new TemplateElement { Type = "Text", Source = "Sale.Number", Label = "Ticket #: ", Format = "Bold" },
                             new TemplateElement { Type = "Text", Source = "Sale.Date", Label = "Fecha: " },
-                            new TemplateElement { Type = "Text", Source = "Sale.CustomerName", Label = "Cliente: " },
                             new TemplateElement { Type = "Line" }
                         }
                     },
@@ -58,9 +57,10 @@ namespace AppsielPrintManager.Core.Services
                         Order = 3,
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Label = "Cant", Source = "Quantity", WidthPercentage = 15 },
-                            new TemplateElement { Label = "Producto", Source = "ProductName", WidthPercentage = 55 },
-                            new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 30, Align = "Right" }
+                            new TemplateElement { Label = "Cant", Source = "Qty", WidthPercentage = 13 },
+                            new TemplateElement { Label = "Producto", Source = "Name", WidthPercentage = 55 },
+                            new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 17, Align = "Right" },
+                            new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 15, Align = "Right" }
                         }
                     },
                     new TemplateSection
@@ -73,8 +73,8 @@ namespace AppsielPrintManager.Core.Services
                         {
                             new TemplateElement { Type = "Line" },
                             new TemplateElement { Type = "Text", Source = "Sale.Subtotal", Label = "Subtotal: " },
-                            new TemplateElement { Type = "Text", Source = "Sale.Tax", Label = "Impuesto: " },
-                            new TemplateElement { Type = "Text", Source = "Sale.TotalAmount", Label = "TOTAL: ", Format = "Bold Large" },
+                            new TemplateElement { Type = "Text", Source = "Sale.iva", Label = "IVA: " },
+                            new TemplateElement { Type = "Text", Source = "Sale.Total", Label = "TOTAL: ", Format = "Bold FontB Size2" },
                             new TemplateElement { Type = "Line" }
                         }
                     },
@@ -135,15 +135,16 @@ namespace AppsielPrintManager.Core.Services
                                 Source = "Qty",
                                 WidthPercentage = 25,
                                 HeaderFormat = "FontB Size2",
-                                Format = "FontB Size3 ",
+                                Format = "FontA Size3 ",
                                 Align = "Left"
                             },
                             new TemplateElement
                             {
-                                Label = "Producto",
+                                Label = "Cant",
                                 Source = "Name",
-                                HeaderFormat = "FontB Size2",
                                 WidthPercentage = 75,
+                                HeaderFormat = "FontB Size2",
+                                Format = "FontA Size3 ",
                                 Align = "Left"
                             }
                         }
@@ -157,9 +158,9 @@ namespace AppsielPrintManager.Core.Services
                         Elements = new List<TemplateElement>
                         {
                             new TemplateElement { Type = "Line" },
-                            new TemplateElement { Type = "Text", Label = "Notas: ", Source = "Detail" },
+                            new TemplateElement { Type = "Text", Label = "Notas: ", Source = "Detail",Format = "FontB Size3 " },
                             new TemplateElement { Type = "Text", Source = "Order.GeneratedDate" },
-                            new TemplateElement { Type = "Text", Label = "Impreso por APM", Format = "Italic" }
+                            new TemplateElement { Type = "Text", StaticValue = "Impreso por APM ", Format = "Italic" }
                         }
                     }
                 }

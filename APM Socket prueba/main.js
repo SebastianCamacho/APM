@@ -110,7 +110,7 @@ const templates = {
                     { "Name": "Pan Tajado", "Qty": 1, "UnitPrice": 3500, "Total": 3500 }
                 ],
                 "Subtotal": 8500,
-                "iva": 0,
+                "IVA": 0,
                 "Total": 8500
             },
             "footer": ["Gracias por su compra"]
