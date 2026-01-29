@@ -33,13 +33,20 @@ namespace AppsielPrintManager.Infraestructure.Repositories
 
         public async Task<PrintTemplate> GetTemplateByTypeAsync(string documentType)
         {
-            var fileName = $"{documentType}.json";
+            var fileName = $"{documentType.ToLower()}.json";
             var filePath = Path.Combine(_directoryPath, fileName);
 
             if (!File.Exists(filePath))
             {
-                _logger.LogWarning($"Plantilla para '{documentType}' no encontrada en {filePath}.");
-                return null;
+                _logger.LogWarning($"Plantilla para '{documentType}' no encontrada en {filePath}. Generando plantilla por defecto.");
+
+                // Intentar obtener plantilla por defecto
+                var defaultTemplate = AppsielPrintManager.Core.Services.DefaultTemplateProvider.GetDefaultTemplate(documentType);
+
+                // Guardar la plantilla por defecto para que el archivo exista físicamente
+                await SaveTemplateAsync(defaultTemplate);
+
+                return defaultTemplate;
             }
 
             try
@@ -56,7 +63,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
 
         public async Task SaveTemplateAsync(PrintTemplate template)
         {
-            var fileName = $"{template.DocumentType ?? "unknown"}.json";
+            var fileName = $"{(template.DocumentType ?? "unknown").ToLower()}.json";
             var filePath = Path.Combine(_directoryPath, fileName);
 
             try
@@ -96,7 +103,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         public Task DeleteTemplateAsync(string templateId)
         {
             // En esta implementación, el templateId se correlaciona con el DocumentType para el nombre del archivo
-            var filePath = Path.Combine(_directoryPath, $"{templateId}.json");
+            var filePath = Path.Combine(_directoryPath, $"{templateId.ToLower()}.json");
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
