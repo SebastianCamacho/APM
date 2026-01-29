@@ -27,9 +27,15 @@
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto, *, Auto">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="{OnIdiom Desktop=17.5*, Default=0}" />
+            <ColumnDefinition Width="{OnIdiom Desktop=65*, Default=*}" />
+            <ColumnDefinition Width="{OnIdiom Desktop=17.5*, Default=0}" />
+        </Grid.ColumnDefinitions>
+
         <!-- Header -->
-        <Border Grid.Row="0" Padding="40,20,40,15" BackgroundColor="{StaticResource Primary}" StrokeThickness="0">
-            <Grid ColumnDefinitions="*, Auto">
+        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Padding="{OnIdiom Desktop='20,15', Default='15'}" BackgroundColor="{StaticResource Primary}" StrokeThickness="0">
+            <Grid ColumnDefinitions="*, Auto" MaxWidthRequest="{OnIdiom Desktop=1000, Default=-1}">
                 <VerticalStackLayout Grid.Column="0">
                     <Label Text="Editor de Plantilla" FontSize="20" FontAttributes="Bold" TextColor="White" />
                     <Entry Text="{Binding Template.Name}" Placeholder="Nombre de la Plantilla" TextColor="White" FontSize="14" BorderColor="Transparent" BackgroundColor="Transparent" />
@@ -39,7 +45,7 @@
         </Border>
 
         <!-- Main Content -->
-        <ScrollView Grid.Row="1" Padding="40,10">
+        <ScrollView Grid.Row="1" Grid.Column="1" Padding="{OnIdiom Desktop='0,10', Default='10'}">
             <VerticalStackLayout Spacing="5">
                     <!-- Encabezado Edición -->
                     <VerticalStackLayout Spacing="10" Padding="0,10">
@@ -48,100 +54,94 @@
                     </VerticalStackLayout>
                 
                     <!-- Lista de Secciones -->
-                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sections}" Spacing="15" Padding="5">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:TemplateSectionViewModel">
-                            <Border StrokeShape="RoundRectangle 12" Padding="15" StrokeThickness="2" Stroke="{StaticResource Gray200}" BackgroundColor="{AppThemeBinding Light=White, Dark=#222}">
-                                <VerticalStackLayout Spacing="10">
-                                    <!-- Cabecera de Sección -->
-                                    <Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto" ColumnSpacing="8">
-                                        <Entry Grid.Column="0" Text="{Binding Name}" FontAttributes="Bold" FontSize="16" Placeholder="Nombre Sección" BorderColor="Transparent" VerticalOptions="Center" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sections}" Spacing="10" Padding="0,5">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodels:TemplateSectionViewModel">
+                        <Border StrokeShape="RoundRectangle 12" Padding="12" StrokeThickness="1" Stroke="{StaticResource Gray200}" BackgroundColor="{AppThemeBinding Light=White, Dark=#222}" Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="8">
+                                <!-- Cabecera de Sección -->
+                                <Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto" ColumnSpacing="6">
+                                    <Entry Grid.Column="0" Text="{Binding Name}" FontAttributes="Bold" FontSize="15" Placeholder="Nombre Sección" BorderColor="Transparent" VerticalOptions="Center" />
                                     
-                                        <Button Grid.Column="1" Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" CommandParameter="{Binding .}" WidthRequest="40" HeightRequest="40" Padding="0" CornerRadius="20" />
-                                        <Button Grid.Column="2" Text="↓" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveDownCommand}" CommandParameter="{Binding .}" WidthRequest="40" HeightRequest="40" Padding="0" CornerRadius="20" />
-                                        <Button Grid.Column="3" Text="+" Command="{Binding AddElementCommand}" BackgroundColor="Green" WidthRequest="40" HeightRequest="40" Padding="0" CornerRadius="20" />
-                                        <Button Grid.Column="4" Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=RemoveSectionCommand}" CommandParameter="{Binding .}" BackgroundColor="DarkRed" WidthRequest="40" HeightRequest="40" Padding="0" CornerRadius="20" />
-                                    </Grid>
+                                    <Button Grid.Column="1" Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" CommandParameter="{Binding .}" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
+                                    <Button Grid.Column="2" Text="↓" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveDownCommand}" CommandParameter="{Binding .}" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
+                                    <Button Grid.Column="3" Text="+" Command="{Binding AddElementCommand}" BackgroundColor="Green" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
+                                    <Button Grid.Column="4" Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=RemoveSectionCommand}" CommandParameter="{Binding .}" BackgroundColor="DarkRed" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
+                                </Grid>
 
-                                    <!-- Configuración de Sección -->
-                                    <Grid ColumnDefinitions="Auto, *, Auto, *, Auto, *" ColumnSpacing="10">
-                                        <Label Grid.Column="0" Text="Tipo:" VerticalOptions="Center" FontSize="11" TextColor="Gray" />
-                                        <Picker Grid.Column="1" ItemsSource="{Binding SectionTypes}" SelectedItem="{Binding Type}" />
+                                <!-- Configuración de Sección -->
+                                <Grid ColumnDefinitions="Auto, *, Auto, *, Auto, 1.5*" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="Tipo:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
+                                    <Picker Grid.Column="1" ItemsSource="{Binding SectionTypes}" SelectedItem="{Binding Type}" HeightRequest="36" />
                                     
-                                        <Label Grid.Column="2" Text="Alinear:" VerticalOptions="Center" FontSize="11" TextColor="Gray" />
-                                        <Picker Grid.Column="3" ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" />
+                                    <Label Grid.Column="2" Text="Alinear:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
+                                    <Picker Grid.Column="3" ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" HeightRequest="36" />
                                     
-                                        <Label Grid.Column="4" Text="Origen:" VerticalOptions="Center" FontSize="11" TextColor="Gray" />
-                                        <Picker Grid.Column="5" Title="Seleccionar..." ItemsSource="{Binding DataSourceSuggestions}" SelectedItem="{Binding DataSource}" />
-                                    </Grid>
+                                    <Label Grid.Column="4" Text="Origen:" VerticalOptions="Center" FontSize="10" TextColor="Gray" IsVisible="{Binding IsDataSourceVisible}" />
+                                    <Picker Grid.Column="5" ItemsSource="{Binding DisplayDataSourceSuggestions}" SelectedItem="{Binding DataSource}" HeightRequest="36" HorizontalOptions="Fill" IsVisible="{Binding IsDataSourceVisible}" />
+                                </Grid>
 
-                                    <!-- Formato General de Sección -->
-                                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                                        <Label Text="Formato:" VerticalOptions="Center" FontSize="11" TextColor="Gray" />
-                                        <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" WidthRequest="110" />
-                                        <HorizontalStackLayout VerticalOptions="Center" Spacing="0">
-                                            <CheckBox IsChecked="{Binding IsBold}" Scale="0.8" />
-                                            <Label Text="N" VerticalOptions="Center" FontAttributes="Bold" Margin="-2,0,10,0" />
-                                            <CheckBox IsChecked="{Binding IsItalic}" Scale="0.8" />
-                                            <Label Text="C" VerticalOptions="Center" FontAttributes="Italic" Margin="-2,0,0,0" />
-                                        </HorizontalStackLayout>
+                                <!-- Formato General de Sección -->
+                                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                    <Label Text="Formato:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
+                                    <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" WidthRequest="100" HeightRequest="32" />
+                                    <HorizontalStackLayout VerticalOptions="Center" Spacing="0">
+                                        <CheckBox IsChecked="{Binding IsBold}" Scale="0.7" />
+                                        <Label Text="N" VerticalOptions="Center" FontAttributes="Bold" Margin="-2,0,8,0" FontSize="11" />
                                     </HorizontalStackLayout>
+                                </HorizontalStackLayout>
 
-                                    <!-- Elementos de la Sección -->
-                                    <Label Text="Elementos de impresión:" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource Primary}" Margin="0,5,0,2" />
-                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Elements}" Spacing="10" Margin="10,0,0,0">
-                                        <BindableLayout.ItemTemplate>
-                                            <DataTemplate x:DataType="viewmodels:TemplateElementViewModel">
-                                                <Border StrokeShape="RoundRectangle 8" Padding="12" Stroke="{StaticResource Gray300}" BackgroundColor="{AppThemeBinding Light=#F9F9F9, Dark=#333}">
-                                                    <VerticalStackLayout Spacing="10">
-                                                        <!-- Fila 1: Elem, Etiqueta y Borrar -->
-                                                        <Grid ColumnDefinitions="Auto, *, Auto, 2*, Auto" ColumnSpacing="10">
-                                                            <Label Grid.Column="0" Text="Elem:" VerticalOptions="Center" FontSize="11" FontAttributes="Bold" />
-                                                            <Picker Grid.Column="1" ItemsSource="{Binding ElementTypes}" SelectedItem="{Binding Type}" />
+                                <!-- Elementos de la Sección -->
+                                <Label Text="Elementos de impresión:" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Primary}" Margin="0,2,0,0" />
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Elements}" Spacing="6" Margin="5,0,0,0">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="viewmodels:TemplateElementViewModel">
+                                            <Border StrokeShape="RoundRectangle 8" Padding="10" Stroke="{StaticResource Gray300}" BackgroundColor="{AppThemeBinding Light=#F9F9F9, Dark=#333}">
+                                                <VerticalStackLayout Spacing="8">
+                                                    <!-- Fila 1: Elem, Etiqueta y Controles -->
+                                                    <Grid ColumnDefinitions="Auto, *, Auto, 1.5*, Auto, Auto, Auto" ColumnSpacing="6">
+                                                        <Label Grid.Column="0" Text="Elem:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" />
+                                                        <Picker Grid.Column="1" ItemsSource="{Binding ElementTypes}" SelectedItem="{Binding Type}" HeightRequest="36" />
                                                         
-                                                            <Label Grid.Column="2" Text="Etiq:" VerticalOptions="Center" FontSize="11" FontAttributes="Bold" />
-                                                            <Entry Grid.Column="3" Text="{Binding Label}" Placeholder="Ej: Cant." />
+                                                        <Label Grid.Column="2" Text="Etiq:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" />
+                                                        <Entry Grid.Column="3" Text="{Binding Label}" Placeholder="Ej: Cant." HeightRequest="36" />
                                                         
-                                                            <Button Grid.Column="4" Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=RemoveElementCommand}" CommandParameter="{Binding .}" BackgroundColor="#CC0000" WidthRequest="30" HeightRequest="30" Padding="0" CornerRadius="15" />
-                                                        </Grid>
+                                                        <Button Grid.Column="4" Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=MoveElementUpCommand}" CommandParameter="{Binding .}" WidthRequest="28" HeightRequest="28" Padding="0" CornerRadius="14" FontSize="10" />
+                                                        <Button Grid.Column="5" Text="↓" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=MoveElementDownCommand}" CommandParameter="{Binding .}" WidthRequest="28" HeightRequest="28" Padding="0" CornerRadius="14" FontSize="10" />
+                                                        <Button Grid.Column="6" Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=RemoveElementCommand}" CommandParameter="{Binding .}" BackgroundColor="#CC0000" WidthRequest="28" HeightRequest="28" Padding="0" CornerRadius="14" FontSize="10" />
+                                                    </Grid>
 
-                                                        <!-- Fila 2: Fuente Unificada -->
-                                                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="10">
-                                                            <Label Grid.Column="0" Text="Fuente:" VerticalOptions="Center" FontSize="11" FontAttributes="Bold" />
-                                                            <Picker Grid.Column="1" Title="Seleccionar origen de datos..." ItemsSource="{Binding AllSuggestions}" SelectedItem="{Binding Source}" />
-                                                        </Grid>
+                                                    <!-- Fila 2: Fuente Unificada -->
+                                                    <Grid ColumnDefinitions="Auto, *" ColumnSpacing="8">
+                                                        <Label Grid.Column="0" Text="Fuente:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" />
+                                                        <Picker Grid.Column="1" ItemsSource="{Binding DisplaySuggestions}" SelectedItem="{Binding Source}" HeightRequest="38" HorizontalOptions="Fill" />
+                                                    </Grid>
 
-                                                        <!-- Fila 3: Config y Alineación -->
-                                                        <Grid ColumnDefinitions="Auto, *, Auto, 110, Auto, Auto, Auto, Auto" ColumnSpacing="8" VerticalOptions="Center">
-                                                            <Label Grid.Column="0" Text="Pos:" VerticalOptions="Center" FontSize="11" />
-                                                            <Picker Grid.Column="1" ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" />
+                                                    <!-- Fila 3: Config y Alineación -->
+                                                    <Grid ColumnDefinitions="Auto, *, Auto, 120, Auto, Auto" ColumnSpacing="6" VerticalOptions="Center">
+                                                        <Label Grid.Column="0" Text="Pos:" VerticalOptions="Center" FontSize="10" />
+                                                        <Picker Grid.Column="1" ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" HeightRequest="34" />
                                                         
-                                                            <Label Grid.Column="2" Text="Txt:" VerticalOptions="Center" FontSize="11" />
-                                                            <Picker Grid.Column="3" ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" />
+                                                        <Label Grid.Column="2" Text="Txt:" VerticalOptions="Center" FontSize="10" />
+                                                        <Picker Grid.Column="3" ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" HeightRequest="36" />
                                                         
-                                                            <CheckBox Grid.Column="4" IsChecked="{Binding IsBold}" Scale="0.8" />
-                                                            <Label Grid.Column="5" Text="N" VerticalOptions="Center" FontAttributes="Bold" Margin="-5,0,0,0" />
+                                                        <CheckBox Grid.Column="4" IsChecked="{Binding IsBold}" Scale="0.7" />
+                                                        <Label Grid.Column="5" Text="N" VerticalOptions="Center" FontAttributes="Bold" Margin="-5,0,0,0" FontSize="10" />
+                                                    </Grid>
 
-                                                            <CheckBox Grid.Column="6" IsChecked="{Binding IsItalic}" Scale="0.8" />
-                                                            <Label Grid.Column="7" Text="C" VerticalOptions="Center" FontAttributes="Italic" Margin="-5,0,0,0" />
-                                                        </Grid>
-
-                                                        <!-- Fila 4: Propiedades Especiales de Tabla (Condicional) -->
-                                                        <Grid ColumnDefinitions="Auto, 60, Auto, *, Auto, Auto, Auto, Auto" ColumnSpacing="8" VerticalOptions="Center" 
-                                                              IsVisible="{Binding Path=BindingContext.IsTableSection, Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}}">
-                                                            <Label Grid.Column="0" Text="Ancho%:" VerticalOptions="Center" FontSize="11" TextColor="Gray" />
-                                                            <Entry Grid.Column="1" Text="{Binding WidthPercentage}" Keyboard="Numeric" Placeholder="0-100" />
-
-                                                            <Label Grid.Column="2" Text="Encab:" VerticalOptions="Center" FontSize="11" TextColor="Gray" />
-                                                            <Picker Grid.Column="3" ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedHeaderSizeIdx}" />
+                                                    <!-- Fila 4: Propiedades Especiales de Tabla (Condicional) -->
+                                                    <Grid ColumnDefinitions="Auto, 60, Auto, *, Auto, Auto" ColumnSpacing="6" VerticalOptions="Center" 
+                                                          IsVisible="{Binding IsTableSection}">
+                                                        <Label Grid.Column="0" Text="Ancho%:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
+                                                        <Entry Grid.Column="1" Text="{Binding WidthPercentage}" Keyboard="Numeric" Placeholder="0-100" HeightRequest="32" />
                                                         
-                                                            <CheckBox Grid.Column="4" IsChecked="{Binding IsHeaderBold}" Scale="0.8" />
-                                                            <Label Grid.Column="5" Text="N" VerticalOptions="Center" FontAttributes="Bold" FontSize="10" Margin="-5,0,0,0" />
+                                                        <Label Grid.Column="2" Text="Encab:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
+                                                        <Picker Grid.Column="3" ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedHeaderSizeIdx}" HeightRequest="32" />
                                                         
-                                                            <CheckBox Grid.Column="6" IsChecked="{Binding IsHeaderItalic}" Scale="0.8" />
-                                                            <Label Grid.Column="7" Text="C" VerticalOptions="Center" FontAttributes="Italic" FontSize="10" Margin="-5,0,0,0" />
-                                                        </Grid>
-                                                    </VerticalStackLayout>
+                                                        <CheckBox Grid.Column="4" IsChecked="{Binding IsHeaderBold}" Scale="0.7" />
+                                                        <Label Grid.Column="5" Text="N" VerticalOptions="Center" FontAttributes="Bold" FontSize="9" Margin="-5,0,0,0" />
+                                                    </Grid>
+                                                </VerticalStackLayout>
                                                 </Border>
                                             </DataTemplate>
                                         </BindableLayout.ItemTemplate>
@@ -155,9 +155,9 @@
         </ScrollView>
 
         <!-- Botones de Acción -->
-        <Grid Grid.Row="2" ColumnDefinitions="*, *" ColumnSpacing="15" Padding="40,15">
-            <Button Grid.Column="0" Text="Cancelar" Command="{Binding CancelCommand}" Style="{StaticResource ButtonOutline}" HeightRequest="50" />
-            <Button Grid.Column="1" Text="Guardar Plantilla" Command="{Binding SaveCommand}" HeightRequest="50" />
+        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*, *" ColumnSpacing="15" Padding="{OnIdiom Desktop='0,15', Default='15'}">
+            <Button Grid.Column="0" Text="Cancelar" Command="{Binding CancelCommand}" Style="{StaticResource ButtonOutline}" HeightRequest="45" FontSize="13" />
+            <Button Grid.Column="1" Text="Guardar Plantilla" Command="{Binding SaveCommand}" HeightRequest="45" FontSize="13" />
         </Grid>
 
         <ActivityIndicator Grid.RowSpan="3" IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" />

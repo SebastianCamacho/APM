@@ -12,12 +12,14 @@ namespace UI.ViewModels
         private readonly TemplateElement _model;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsTableSection))]
         private string type;
 
         [ObservableProperty]
         private string label;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DisplaySuggestions))]
         private string source;
 
         [ObservableProperty]
@@ -33,7 +35,7 @@ namespace UI.ViewModels
         private bool isBold;
 
         [ObservableProperty]
-        private bool isItalic;
+        private bool isTableSection;
 
         [ObservableProperty]
         private int? widthPercentage;
@@ -44,9 +46,6 @@ namespace UI.ViewModels
         [ObservableProperty]
         private bool isHeaderBold;
 
-        [ObservableProperty]
-        private bool isHeaderItalic;
-
         public List<string> Alignments { get; } = new() { "Left", "Center", "Right" };
         public List<string> Sizes { get; } = new() { "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
         public List<string> ElementTypes { get; } = new() { "Text", "Line", "Barcode", "QR", "Image" };
@@ -54,6 +53,19 @@ namespace UI.ViewModels
         public List<string> GlobalSuggestions => TemplateCatalogService.GetGlobalSourceSuggestions();
         public List<string> ItemSuggestions => TemplateCatalogService.GetItemSourceSuggestions();
         public List<string> AllSuggestions => GlobalSuggestions.Concat(ItemSuggestions).ToList();
+
+        public List<string> DisplaySuggestions
+        {
+            get
+            {
+                var list = AllSuggestions.ToList();
+                if (!string.IsNullOrEmpty(Source) && !list.Contains(Source, StringComparer.OrdinalIgnoreCase))
+                {
+                    list.Insert(0, Source);
+                }
+                return list;
+            }
+        }
 
         public TemplateElementViewModel(TemplateElement model)
         {
@@ -79,7 +91,6 @@ namespace UI.ViewModels
 
             var parts = format.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             IsBold = parts.Contains("Bold", StringComparer.OrdinalIgnoreCase);
-            IsItalic = parts.Contains("Italic", StringComparer.OrdinalIgnoreCase);
 
             SetSizeIndex(parts, out int sizeIdx);
             SelectedSizeIdx = sizeIdx;
@@ -91,7 +102,6 @@ namespace UI.ViewModels
 
             var parts = format.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             IsHeaderBold = parts.Contains("Bold", StringComparer.OrdinalIgnoreCase);
-            IsHeaderItalic = parts.Contains("Italic", StringComparer.OrdinalIgnoreCase);
 
             SetSizeIndex(parts, out int sizeIdx);
             SelectedHeaderSizeIdx = sizeIdx;
@@ -151,7 +161,6 @@ namespace UI.ViewModels
             }
 
             if (IsBold) formats.Add("Bold");
-            if (IsItalic) formats.Add("Italic");
 
             return string.Join(" ", formats);
         }
@@ -171,7 +180,6 @@ namespace UI.ViewModels
             }
 
             if (IsHeaderBold) formats.Add("Bold");
-            if (IsHeaderItalic) formats.Add("Italic");
 
             return formats.Count > 0 ? string.Join(" ", formats) : null;
         }

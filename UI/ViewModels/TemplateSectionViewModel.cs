@@ -16,9 +16,22 @@ namespace UI.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsTableSection))]
+        [NotifyPropertyChangedFor(nameof(IsDataSourceVisible))]
         private string type;
 
+        partial void OnTypeChanged(string value) => UpdateElementsTableStatus();
+
+        private void UpdateElementsTableStatus()
+        {
+            if (Elements != null)
+            {
+                foreach (var element in Elements)
+                    element.IsTableSection = this.IsTableSection;
+            }
+        }
+
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DisplayDataSourceSuggestions))]
         private string dataSource;
 
         [ObservableProperty]
@@ -36,15 +49,28 @@ namespace UI.ViewModels
         [ObservableProperty]
         private bool isBold;
 
-        [ObservableProperty]
-        private bool isItalic;
+
 
         public bool IsTableSection => Type == "Table";
+        public bool IsDataSourceVisible => Type == "Table" || Type == "Repeated";
 
         public List<string> SectionTypes { get; } = new() { "Static", "Table", "Repeated" };
         public List<string> Alignments { get; } = new() { "Left", "Center", "Right" };
         public List<string> Sizes { get; } = new() { "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
         public List<string> DataSourceSuggestions => AppsielPrintManager.Core.Services.TemplateCatalogService.GetDataSourceSuggestions();
+
+        public List<string> DisplayDataSourceSuggestions
+        {
+            get
+            {
+                var list = DataSourceSuggestions.ToList();
+                if (!string.IsNullOrEmpty(DataSource) && !list.Contains(DataSource, StringComparer.OrdinalIgnoreCase))
+                {
+                    list.Insert(0, DataSource);
+                }
+                return list;
+            }
+        }
 
         public TemplateSectionViewModel(TemplateSection model)
         {
@@ -56,7 +82,7 @@ namespace UI.ViewModels
             Order = model.Order ?? 0;
 
             Elements = new ObservableCollection<TemplateElementViewModel>(
-                model.Elements.Select(e => new TemplateElementViewModel(e))
+                model.Elements.Select(e => new TemplateElementViewModel(e) { IsTableSection = IsTableSection })
             );
 
             ParseFormat(model.Format);
@@ -67,7 +93,6 @@ namespace UI.ViewModels
             if (string.IsNullOrEmpty(format)) return;
 
             IsBold = format.Contains("Bold", StringComparison.OrdinalIgnoreCase);
-            IsItalic = format.Contains("Italic", StringComparison.OrdinalIgnoreCase);
 
             if (format.Contains("Size1")) SelectedSizeIdx = 0;
             else if (format.Contains("Size2")) SelectedSizeIdx = 1;
@@ -95,7 +120,6 @@ namespace UI.ViewModels
             parts.Add(sizePart);
 
             if (IsBold) parts.Add("Bold");
-            if (IsItalic) parts.Add("Italic");
 
             return string.Join(" ", parts);
         }
@@ -103,7 +127,27 @@ namespace UI.ViewModels
         [RelayCommand]
         private void AddElement()
         {
-            Elements.Add(new TemplateElementViewModel(new TemplateElement { Type = "Text", Align = "Left" }));
+            Elements.Add(new TemplateElementViewModel(new TemplateElement { Type = "Text", Align = "Left" }) { IsTableSection = IsTableSection });
+        }
+
+        [RelayCommand]
+        private void MoveElementUp(TemplateElementViewModel element)
+        {
+            var index = Elements.IndexOf(element);
+            if (index > 0)
+            {
+                Elements.Move(index, index - 1);
+            }
+        }
+
+        [RelayCommand]
+        private void MoveElementDown(TemplateElementViewModel element)
+        {
+            var index = Elements.IndexOf(element);
+            if (index < Elements.Count - 1)
+            {
+                Elements.Move(index, index + 1);
+            }
         }
 
         [RelayCommand]
