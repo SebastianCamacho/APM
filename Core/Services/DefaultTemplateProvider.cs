@@ -111,7 +111,7 @@ namespace AppsielPrintManager.Core.Services
                         Align = "Center",
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Text", Source = "Order.Copy", Label = "Copy:", Format = "Bold", Align = "Left" },
+                            new TemplateElement { Type = "Text", Source = "Order.COPY", Label = "COPY:", Format = "Bold", Align = "Left" },
                             new TemplateElement { Type = "Text", Source = "Order.RestaurantName", Format = "Bold,Large" },
                             new TemplateElement { Type = "Text", Label = "COMANDA N°: ", Source = "Order.Number", Format = "Bold" },
                             new TemplateElement { Type = "Text", Label = "Mesa: ", Source = "Order.Table" },

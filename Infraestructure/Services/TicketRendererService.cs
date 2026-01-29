@@ -111,6 +111,12 @@ namespace AppsielPrintManager.Infraestructure.Services
 
                         var textValue = $"{(element.Label ?? string.Empty)}{val}";
 
+                        // CONDICIONAL PARA NO MOSTRAR EL CAMPO COPIA CUANDO ES "ORIGINAL"
+                        if (element.Label == "COPY:" && val == "ORIGINAL")
+                        {
+                            textValue = "";
+                        }
+
                         renderedSection.Elements.Add(new RenderedElement
                         {
                             Type = element.Type ?? "Text",

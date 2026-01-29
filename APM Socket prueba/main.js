@@ -123,6 +123,7 @@ const templates = {
         "DocumentType": "comanda",
         "Document": {
             "order": { 
+                "COPY":"ORIGINAL",
                 "Number": "CMD-001",
                 "Table": "Mesa 5", 
                 "Waiter": "Carlos", 
