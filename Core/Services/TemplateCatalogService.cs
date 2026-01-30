@@ -4,54 +4,72 @@ namespace AppsielPrintManager.Core.Services
 {
     public static class TemplateCatalogService
     {
-        public static List<string> GetDataSourceSuggestions()
+        public static List<string> GetDataSourceSuggestions(string? documentType = null)
         {
-            return new List<string>
+            var list = new List<string>();
+            bool isComanda = documentType?.ToLower() == "comanda";
+
+            if (isComanda)
             {
-                "Order.Items",
-                "Sale.Items",
-                "Barcode.Items"
-            };
+                list.Add("order.Items");
+            }
+            else
+            {
+                list.Add("sale.Items");
+                list.Add("footer");
+            }
+
+            list.Add("barcode.Items");
+            return list;
         }
 
-        public static List<string> GetGlobalSourceSuggestions()
+        public static List<string> GetGlobalSourceSuggestions(string? documentType = null)
         {
-            return new List<string>
+            var list = new List<string>();
+            bool isComanda = documentType?.ToLower() == "comanda";
+
+            if (isComanda)
             {
-                "Order.Number",
-                "Order.Table",
-                "Order.Waiter",
-                "Order.Date",
-                "Order.RestaurantName",
-                "Order.COPY",
-                "Order.GeneratedDate",
-                "Order.CreatedBy",
-                "Company.Name",
-                "Company.Nit",
-                "Company.Address",
-                "Company.Phone",
-                "Sale.Number",
-                "Sale.Date",
-                "Sale.Subtotal",
-                "Sale.IVA",
-                "Sale.Total",
-                "Detail"
-            };
+                list.AddRange(new[] {
+                    "order.Number", "order.Table", "order.Waiter", "order.Date",
+                    "order.RestaurantName", "order.COPY", "order.GeneratedDate",
+                    "order.CreatedBy", "Detail"
+                });
+            }
+            else
+            {
+                list.AddRange(new[] {
+                    "sale.Number", "sale.Date", "sale.Subtotal", "sale.IVA",
+                    "sale.Total", "footer"
+                });
+
+                // Para tickets, incluimos company
+                list.AddRange(new[] {
+                    "company.Name", "company.Nit", "company.Address", "company.Phone"
+                });
+            }
+
+            return list;
         }
 
-        public static List<string> GetItemSourceSuggestions()
+        public static List<string> GetItemSourceSuggestions(string? documentType = null)
         {
-            return new List<string>
+            var list = new List<string> { "Name", "Qty" };
+            bool isComanda = documentType?.ToLower() == "comanda";
+
+            if (isComanda)
             {
-                "Name",
-                "Qty",
-                "Notes",
-                "UnitPrice",
-                "Total",
-                "Description",
-                "Code",
-                "Price"
-            };
+                list.Add("Notes");
+            }
+            else
+            {
+                list.AddRange(new[] { "UnitPrice", "Total" });
+            }
+
+            // Sugerencias adicionales comunes
+            list.AddRange(new[] { "Description", "Code", "Price" });
+
+            return list;
         }
     }
 }

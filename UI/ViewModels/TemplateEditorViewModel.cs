@@ -40,7 +40,7 @@ namespace UI.ViewModels
                 TemplateName = value.Name ?? string.Empty;
                 Sections = new ObservableCollection<TemplateSectionViewModel>(
                     value.Sections.OrderBy(s => s.Order ?? 0)
-                                 .Select(s => new TemplateSectionViewModel(s))
+                                 .Select(s => new TemplateSectionViewModel(s, value.DocumentType))
                 );
             }
         }
@@ -54,7 +54,7 @@ namespace UI.ViewModels
                 Name = "Nueva Sección",
                 Order = nextOrder,
                 Type = "Static"
-            }));
+            }, Template.DocumentType));
         }
 
         [RelayCommand]
