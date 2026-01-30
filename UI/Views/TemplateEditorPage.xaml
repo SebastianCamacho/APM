@@ -44,11 +44,11 @@
 
         <!-- Header -->
         <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Padding="{OnIdiom Desktop='20,15', Phone='10,12'}" BackgroundColor="{DynamicResource Primary}" StrokeThickness="0">
-            <Grid ColumnDefinitions="*, Auto" MaxWidthRequest="{OnIdiom Desktop=1000, Default=-1}">
+            <Grid ColumnDefinitions="*, Auto" MaximumWidthRequest="{OnIdiom Desktop=1000, Default=-1}">
                 <VerticalStackLayout Grid.Column="0" Spacing="2">
                     <Label Text="Editor de Plantilla" FontSize="{OnIdiom Desktop=20, Phone=16}" FontAttributes="Bold" TextColor="{DynamicResource White}" />
                     <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="#22FFFFFF" HeightRequest="38">
-                        <Entry Text="{Binding Template.Name}" Placeholder="Nombre de la Plantilla" TextColor="{DynamicResource White}" FontSize="{OnIdiom Desktop=14, Phone=12}" BorderColor="Transparent" BackgroundColor="Transparent" VerticalOptions="Center" />
+                        <Entry Text="{Binding Template.Name}" Placeholder="Nombre de la Plantilla" TextColor="{DynamicResource White}" FontSize="{OnIdiom Desktop=14, Phone=12}" BackgroundColor="Transparent" VerticalOptions="Center" />
                     </Border>
                 </VerticalStackLayout>
                 <Button Grid.Column="1" Text="+ Sección" Command="{Binding AddSectionCommand}" VerticalOptions="Center" Style="{StaticResource ButtonOutline}" TextColor="{DynamicResource White}" BorderColor="{DynamicResource White}" HeightRequest="38" Padding="15,0" />
@@ -73,7 +73,7 @@
                                 <!-- Cabecera de Sección -->
                                 <Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto" ColumnSpacing="6">
                                     <Border Grid.Column="0" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                                        <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="{OnIdiom Desktop=15, Phone=14}" Placeholder="Nombre Sección" BorderColor="Transparent" BackgroundColor="Transparent" VerticalOptions="Center" Margin="5,0" TextColor="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                                        <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="{OnIdiom Desktop=15, Phone=14}" Placeholder="Nombre Sección" BackgroundColor="Transparent" VerticalOptions="Center" Margin="5,0" TextColor="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
                                     </Border>
                                     
                                     <Button Grid.Column="1" Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" CommandParameter="{Binding .}" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" BackgroundColor="{DynamicResource Primary}" />
@@ -114,7 +114,7 @@
 
                                 <!-- Elementos de la Sección -->
                                 <Label Text="Elementos de impresión:" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" Margin="0,2,0,0" />
-                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Elements}" Spacing="6" Margin="{OnIdiom Desktop=5, Phone=2},0,0,0">
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Elements}" Spacing="6" Margin="{OnIdiom Desktop='5,0,0,0', Phone='2,0,0,0'}">
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="viewmodels:TemplateElementViewModel">
                                             <Border StrokeShape="RoundRectangle 8" Padding="{OnIdiom Desktop=10, Phone=8}" Stroke="{DynamicResource Gray300}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray900}}">
@@ -149,10 +149,10 @@
                                                             <Label Grid.Column="0" Text="Valor:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" IsVisible="{Binding ShowStaticValueInput}" />
                                                             
                                                             <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="36" HorizontalOptions="Fill">
-                                                                <Entry Text="{Binding Label}" Placeholder="Ej: Cant." FontSize="11" IsVisible="{Binding ShowLabelAndSource}" BackgroundColor="Transparent" Padding="5,0" />
+                                                                <Entry Text="{Binding Label}" Placeholder="Ej: Cant." FontSize="11" IsVisible="{Binding ShowLabelAndSource}" BackgroundColor="Transparent" />
                                                             </Border>
                                                             <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="36" HorizontalOptions="Fill" IsVisible="{Binding ShowStaticValueInput}">
-                                                                <Entry Text="{Binding StaticValue}" Placeholder="Texto fijo..." FontSize="11" BackgroundColor="Transparent" Padding="5,0" />
+                                                                <Entry Text="{Binding StaticValue}" Placeholder="Texto fijo..." FontSize="11" BackgroundColor="Transparent" />
                                                             </Border>
                                                         </Grid>
                                                     </Grid>
@@ -186,7 +186,7 @@
                                                           IsVisible="{Binding ShowTableProperties}">
                                                         <Label Grid.Column="0" Text="Ancho%:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
                                                         <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="32">
-                                                            <Entry Text="{Binding WidthPercentage}" Keyboard="Numeric" Placeholder="0-100" FontSize="11" BackgroundColor="Transparent" Padding="5,0" />
+                                                            <Entry Text="{Binding WidthPercentage}" Keyboard="Numeric" Placeholder="0-100" FontSize="11" BackgroundColor="Transparent" />
                                                         </Border>
                                                         
                                                         <Label Grid.Column="2" Text="Enca:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
@@ -217,13 +217,21 @@
         </Grid>
 
         <!-- Pantalla de Carga Inicial -->
-        <Grid Grid.RowSpan="3" Grid.ColumnSpan="3" BackgroundColor="{AppThemeBinding Light=#AAFFFFFF, Dark=#AA000000}" IsVisible="{Binding IsInitializing}">
+        <Grid Grid.RowSpan="3" Grid.ColumnSpan="3" 
+              ZIndex="99"
+              BackgroundColor="{AppThemeBinding Light=#AAFFFFFF, Dark=#AA000000}" 
+              IsVisible="{Binding IsInitializing}">
             <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="15">
                 <ActivityIndicator IsRunning="{Binding IsInitializing}" Color="{DynamicResource Primary}" WidthRequest="60" HeightRequest="60" />
                 <Label Text="Preparando editor..." FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="{DynamicResource Primary}" />
             </VerticalStackLayout>
         </Grid>
-
-        <ActivityIndicator Grid.RowSpan="3" Grid.ColumnSpan="3" IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" Color="{DynamicResource Primary}" />
+ 
+        <ActivityIndicator Grid.RowSpan="3" Grid.ColumnSpan="3" 
+                           ZIndex="100"
+                           IsRunning="{Binding IsBusy}" 
+                           VerticalOptions="Center" HorizontalOptions="Center" 
+                           Color="{DynamicResource Primary}" 
+                           WidthRequest="60" HeightRequest="60"/>
     </Grid>
 </ContentPage>

@@ -41,16 +41,26 @@ namespace UI.ViewModels
             if (value != null)
             {
                 TemplateName = value.Name ?? string.Empty;
-                var _ = InitializeAsync(value);
+                // No llamamos a InitializeAsync aquí para evitar bloquear la transición de navegación en Android
             }
+        }
+
+        [RelayCommand]
+        private async Task LoadData()
+        {
+            if (Template == null || Sections.Count > 0 || IsInitializing) return;
+            await InitializeAsync(Template);
         }
 
         private async Task InitializeAsync(PrintTemplate value)
         {
+            if (IsInitializing) return;
+
             IsInitializing = true;
             try
             {
-                await Task.Delay(100); // Dar un momento para que se muestre el indicador
+                // Esperar a que la transición de navegación termine completamente en Android
+                await Task.Delay(300);
 
                 var mappedSections = await Task.Run(() =>
                     value.Sections.OrderBy(s => s.Order ?? 0)
@@ -58,7 +68,13 @@ namespace UI.ViewModels
                                  .ToList()
                 );
 
-                Sections = new ObservableCollection<TemplateSectionViewModel>(mappedSections);
+                Sections.Clear();
+                // Carga incremental para no congelar la UI de Android con un solo layout pass masivo
+                foreach (var section in mappedSections)
+                {
+                    Sections.Add(section);
+                    await Task.Delay(50); // Pequeño respiro para que el ActivityIndicator siga girando
+                }
             }
             finally
             {

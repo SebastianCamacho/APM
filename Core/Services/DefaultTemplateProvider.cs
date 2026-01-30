@@ -158,7 +158,7 @@ namespace AppsielPrintManager.Core.Services
                         Elements = new List<TemplateElement>
                         {
                             new TemplateElement { Type = "Line" },
-                            new TemplateElement { Type = "Text", Label = "Notas: ", Source = "Detail",Format = "FontB Size3 " },
+                            new TemplateElement { Type = "Text", Label = "Notas: ", Source = "Detail",Format = "FontB Size2 " },
                             new TemplateElement { Type = "Text", Source = "order.GeneratedDate" },
                             new TemplateElement { Type = "Text", StaticValue = "Impreso por APM ", Format = "" }
                         }

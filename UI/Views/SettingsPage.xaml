@@ -6,14 +6,14 @@
              x:Class="UI.Views.SettingsPage"
              Title="Configuración"
              x:DataType="viewmodels:SettingsViewModel">
-    <Grid RowDefinitions="Auto, *, Auto" Padding="20" Spacing="10">
+    <Grid RowDefinitions="Auto, *, Auto" Padding="20">
         <Label Grid.Row="0" Text="Plantillas de Impresión" Style="{StaticResource Headline}" HorizontalOptions="Center" />
 
         <CollectionView Grid.Row="1" ItemsSource="{Binding Templates}" SelectionMode="None">
             <CollectionView.EmptyView>
                 <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
                     <Label Text="No se encontraron plantillas." FontSize="Medium" TextColor="Gray" />
-                    <Button Text="Cargar Plantillas" Command="{Binding LoadTemplatesAsyncCommand}" Margin="10" />
+                    <Button Text="Cargar Plantillas" Command="{Binding LoadTemplatesCommand}" Margin="10" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
@@ -34,7 +34,7 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <Button Grid.Row="2" Text="Refrescar Plantillas" Command="{Binding LoadTemplatesAsyncCommand}" />
+        <Button Grid.Row="2" Text="Refrescar Plantillas" Command="{Binding LoadTemplatesCommand}" />
 
         <ActivityIndicator Grid.RowSpan="3" IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" />
     </Grid>
