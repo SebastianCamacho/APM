@@ -28,12 +28,10 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         {
             _logger = logger;
 
-            // Obtener el directorio de datos de la aplicación local del usuario
-#if WINDOWS
-            string   appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-#else
+            // Usar siempre LocalApplicationData para consistencia entre UI y WorkerService
+            // y evitar problemas de dependencias de compilación con #if WINDOWS
             string appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-#endif
+
             // Crear una subcarpeta específica para nuestra aplicación
             string appSpecificDirectory = Path.Combine(appDataDirectory, "AppsielPrintManager");
 
@@ -43,6 +41,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                 Directory.CreateDirectory(appSpecificDirectory);
             }
 
+            _filePath = Path.Combine(appSpecificDirectory, SettingsFileName);
             _filePath = Path.Combine(appSpecificDirectory, SettingsFileName);
             _logger.LogInfo($"Ruta del archivo de configuraciones de impresora: {_filePath}");
         }
@@ -130,21 +129,41 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         {
             if (!File.Exists(_filePath))
             {
-                _logger.LogError($"EEl archivo no exite {_filePath}");
-
+                // _logger.LogError($"El archivo no existe {_filePath}"); // Reducir ruido si es esperado
                 return new List<PrinterSettings>();
             }
 
-            try
+            const int maxRetries = 3;
+            const int delayMs = 200;
+
+            for (int i = 0; i < maxRetries; i++)
             {
-                var json = await File.ReadAllTextAsync(_filePath);
-                return JsonSerializer.Deserialize<List<PrinterSettings>>(json) ?? new List<PrinterSettings>();
+                try
+                {
+                    using (var stream = File.Open(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (var reader = new StreamReader(stream))
+                    {
+                        var json = await reader.ReadToEndAsync();
+                        return JsonSerializer.Deserialize<List<PrinterSettings>>(json) ?? new List<PrinterSettings>();
+                    }
+                }
+                catch (IOException ioEx)
+                {
+                    // Si el archivo está bloqueado, esperar y reintentar
+                    if (i == maxRetries - 1)
+                    {
+                        _logger.LogError($"Error IO al cargar configuraciones tras {maxRetries} intentos: {ioEx.Message}", ioEx);
+                        return new List<PrinterSettings>();
+                    }
+                    await Task.Delay(delayMs);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error general al cargar configuraciones de impresora desde {_filePath}: {ex.Message}", ex);
+                    return new List<PrinterSettings>();
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error al cargar configuraciones de impresora desde {_filePath}: {ex.Message}", ex);
-                return new List<PrinterSettings>();
-            }
+            return new List<PrinterSettings>();
         }
 
         /// <summary>

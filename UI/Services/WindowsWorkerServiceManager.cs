@@ -58,22 +58,21 @@ namespace UI.Services
                 string debugPath = Path.Combine(workerProjectBase, "bin", "Debug", "net10.0", WorkerExeName);
                 string releasePath = Path.Combine(workerProjectBase, "bin", "Release", "net10.0", WorkerExeName);
 
-                //if (File.Exists(productionPath))
-                //{
-                //    workerExePath = productionPath;
-                //    _logger.LogInfo($"[WorkerServiceManager] Usando ruta de producción: '{workerExePath}'");
-                //}
-                //else
-                if (File.Exists(debugPath))
+                if (File.Exists(productionPath))
+                {
+                    workerExePath = productionPath;
+                    _logger.LogInfo($"[WorkerServiceManager] Usando ruta de producción: '{workerExePath}'");
+                }
+                else if (File.Exists(debugPath))
                 {
                     workerExePath = debugPath;
                     _logger.LogInfo($"[WorkerServiceManager] Usando ruta Debug: '{workerExePath}'");
                 }
-                //else if (File.Exists(releasePath))
-                //{
-                //    workerExePath = releasePath;
-                //    _logger.LogInfo($"[WorkerServiceManager] Usando ruta Release: '{workerExePath}'");
-                //}
+                else if (File.Exists(releasePath))
+                {
+                    workerExePath = releasePath;
+                    _logger.LogInfo($"[WorkerServiceManager] Usando ruta Release: '{workerExePath}'");
+                }
                 else
                 {
                     _logger.LogError($"[WorkerServiceManager] No se pudo encontrar el ejecutable en ninguna ruta.");
