@@ -8,96 +8,126 @@
              x:DataType="viewmodels:PrinterDetailViewModel">
 
     <ContentPage.Resources>
-        <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
-        <converters:NumericToStringConverter x:Key="NumericToStringConverter" />
+        <ResourceDictionary>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <converters:NumericToStringConverter x:Key="NumericToStringConverter" />
+            
+            <Style x:Key="EditorInputStyle" TargetType="View">
+                <Setter Property="Margin" Value="2" />
+            </Style>
+            <Style TargetType="Entry">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+            </Style>
+            <Style TargetType="Picker">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="TitleColor" Value="{DynamicResource Gray500}" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+            </Style>
+
+            <Style x:Key="ButtonOutline" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="BorderColor" Value="{DynamicResource Primary}" />
+                <Setter Property="BorderWidth" Value="1" />
+                <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                <Setter Property="CornerRadius" Value="8" />
+            </Style>
+        </ResourceDictionary>
     </ContentPage.Resources>
 
-    <ScrollView>
-        <Grid RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="*, Auto, *"
-              RowSpacing="20" ColumnSpacing="0" Padding="20">
+    <Grid RowDefinitions="Auto, *, Auto">
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="10,12" BackgroundColor="{DynamicResource Primary}" StrokeThickness="0">
+            <Label Text="Configuración de Impresora" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource White}" HorizontalOptions="Center" />
+        </Border>
 
-            <!-- Título de la Página -->
-            <Label Grid.Row="0" Grid.ColumnSpan="3" Text="Configuración de Impresora"
-                   FontSize="Title" HorizontalOptions="Center" VerticalOptions="Center"
-                   Margin="0,0,0,10" />
+        <ScrollView Grid.Row="1" Padding="20">
+            <Border StrokeShape="RoundRectangle 12" Padding="20" StrokeThickness="1" Stroke="{DynamicResource Gray200}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" HorizontalOptions="Center" VerticalOptions="Start">
+                <VerticalStackLayout Spacing="15" WidthRequest="320">
 
-            <!-- Contenedor Principal Centrado para los Campos -->
-            <Border Grid.Row="1" Grid.Column="1" Padding="20" StrokeShape="RoundRectangle 10"
-                    BackgroundColor="{AppThemeBinding Light=White, Dark=DarkGray}"
-                    HorizontalOptions="Center" VerticalOptions="Start">
-                <VerticalStackLayout Spacing="10" WidthRequest="300">
-
-                    <Label Text="ID de Impresora:" FontAttributes="Bold" />
-                    <VerticalStackLayout Spacing="0">
-                        <Entry Text="{Binding Printer.PrinterId}" Placeholder="Ej: ImpresoraCocina" Margin="0"  />
-                        <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
+                    <!-- ID Impresora -->
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="ID de Impresora" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                            <Entry Text="{Binding Printer.PrinterId}" Placeholder="Ej: ImpresoraCocina" VerticalOptions="Center" Margin="5,0"/>
+                        </Border>
                     </VerticalStackLayout>
 
-                    <Label Text="Dirección IP:" FontAttributes="Bold" />
-                    <Grid ColumnDefinitions="*,5,*,5,*,5,*" ColumnSpacing="0">
-                        <VerticalStackLayout Grid.Column="0" Spacing="0">
-                            <Entry Text="{Binding IpSegment1}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" Margin="0" />
-                            <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
-                        </VerticalStackLayout>
-                        <Label Grid.Column="1" Text="." VerticalOptions="Center" HorizontalOptions="Center" />
-                        <VerticalStackLayout Grid.Column="2" Spacing="0">
-                            <Entry Text="{Binding IpSegment2}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" Margin="0"  />
-                            <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
-                        </VerticalStackLayout>
-                        <Label Grid.Column="3" Text="." VerticalOptions="Center" HorizontalOptions="Center" />
-                        <VerticalStackLayout Grid.Column="4" Spacing="0">
-                            <Entry Text="{Binding IpSegment3}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" Margin="0"  />
-                            <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
-                        </VerticalStackLayout>
-                        <Label Grid.Column="5" Text="." VerticalOptions="Center" HorizontalOptions="Center" />
-                        <VerticalStackLayout Grid.Column="6" Spacing="0">
-                            <Entry Text="{Binding IpSegment4}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" Margin="0"  />
-                            <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
-                        </VerticalStackLayout>
-                    </Grid>
-
-                    <Label Text="Puerto:" FontAttributes="Bold" />
-                    <VerticalStackLayout Spacing="0">
-                        <Entry Text="{Binding Printer.Port, Converter={StaticResource NumericToStringConverter}}" Keyboard="Numeric" Margin="0"  />
-                        <BoxView HeightRequest="1" Color="{StaticResource Primary}" Margin="0,-2,0,0" />
-                    </VerticalStackLayout>
-
-                    <Label Text="Ancho Papel (mm):" FontAttributes="Bold" />
-                    <Border StrokeShape="RoundRectangle 5" StrokeThickness="1" Stroke="{StaticResource Primary}" Padding="0" HorizontalOptions="FillAndExpand">
-                        <Grid ColumnDefinitions="*, Auto">
-                            <Picker Grid.Column="0" SelectedItem="{Binding SelectedPaperWidthMm}" ItemsSource="{Binding AvailablePaperWidths}" HorizontalOptions="Fill" VerticalOptions="Center" />
-                            <Label Grid.Column="1" Text="▼" VerticalOptions="Center" HorizontalOptions="End" Margin="0,0,10,0" FontAttributes="Bold" FontSize="14" />
+                    <!-- IP Address -->
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Dirección IP" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                        <Grid ColumnDefinitions="*,Auto,*,Auto,*,Auto,*" ColumnSpacing="4">
+                            <Border Grid.Column="0" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                <Entry Text="{Binding IpSegment1}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Grid.Column="1" Text="." VerticalOptions="Center" FontAttributes="Bold" />
+                            
+                            <Border Grid.Column="2" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                <Entry Text="{Binding IpSegment2}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Grid.Column="3" Text="." VerticalOptions="Center" FontAttributes="Bold" />
+                            
+                            <Border Grid.Column="4" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                <Entry Text="{Binding IpSegment3}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Grid.Column="5" Text="." VerticalOptions="Center" FontAttributes="Bold" />
+                            
+                            <Border Grid.Column="6" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                <Entry Text="{Binding IpSegment4}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                            </Border>
                         </Grid>
-                    </Border>
+                    </VerticalStackLayout>
 
-                    <HorizontalStackLayout Spacing="10" HorizontalOptions="FillAndExpand">
-                        <Label Text="Beep al imprimir:" VerticalOptions="Center" HorizontalOptions="StartAndExpand" />
-                        <Switch IsToggled="{Binding Printer.BeepOnPrint}" HorizontalOptions="End" />
-                    </HorizontalStackLayout>
+                    <!-- Puerto -->
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Puerto" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                            <Entry Text="{Binding Printer.Port, Converter={StaticResource NumericToStringConverter}}" Keyboard="Numeric" VerticalOptions="Center" Margin="5,0"/>
+                        </Border>
+                    </VerticalStackLayout>
 
-                    <HorizontalStackLayout Spacing="10" HorizontalOptions="FillAndExpand">
-                        <Label Text="Abrir cajón después de imprimir:" VerticalOptions="Center" HorizontalOptions="StartAndExpand" />
-                        <Switch IsToggled="{Binding Printer.OpenCashDrawerAfterPrint}" HorizontalOptions="End" />
-                    </HorizontalStackLayout>
+                    <!-- Ancho Papel -->
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Ancho Papel (mm)" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                            <Picker SelectedItem="{Binding SelectedPaperWidthMm}" ItemsSource="{Binding AvailablePaperWidths}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
+                        </Border>
+                    </VerticalStackLayout>
 
-                    <HorizontalStackLayout Spacing="10" HorizontalOptions="FillAndExpand">
-                        <Label Text="Abrir cajón sin imprimir:" VerticalOptions="Center" HorizontalOptions="StartAndExpand" />
-                        <Switch IsToggled="{Binding Printer.OpenCashDrawerWithoutPrint}" HorizontalOptions="End" />
-                    </HorizontalStackLayout>
+                    <!-- Switches -->
+                    <VerticalStackLayout Spacing="10" Margin="0,5,0,0">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Label Grid.Column="0" Text="Beep al imprimir" VerticalOptions="Center" FontSize="14" />
+                            <Switch Grid.Column="1" IsToggled="{Binding Printer.BeepOnPrint}" />
+                        </Grid>
+                        
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Label Grid.Column="0" Text="Abrir cajón al final" VerticalOptions="Center" FontSize="14" />
+                            <Switch Grid.Column="1" IsToggled="{Binding Printer.OpenCashDrawerAfterPrint}" />
+                        </Grid>
+                        
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Label Grid.Column="0" Text="Abrir cajón sin imprimir" VerticalOptions="Center" FontSize="14" />
+                            <Switch Grid.Column="1" IsToggled="{Binding Printer.OpenCashDrawerWithoutPrint}" />
+                        </Grid>
+                    </VerticalStackLayout>
 
-                    <!-- Aquí se podría añadir una sección para CopyToPrinterIds si se requiere UI para gestionarlos -->
-
-                    <Button Text="Guardar Impresora" Command="{Binding SavePrinterCommand}"
-                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
-                            Margin="0,10,0,0" HorizontalOptions="Center" WidthRequest="200" />
                 </VerticalStackLayout>
             </Border>
+        </ScrollView>
+        
+        <!-- Botones Pie de Página -->
+        <Border Grid.Row="2" StrokeThickness="0" Padding="15,10" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}">
+             <Button Text="Guardar Impresora" Command="{Binding SavePrinterCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                        HeightRequest="42" FontSize="14" CornerRadius="8" />
+        </Border>
 
-            <!-- Activity Indicator Centrado -->
-            <ActivityIndicator Grid.Row="2" Grid.ColumnSpan="3"
-                               IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
-                               VerticalOptions="Center" HorizontalOptions="Center"
-                               Color="{StaticResource Primary}" />
-        </Grid>
-    </ScrollView>
+        <ActivityIndicator Grid.RowSpan="3"
+                           IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                           VerticalOptions="Center" HorizontalOptions="Center"
+                           Color="{StaticResource Primary}" WidthRequest="50" HeightRequest="50" />
+    </Grid>
 </ContentPage>
