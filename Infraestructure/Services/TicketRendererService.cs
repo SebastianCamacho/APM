@@ -101,6 +101,33 @@ namespace AppsielPrintManager.Infraestructure.Services
                     }
                     break;
 
+                case "repeated":
+                    var repeatedData = GetValueFromPath(data, section.DataSource ?? string.Empty) as IEnumerable;
+                    if (repeatedData != null)
+                    {
+                        foreach (var item in repeatedData)
+                        {
+                            foreach (var element in section.Elements)
+                            {
+                                // Soporte para "." como origen (item actual en la lista)
+                                var val = !string.IsNullOrEmpty(element.Source) && element.Source != "."
+                                    ? GetValueFromPath(item, element.Source!)?.ToString()
+                                    : (element.Source == "." ? item?.ToString() : element.StaticValue);
+
+                                var textValue = $"{(element.Label ?? string.Empty)}{val}";
+
+                                renderedSection.Elements.Add(new RenderedElement
+                                {
+                                    Type = element.Type ?? "Text",
+                                    TextValue = textValue,
+                                    Align = element.Align ?? section.Align,
+                                    Format = element.Format ?? section.Format
+                                });
+                            }
+                        }
+                    }
+                    break;
+
                 case "static":
                 default:
                     foreach (var element in section.Elements)
@@ -133,7 +160,7 @@ namespace AppsielPrintManager.Infraestructure.Services
 
         private object? GetValueFromPath(object data, string path)
         {
-            if (string.IsNullOrEmpty(path) || data == null) return data;
+            if (string.IsNullOrEmpty(path) || path == "." || data == null) return data;
 
             var parts = path.Split('.');
             object current = data;

@@ -35,7 +35,10 @@ namespace UI.ViewModels
             if (Elements != null)
             {
                 foreach (var element in Elements)
+                {
                     element.IsTableSection = this.IsTableSection;
+                    element.IsRepeatedSection = this.Type == "Repeated";
+                }
             }
         }
 
@@ -44,7 +47,7 @@ namespace UI.ViewModels
         private string dataSource;
 
         [ObservableProperty]
-        private string align;
+        private string? align;
 
         [ObservableProperty]
         private int? order;
@@ -58,7 +61,7 @@ namespace UI.ViewModels
         private ObservableCollection<TemplateElementViewModel> elements;
 
         [ObservableProperty]
-        private int selectedSizeIdx;
+        private int? selectedSizeIdx;
 
         [ObservableProperty]
         private bool isBold;
@@ -69,8 +72,8 @@ namespace UI.ViewModels
         public bool IsDataSourceVisible => Type == "Table" || Type == "Repeated";
 
         public List<string> SectionTypes { get; } = new() { "Static", "Table", "Repeated" };
-        public List<string> Alignments { get; } = new() { "Left", "Center", "Right" };
-        public List<string> Sizes { get; } = new() { "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
+        public List<string> Alignments { get; } = new() { "Ninguno", "Left", "Center", "Right" };
+        public List<string> Sizes { get; } = new() { "Ninguno", "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
         public List<string> DataSourceSuggestions => AppsielPrintManager.Core.Services.TemplateCatalogService.GetDataSourceSuggestions(DocumentType);
 
         public List<string> DisplayDataSourceSuggestions
@@ -102,13 +105,14 @@ namespace UI.ViewModels
             Name = model.Name ?? "Nueva Sección";
             Type = model.Type ?? "Static";
             DataSource = model.DataSource ?? string.Empty;
-            Align = model.Align ?? "Left";
+            Align = model.Align ?? "Ninguno";
             Order = model.Order ?? 0;
 
             Elements = new ObservableCollection<TemplateElementViewModel>(
                 model.Elements.Select(e => new TemplateElementViewModel(e, DocumentType)
                 {
-                    IsTableSection = IsTableSection
+                    IsTableSection = IsTableSection,
+                    IsRepeatedSection = Type == "Repeated"
                 })
             );
 
@@ -117,24 +121,34 @@ namespace UI.ViewModels
 
         private void ParseFormat(string format)
         {
-            if (string.IsNullOrEmpty(format)) return;
+            if (string.IsNullOrEmpty(format))
+            {
+                SelectedSizeIdx = 0; // Ninguno
+                return;
+            }
 
             IsBold = format.Contains("Bold", StringComparison.OrdinalIgnoreCase);
 
-            if (format.Contains("Size1")) SelectedSizeIdx = 0;
-            else if (format.Contains("Size2")) SelectedSizeIdx = 1;
-            else if (format.Contains("Size3")) SelectedSizeIdx = 2;
-            else if (format.Contains("Size4")) SelectedSizeIdx = 3;
-            else if (format.Contains("Size5")) SelectedSizeIdx = 4;
-            else if (format.Contains("Size6")) SelectedSizeIdx = 5;
+            if (format.Contains("Size1")) SelectedSizeIdx = 1;
+            else if (format.Contains("Size2")) SelectedSizeIdx = 2;
+            else if (format.Contains("Size3")) SelectedSizeIdx = 3;
+            else if (format.Contains("Size4")) SelectedSizeIdx = 4;
+            else if (format.Contains("Size5")) SelectedSizeIdx = 5;
+            else if (format.Contains("Size6")) SelectedSizeIdx = 6;
+            else SelectedSizeIdx = 0;
         }
 
-        private string UpdateFormat()
+        private string? UpdateFormat()
         {
+            if (SelectedSizeIdx == null || SelectedSizeIdx == 0)
+            {
+                return IsBold ? "Bold" : null;
+            }
+
             var parts = new List<string>();
 
             // Mapeo inverso de los 6 tamaños
-            string sizePart = (SelectedSizeIdx + 1) switch
+            string sizePart = SelectedSizeIdx switch
             {
                 1 => "FontA Size1",
                 2 => "FontA Size2",
@@ -142,13 +156,13 @@ namespace UI.ViewModels
                 4 => "FontB Size1",
                 5 => "FontB Size2",
                 6 => "FontB Size3",
-                _ => "FontA Size1"
+                _ => null
             };
-            parts.Add(sizePart);
 
+            if (sizePart != null) parts.Add(sizePart);
             if (IsBold) parts.Add("Bold");
 
-            return string.Join(" ", parts);
+            return parts.Count > 0 ? string.Join(" ", parts) : null;
         }
 
         [RelayCommand]
@@ -192,7 +206,7 @@ namespace UI.ViewModels
             _model.Name = Name;
             _model.Type = Type;
             _model.DataSource = string.IsNullOrEmpty(DataSource) ? null : DataSource;
-            _model.Align = Align;
+            _model.Align = (Align == "Ninguno") ? null : Align;
             _model.Order = Order;
             _model.Format = UpdateFormat();
             _model.Elements = Elements.Select(e => e.ToModel()).ToList();

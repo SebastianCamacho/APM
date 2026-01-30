@@ -59,10 +59,10 @@ namespace UI.ViewModels
         private string staticValue;
 
         [ObservableProperty]
-        private string align;
+        private string? align;
 
         [ObservableProperty]
-        private int selectedSizeIdx = 0; // 0 to 5 for sizes 1 to 6
+        private int? selectedSizeIdx; // null means not specified
 
         [ObservableProperty]
         private bool isBold;
@@ -72,10 +72,13 @@ namespace UI.ViewModels
         private bool isTableSection;
 
         [ObservableProperty]
+        private bool isRepeatedSection;
+
+        [ObservableProperty]
         private int? widthPercentage;
 
         [ObservableProperty]
-        private int selectedHeaderSizeIdx;
+        private int? selectedHeaderSizeIdx;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(GlobalSuggestions))]
@@ -87,8 +90,8 @@ namespace UI.ViewModels
         [ObservableProperty]
         private bool isHeaderBold;
 
-        public List<string> Alignments { get; } = new() { "Left", "Center", "Right" };
-        public List<string> Sizes { get; } = new() { "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
+        public List<string> Alignments { get; } = new() { "Ninguno", "Left", "Center", "Right" };
+        public List<string> Sizes { get; } = new() { "Ninguno", "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
         public List<string> ElementTypes { get; } = new() { "Text", "Line", "Barcode", "QR", "Image" };
 
         public List<string> GlobalSuggestions => TemplateCatalogService.GetGlobalSourceSuggestions(DocumentType);
@@ -100,6 +103,11 @@ namespace UI.ViewModels
             get
             {
                 var list = AllSuggestions.ToList();
+
+                // Siempre añadir "." para permitir referencia al objeto mismo (especialmente en Repeated)
+                if (!list.Contains("."))
+                    list.Insert(0, ".");
+
                 if (!string.IsNullOrEmpty(Source))
                 {
                     // Buscar coincidencia exacta
@@ -125,7 +133,7 @@ namespace UI.ViewModels
             Label = model.Label ?? string.Empty;
             Source = model.Source ?? string.Empty;
             StaticValue = model.StaticValue ?? string.Empty;
-            Align = model.Align ?? "Left";
+            Align = model.Align ?? "Ninguno";
             WidthPercentage = model.WidthPercentage;
 
             ParseFormat(model.Format ?? string.Empty);
@@ -138,29 +146,33 @@ namespace UI.ViewModels
         {
             if (string.IsNullOrEmpty(format))
             {
-                SelectedSizeIdx = 1; // Default Size2
+                SelectedSizeIdx = 0; // Ninguno
                 return;
             }
 
             var parts = format.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             IsBold = parts.Contains("Bold", StringComparer.OrdinalIgnoreCase);
 
-            SetSizeIndex(parts, out int sizeIdx);
+            SetSizeIndex(parts, out int? sizeIdx);
             SelectedSizeIdx = sizeIdx;
         }
 
         private void ParseHeaderFormat(string format)
         {
-            if (string.IsNullOrEmpty(format)) return;
+            if (string.IsNullOrEmpty(format))
+            {
+                SelectedHeaderSizeIdx = 0; // Ninguno
+                return;
+            }
 
             var parts = format.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             IsHeaderBold = parts.Contains("Bold", StringComparer.OrdinalIgnoreCase);
 
-            SetSizeIndex(parts, out int sizeIdx);
+            SetSizeIndex(parts, out int? sizeIdx);
             SelectedHeaderSizeIdx = sizeIdx;
         }
 
-        private void SetSizeIndex(string[] parts, out int sizeIdx)
+        private void SetSizeIndex(string[] parts, out int? sizeIdx)
         {
             bool isFontA = parts.Contains("FontA", StringComparer.OrdinalIgnoreCase);
             bool isFontB = parts.Contains("FontB", StringComparer.OrdinalIgnoreCase);
@@ -168,13 +180,13 @@ namespace UI.ViewModels
             bool isSize2 = parts.Contains("Size2", StringComparer.OrdinalIgnoreCase);
             bool isSize3 = parts.Contains("Size3", StringComparer.OrdinalIgnoreCase);
 
-            if (isSize1 && isFontB) sizeIdx = 0;
-            else if (isSize1 && (isFontA || !isFontB)) sizeIdx = 1;
-            else if (isSize2 && isFontB) sizeIdx = 2;
-            else if (isSize2 && (isFontA || !isFontB)) sizeIdx = 3;
-            else if (isSize3 && isFontB) sizeIdx = 4;
-            else if (isSize3 && (isFontA || !isFontB)) sizeIdx = 5;
-            else sizeIdx = 1;
+            if (isSize1 && isFontB) sizeIdx = 1;
+            else if (isSize1 && (isFontA || !isFontB)) sizeIdx = 2;
+            else if (isSize2 && isFontB) sizeIdx = 3;
+            else if (isSize2 && (isFontA || !isFontB)) sizeIdx = 4;
+            else if (isSize3 && isFontB) sizeIdx = 5;
+            else if (isSize3 && (isFontA || !isFontB)) sizeIdx = 6;
+            else sizeIdx = 0; // Ninguno
         }
 
         public TemplateElement ToModel()
@@ -183,7 +195,7 @@ namespace UI.ViewModels
             _model.Label = string.IsNullOrEmpty(Label) ? null : Label;
             _model.Source = string.IsNullOrEmpty(Source) ? null : Source;
             _model.StaticValue = string.IsNullOrEmpty(StaticValue) ? null : StaticValue;
-            _model.Align = Align;
+            _model.Align = (Align == "Ninguno") ? null : Align;
             _model.WidthPercentage = WidthPercentage;
             _model.Format = GenerateFormat();
             _model.HeaderFormat = GenerateHeaderFormat();
@@ -205,12 +217,12 @@ namespace UI.ViewModels
 
             switch (SelectedSizeIdx)
             {
-                case 0: formats.Add("FontB Size1"); break;
-                case 1: formats.Add("FontA Size1"); break;
-                case 2: formats.Add("FontB Size2"); break;
-                case 3: formats.Add("FontA Size2"); break;
-                case 4: formats.Add("FontB Size3"); break;
-                case 5: formats.Add("FontA Size3"); break;
+                case 1: formats.Add("FontB Size1"); break;
+                case 2: formats.Add("FontA Size1"); break;
+                case 3: formats.Add("FontB Size2"); break;
+                case 4: formats.Add("FontA Size2"); break;
+                case 5: formats.Add("FontB Size3"); break;
+                case 6: formats.Add("FontA Size3"); break;
             }
 
             if (IsBold) formats.Add("Bold");
@@ -224,12 +236,12 @@ namespace UI.ViewModels
 
             switch (SelectedHeaderSizeIdx)
             {
-                case 0: formats.Add("FontB Size1"); break;
-                case 1: formats.Add("FontA Size1"); break;
-                case 2: formats.Add("FontB Size2"); break;
-                case 3: formats.Add("FontA Size2"); break;
-                case 4: formats.Add("FontB Size3"); break;
-                case 5: formats.Add("FontA Size3"); break;
+                case 1: formats.Add("FontB Size1"); break;
+                case 2: formats.Add("FontA Size1"); break;
+                case 3: formats.Add("FontB Size2"); break;
+                case 4: formats.Add("FontA Size2"); break;
+                case 5: formats.Add("FontB Size3"); break;
+                case 6: formats.Add("FontA Size3"); break;
             }
 
             if (IsHeaderBold) formats.Add("Bold");

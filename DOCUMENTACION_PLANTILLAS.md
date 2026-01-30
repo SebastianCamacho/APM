@@ -10,11 +10,11 @@ Cada sección agrupa elementos y define el comportamiento lógico de un bloque d
 | Propiedad | Tipo | Descripción |
 | :--- | :--- | :--- |
 | `Name` | `string` | Nombre identificador (ej: "Encabezado", "Items"). |
-| `Type` | `string` | `"Static"` (secuencial) o `"Table"` (para listas con columnas). |
-| `DataSource` | `string` | (Solo `Table`) Ruta a la colección de datos (ej: `"Sale.Items"`). |
+| `Type` | `string` | `"Static"` (secuencial), `"Table"` (columnas) o `"Repeated"` (bucles de listas simples). |
+| `DataSource` | `string` | (Solo `Table` y `Repeated`) Ruta a la colección de datos (ej: `"Sale.Items"`, `"Footer"`). |
 | `Order` | `int` | Orden físico de impresión (menor a mayor). |
-| `Align` | `string` | Alineación por defecto: `"Left"`, `"Center"`, `"Right"`. |
-| `Format` | `string` | Formato de texto por defecto para toda la sección. |
+| `Align` | `string` | Alineación por defecto: `"Left"`, `"Center"`, `"Right"`, o `null` para heredar. |
+| `Format` | `string` | Formato de texto por defecto para toda la sección, o `null` para heredar. |
 
 ---
 
@@ -25,7 +25,7 @@ Componentes individuales dentro de una sección.
 | :--- | :--- | :--- |
 | `Type` | `string` | `"Text"`, `"Line"` (divisor), `"Barcode"`, `"QR"`, `"Image"`. |
 | `Label` | `string` | Texto estático que precede al valor. |
-| `Source` | `string` | Ruta dinámica al dato en el objeto JSON (ej: `"Sale.Total"`). |
+| `Source` | `string` | Ruta al dato (ej: `"Sale.Total"`). Usa `"."` para referenciar el objeto mismo en una lista `Repeated`. |
 | `StaticValue` | `string` | Valor fijo si no se especifica `Source`. |
 | `WidthPercentage`| `int` | (Solo `Table`) % del ancho del papel que ocupa la columna. |
 | `Align` | `string` | Alineación específica del elemento. |
@@ -65,7 +65,26 @@ Se pueden combinar múltiples valores separados por espacios (ej: `"Bold Large C
 
 ---
 
-## 5. Ejemplo de Plantilla Completa
+## 5. Secciones de Repetición (`Repeated`)
+Se usan para imprimir listas de valores simples (como un array de strings) aplicando el mismo diseño a cada elemento. 
+*   **`DataSource`**: Nombre de la lista en el JSON.
+*   **`Source: "."`**: Indica que se debe imprimir el valor actual del bucle directamente.
+
+**Ejemplo para un Footer con múltiples líneas:**
+```json
+{
+  "Name": "Mensajes Finales",
+  "Type": "Repeated",
+  "DataSource": "Footer",
+  "Elements": [
+    { "Type": "Text", "Source": ".", "Align": "Center" }
+  ]
+}
+```
+
+---
+
+## 6. Ejemplo de Plantilla Completa
 ```json
 {
   "DocumentType": "ticket_venta",
@@ -93,11 +112,12 @@ Se pueden combinar múltiples valores separados por espacios (ej: `"Bold Large C
     },
     {
       "Name": "Footer",
-      "Type": "Static",
+      "Type": "Repeated",
+      "DataSource": "Footer",
       "Align": "Center",
       "Elements": [
         { "Type": "Line" },
-        { "Type": "Text", "Label": "TOTAL: ", "Source": "Sale.TotalAmount", "Format": "Bold Large" },
+        { "Type": "Text", "Source": "." },
         { "Type": "QR", "Source": "Sale.InvoiceUrl", "Properties": { "Size": "4" } }
       ]
     }
