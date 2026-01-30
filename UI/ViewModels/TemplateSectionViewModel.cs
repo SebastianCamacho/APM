@@ -21,6 +21,15 @@ namespace UI.ViewModels
 
         partial void OnTypeChanged(string value) => UpdateElementsTableStatus();
 
+        partial void OnDocumentTypeChanged(string? value)
+        {
+            if (Elements != null)
+            {
+                foreach (var element in Elements)
+                    element.DocumentType = value;
+            }
+        }
+
         private void UpdateElementsTableStatus()
         {
             if (Elements != null)
@@ -41,6 +50,11 @@ namespace UI.ViewModels
         private int? order;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DataSourceSuggestions))]
+        [NotifyPropertyChangedFor(nameof(DisplayDataSourceSuggestions))]
+        private string? documentType;
+
+        [ObservableProperty]
         private ObservableCollection<TemplateElementViewModel> elements;
 
         [ObservableProperty]
@@ -57,24 +71,34 @@ namespace UI.ViewModels
         public List<string> SectionTypes { get; } = new() { "Static", "Table", "Repeated" };
         public List<string> Alignments { get; } = new() { "Left", "Center", "Right" };
         public List<string> Sizes { get; } = new() { "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
-        public List<string> DataSourceSuggestions => AppsielPrintManager.Core.Services.TemplateCatalogService.GetDataSourceSuggestions();
+        public List<string> DataSourceSuggestions => AppsielPrintManager.Core.Services.TemplateCatalogService.GetDataSourceSuggestions(DocumentType);
 
         public List<string> DisplayDataSourceSuggestions
         {
             get
             {
                 var list = DataSourceSuggestions.ToList();
-                if (!string.IsNullOrEmpty(DataSource) && !list.Contains(DataSource, StringComparer.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(DataSource))
                 {
-                    list.Insert(0, DataSource);
+                    // Buscar coincidencia exacta
+                    var exactMatch = list.FirstOrDefault(x => x == DataSource);
+                    if (exactMatch == null)
+                    {
+                        // Si no hay exacta, buscar por ignorar mayúsculas y quitarla para evitar duplicados visuales
+                        var caseInsensitiveMatch = list.FirstOrDefault(x => x.Equals(DataSource, StringComparison.OrdinalIgnoreCase));
+                        if (caseInsensitiveMatch != null) list.Remove(caseInsensitiveMatch);
+
+                        list.Insert(0, DataSource);
+                    }
                 }
                 return list;
             }
         }
 
-        public TemplateSectionViewModel(TemplateSection model)
+        public TemplateSectionViewModel(TemplateSection model, string? documentType)
         {
             _model = model;
+            DocumentType = documentType;
             Name = model.Name ?? "Nueva Sección";
             Type = model.Type ?? "Static";
             DataSource = model.DataSource ?? string.Empty;
@@ -82,7 +106,10 @@ namespace UI.ViewModels
             Order = model.Order ?? 0;
 
             Elements = new ObservableCollection<TemplateElementViewModel>(
-                model.Elements.Select(e => new TemplateElementViewModel(e) { IsTableSection = IsTableSection })
+                model.Elements.Select(e => new TemplateElementViewModel(e, DocumentType)
+                {
+                    IsTableSection = IsTableSection
+                })
             );
 
             ParseFormat(model.Format);
@@ -127,7 +154,10 @@ namespace UI.ViewModels
         [RelayCommand]
         private void AddElement()
         {
-            Elements.Add(new TemplateElementViewModel(new TemplateElement { Type = "Text", Align = "Left" }) { IsTableSection = IsTableSection });
+            Elements.Add(new TemplateElementViewModel(new TemplateElement { Type = "Text", Align = "Left" }, DocumentType)
+            {
+                IsTableSection = IsTableSection
+            });
         }
 
         [RelayCommand]

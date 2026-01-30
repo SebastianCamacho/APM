@@ -13,7 +13,40 @@ namespace UI.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsTableSection))]
+        [NotifyPropertyChangedFor(nameof(IsLine))]
+        [NotifyPropertyChangedFor(nameof(IsNotLine))]
+        [NotifyPropertyChangedFor(nameof(IsText))]
+        [NotifyPropertyChangedFor(nameof(ShowStaticToggle))]
+        [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
+        [NotifyPropertyChangedFor(nameof(ShowStaticValueInput))]
+        [NotifyPropertyChangedFor(nameof(ShowTableProperties))]
         private string type;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
+        [NotifyPropertyChangedFor(nameof(ShowStaticValueInput))]
+        private bool isStatic;
+
+        partial void OnIsStaticChanged(bool value)
+        {
+            if (value)
+            {
+                Source = string.Empty;
+            }
+            else
+            {
+                StaticValue = string.Empty;
+            }
+        }
+
+        public bool IsLine => Type == "Line";
+        public bool IsNotLine => !IsLine;
+        public bool IsText => Type == "Text";
+
+        public bool ShowStaticToggle => IsText;
+        public bool ShowLabelAndSource => IsNotLine && !(IsText && IsStatic);
+        public bool ShowStaticValueInput => IsText && IsStatic;
+        public bool ShowTableProperties => IsTableSection && IsNotLine;
 
         [ObservableProperty]
         private string label;
@@ -35,6 +68,7 @@ namespace UI.ViewModels
         private bool isBold;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowTableProperties))]
         private bool isTableSection;
 
         [ObservableProperty]
@@ -44,14 +78,21 @@ namespace UI.ViewModels
         private int selectedHeaderSizeIdx;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(GlobalSuggestions))]
+        [NotifyPropertyChangedFor(nameof(ItemSuggestions))]
+        [NotifyPropertyChangedFor(nameof(AllSuggestions))]
+        [NotifyPropertyChangedFor(nameof(DisplaySuggestions))]
+        private string? documentType;
+
+        [ObservableProperty]
         private bool isHeaderBold;
 
         public List<string> Alignments { get; } = new() { "Left", "Center", "Right" };
         public List<string> Sizes { get; } = new() { "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
         public List<string> ElementTypes { get; } = new() { "Text", "Line", "Barcode", "QR", "Image" };
 
-        public List<string> GlobalSuggestions => TemplateCatalogService.GetGlobalSourceSuggestions();
-        public List<string> ItemSuggestions => TemplateCatalogService.GetItemSourceSuggestions();
+        public List<string> GlobalSuggestions => TemplateCatalogService.GetGlobalSourceSuggestions(DocumentType);
+        public List<string> ItemSuggestions => TemplateCatalogService.GetItemSourceSuggestions(DocumentType);
         public List<string> AllSuggestions => GlobalSuggestions.Concat(ItemSuggestions).ToList();
 
         public List<string> DisplaySuggestions
@@ -59,17 +100,27 @@ namespace UI.ViewModels
             get
             {
                 var list = AllSuggestions.ToList();
-                if (!string.IsNullOrEmpty(Source) && !list.Contains(Source, StringComparer.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(Source))
                 {
-                    list.Insert(0, Source);
+                    // Buscar coincidencia exacta
+                    var exactMatch = list.FirstOrDefault(x => x == Source);
+                    if (exactMatch == null)
+                    {
+                        // Si no hay exacta, buscar por ignorar mayúsculas y quitarla para evitar duplicados visuales
+                        var caseInsensitiveMatch = list.FirstOrDefault(x => x.Equals(Source, StringComparison.OrdinalIgnoreCase));
+                        if (caseInsensitiveMatch != null) list.Remove(caseInsensitiveMatch);
+
+                        list.Insert(0, Source);
+                    }
                 }
                 return list;
             }
         }
 
-        public TemplateElementViewModel(TemplateElement model)
+        public TemplateElementViewModel(TemplateElement model, string? documentType)
         {
             _model = model;
+            DocumentType = documentType;
             Type = model.Type ?? "Text";
             Label = model.Label ?? string.Empty;
             Source = model.Source ?? string.Empty;
@@ -79,6 +130,8 @@ namespace UI.ViewModels
 
             ParseFormat(model.Format ?? string.Empty);
             ParseHeaderFormat(model.HeaderFormat ?? string.Empty);
+
+            IsStatic = !string.IsNullOrEmpty(StaticValue);
         }
 
         private void ParseFormat(string format)

@@ -25,6 +25,9 @@ namespace UI.ViewModels
         private ObservableCollection<TemplateSectionViewModel> sections = new();
 
         [ObservableProperty]
+        private bool isInitializing;
+
+        [ObservableProperty]
         private bool isBusy;
 
         public TemplateEditorViewModel(ITemplateRepository templateRepository, ILoggingService logger)
@@ -38,10 +41,28 @@ namespace UI.ViewModels
             if (value != null)
             {
                 TemplateName = value.Name ?? string.Empty;
-                Sections = new ObservableCollection<TemplateSectionViewModel>(
+                var _ = InitializeAsync(value);
+            }
+        }
+
+        private async Task InitializeAsync(PrintTemplate value)
+        {
+            IsInitializing = true;
+            try
+            {
+                await Task.Delay(100); // Dar un momento para que se muestre el indicador
+
+                var mappedSections = await Task.Run(() =>
                     value.Sections.OrderBy(s => s.Order ?? 0)
-                                 .Select(s => new TemplateSectionViewModel(s))
+                                 .Select(s => new TemplateSectionViewModel(s, value.DocumentType))
+                                 .ToList()
                 );
+
+                Sections = new ObservableCollection<TemplateSectionViewModel>(mappedSections);
+            }
+            finally
+            {
+                IsInitializing = false;
             }
         }
 
@@ -54,7 +75,7 @@ namespace UI.ViewModels
                 Name = "Nueva Sección",
                 Order = nextOrder,
                 Type = "Static"
-            }));
+            }, Template.DocumentType));
         }
 
         [RelayCommand]
