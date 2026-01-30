@@ -36,31 +36,38 @@
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto, *, Auto">
+        <!-- SAFE MODE: Default Column Definitions (No OnIdiom) -->
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="{OnIdiom Desktop=17.5*, Default=0}" />
-            <ColumnDefinition Width="{OnIdiom Desktop=65*, Default=*}" />
-            <ColumnDefinition Width="{OnIdiom Desktop=17.5*, Default=0}" />
+            <ColumnDefinition Width="0" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="0" />
         </Grid.ColumnDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Padding="{OnIdiom Desktop='20,15', Phone='10,12'}" BackgroundColor="{DynamicResource Primary}" StrokeThickness="0">
-            <Grid ColumnDefinitions="*, Auto" MaximumWidthRequest="{OnIdiom Desktop=1000, Default=-1}">
+        <!-- SAFE MODE: Padding hardcoded to Phone default '10,12' -->
+        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Padding="10,12" BackgroundColor="{DynamicResource Primary}" StrokeThickness="0">
+            <!-- SAFE MODE: MaxWidth removed or static -->
+            <Grid ColumnDefinitions="*, Auto">
                 <VerticalStackLayout Grid.Column="0" Spacing="2">
-                    <Label Text="Editor de Plantilla" FontSize="{OnIdiom Desktop=20, Phone=16}" FontAttributes="Bold" TextColor="{DynamicResource White}" />
+                    <!-- SAFE MODE: FontSize 16 -->
+                    <Label Text="Editor de Plantilla" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource White}" />
                     <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="#22FFFFFF" HeightRequest="38">
-                        <Entry Text="{Binding Template.Name}" Placeholder="Nombre de la Plantilla" TextColor="{DynamicResource White}" FontSize="{OnIdiom Desktop=14, Phone=12}" BackgroundColor="Transparent" VerticalOptions="Center" />
+                        <!-- SAFE MODE: FontSize 12 -->
+                        <Entry Text="{Binding Template.Name}" Placeholder="Nombre de la Plantilla" TextColor="{DynamicResource White}" FontSize="12" BackgroundColor="Transparent" VerticalOptions="Center" />
                     </Border>
                 </VerticalStackLayout>
                 <Button Grid.Column="1" Text="+ Sección" Command="{Binding AddSectionCommand}" VerticalOptions="Center" Style="{StaticResource ButtonOutline}" TextColor="{DynamicResource White}" BorderColor="{DynamicResource White}" HeightRequest="38" Padding="15,0" />
             </Grid>
         </Border>
 
-        <!-- Main Content -->
-        <ScrollView Grid.Row="1" Grid.Column="1" Padding="{OnIdiom Desktop='0,10', Phone='8'}">
-            <VerticalStackLayout Spacing="{OnIdiom Desktop=5, Phone=8}">
+        <!-- Main Content (Full UI Restored) -->
+        <!-- SAFE MODE: Padding 8 -->
+        <ScrollView Grid.Row="1" Grid.Column="1" Padding="8">
+            <VerticalStackLayout Spacing="8">
                     <!-- Encabezado Edición -->
                     <VerticalStackLayout Spacing="5" Padding="0,5">
-                        <Label Text="Configuración General" FontSize="{OnIdiom Desktop=Medium, Phone=Basic}" FontAttributes="Bold" />
+                         <!-- SAFE MODE: FontSize 14 (Basic) -->
+                        <Label Text="Configuración General" FontSize="14" FontAttributes="Bold" />
                         <BoxView HeightRequest="1" Color="{DynamicResource Gray200}" Margin="0,5" />
                     </VerticalStackLayout>
                 
@@ -68,12 +75,13 @@
                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sections}" Spacing="10" Padding="0,5">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewmodels:TemplateSectionViewModel">
-                        <Border StrokeShape="RoundRectangle 12" Padding="{OnIdiom Desktop=12, Phone=10}" StrokeThickness="1" Stroke="{DynamicResource Gray200}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" Margin="0,0,0,10">
+                        <!-- SAFE MODE: Padding 10 -->
+                        <Border StrokeShape="RoundRectangle 12" Padding="10" StrokeThickness="1" Stroke="{DynamicResource Gray200}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" Margin="0,0,0,10">
                             <VerticalStackLayout Spacing="8">
-                                <!-- Cabecera de Sección -->
                                 <Grid ColumnDefinitions="*, Auto, Auto, Auto, Auto" ColumnSpacing="6">
                                     <Border Grid.Column="0" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                                        <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="{OnIdiom Desktop=15, Phone=14}" Placeholder="Nombre Sección" BackgroundColor="Transparent" VerticalOptions="Center" Margin="5,0" TextColor="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                                        <!-- SAFE MODE: FontSize 14 -->
+                                        <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="14" Placeholder="Nombre Sección" BackgroundColor="Transparent" VerticalOptions="Center" Margin="5,0" TextColor="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
                                     </Border>
                                     
                                     <Button Grid.Column="1" Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" CommandParameter="{Binding .}" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" BackgroundColor="{DynamicResource Primary}" />
@@ -82,8 +90,8 @@
                                     <Button Grid.Column="4" Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=RemoveSectionCommand}" CommandParameter="{Binding .}" BackgroundColor="#C62828" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
                                 </Grid>
 
-                                <!-- Configuración de Sección -->
-                                <Grid ColumnDefinitions="Auto, *, Auto, *, Auto, 1.5*" ColumnSpacing="{OnIdiom Desktop=10, Phone=5}">
+                                <!-- SAFE MODE: ColumnSpacing 5 -->
+                                <Grid ColumnDefinitions="Auto, *, Auto, *, Auto, 1.5*" ColumnSpacing="5">
                                     <Label Grid.Column="0" Text="Tipo:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
                                     <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="36">
                                         <Picker ItemsSource="{Binding SectionTypes}" SelectedItem="{Binding Type}" BackgroundColor="Transparent" />
@@ -100,51 +108,53 @@
                                     </Border>
                                 </Grid>
 
-                                <!-- Formato General de Sección -->
                                 <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
                                     <Label Text="Formato:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
                                     <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="32">
-                                        <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" WidthRequest="{OnIdiom Desktop=100, Phone=120}" BackgroundColor="Transparent" />
+                                        <!-- SAFE MODE: WidthRequest 120 -->
+                                        <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" WidthRequest="120" BackgroundColor="Transparent" />
                                     </Border>
                                     <HorizontalStackLayout VerticalOptions="Center" Spacing="0">
-                                        <CheckBox IsChecked="{Binding IsBold}" Scale="{OnIdiom Desktop=0.7, Phone=0.9}" />
+                                        <!-- SAFE MODE: Scale 0.9 -->
+                                        <CheckBox IsChecked="{Binding IsBold}" Scale="0.9" />
                                         <Label Text="N" VerticalOptions="Center" FontAttributes="Bold" Margin="-2,0,8,0" FontSize="11" />
                                     </HorizontalStackLayout>
                                 </HorizontalStackLayout>
 
-                                <!-- Elementos de la Sección -->
                                 <Label Text="Elementos de impresión:" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" Margin="0,2,0,0" />
-                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Elements}" Spacing="6" Margin="{OnIdiom Desktop='5,0,0,0', Phone='2,0,0,0'}">
+                                <!-- SAFE MODE: Margin 2,0,0,0 -->
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Elements}" Spacing="6" Margin="2,0,0,0">
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="viewmodels:TemplateElementViewModel">
-                                            <Border StrokeShape="RoundRectangle 8" Padding="{OnIdiom Desktop=10, Phone=8}" Stroke="{DynamicResource Gray300}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray900}}">
+                                            <!-- SAFE MODE: Padding 8 -->
+                                            <Border StrokeShape="RoundRectangle 8" Padding="8" Stroke="{DynamicResource Gray300}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray900}}">
                                                 <VerticalStackLayout Spacing="8">
-                                                    <!-- Fila 1: Tipo y Controles (Acomodados para móvil) -->
-                                                    <Grid ColumnDefinitions="{OnIdiom Desktop='Auto, 100, Auto, Auto, Auto, *, Auto, Auto, Auto', Phone='Auto, *, Auto, Auto, Auto'}" 
-                                                          RowDefinitions="{OnIdiom Desktop='Auto', Phone='Auto, Auto'}"
-                                                          ColumnSpacing="{OnIdiom Desktop=6, Phone=4}" RowSpacing="6">
+                                                    <!-- SAFE MODE: GRID REDUCED TO PHONE (Auto, *, Auto, Auto, Auto) and RowDefinitions Auto, Auto -->
+                                                    <Grid ColumnDefinitions="Auto, *, Auto, Auto, Auto" 
+                                                          RowDefinitions="Auto, Auto"
+                                                          ColumnSpacing="4" RowSpacing="6">
                                                         
-                                                        <!-- Tipo de Elemento -->
                                                         <Label Grid.Row="0" Grid.Column="0" Text="Tipo:" VerticalOptions="Center" FontSize="11" FontAttributes="Bold" />
                                                         <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="38">
                                                             <Picker ItemsSource="{Binding ElementTypes}" SelectedItem="{Binding Type}" BackgroundColor="Transparent" />
                                                         </Border>
                                                         
-                                                        <!-- Botones de Acción (Al final de la fila 0) -->
-                                                        <HorizontalStackLayout Grid.Row="0" Grid.Column="{OnIdiom Desktop=6, Phone=2}" Grid.ColumnSpan="{OnIdiom Desktop=3, Phone=3}" Spacing="4" HorizontalOptions="End">
-                                                            <Button Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=MoveElementUpCommand}" CommandParameter="{Binding .}" WidthRequest="{OnIdiom Desktop=28, Phone=24}" HeightRequest="{OnIdiom Desktop=28, Phone=24}" Padding="0" CornerRadius="{OnIdiom Desktop=14, Phone=12}" FontSize="10" BackgroundColor="{DynamicResource Primary}" />
-                                                            <Button Text="↓" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=MoveElementDownCommand}" CommandParameter="{Binding .}" WidthRequest="{OnIdiom Desktop=28, Phone=24}" HeightRequest="{OnIdiom Desktop=28, Phone=24}" Padding="0" CornerRadius="{OnIdiom Desktop=14, Phone=12}" FontSize="10" BackgroundColor="{DynamicResource Primary}" />
-                                                            <Button Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=RemoveElementCommand}" CommandParameter="{Binding .}" BackgroundColor="#C62828" WidthRequest="{OnIdiom Desktop=28, Phone=24}" HeightRequest="{OnIdiom Desktop=28, Phone=24}" Padding="0" CornerRadius="{OnIdiom Desktop=14, Phone=12}" FontSize="10" />
+                                                        <!-- SAFE MODE: Column 2, Span 3 -->
+                                                        <HorizontalStackLayout Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3" Spacing="4" HorizontalOptions="End">
+                                                            <!-- SAFE MODE: Width 24, CornerRadius 12 -->
+                                                            <Button Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=MoveElementUpCommand}" CommandParameter="{Binding .}" WidthRequest="24" HeightRequest="24" Padding="0" CornerRadius="12" FontSize="10" BackgroundColor="{DynamicResource Primary}" />
+                                                            <Button Text="↓" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=MoveElementDownCommand}" CommandParameter="{Binding .}" WidthRequest="24" HeightRequest="24" Padding="0" CornerRadius="12" FontSize="10" BackgroundColor="{DynamicResource Primary}" />
+                                                            <Button Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=RemoveElementCommand}" CommandParameter="{Binding .}" BackgroundColor="#C62828" WidthRequest="24" HeightRequest="24" Padding="0" CornerRadius="12" FontSize="10" />
                                                         </HorizontalStackLayout>
 
-                                                        <!-- Configuración de Fijo/Etiqueta/Valor (Abajo en móvil, centro en Desktop) -->
-                                                        <HorizontalStackLayout Grid.Row="{OnIdiom Desktop=0, Phone=1}" Grid.Column="{OnIdiom Desktop=2, Phone=0}" Spacing="4" VerticalOptions="Center" IsVisible="{Binding ShowStaticToggle}">
+                                                        <!-- SAFE MODE: Row 1 -->
+                                                        <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="4" VerticalOptions="Center" IsVisible="{Binding ShowStaticToggle}">
                                                             <Label Text="Fijo:" VerticalOptions="Center" FontSize="10" />
-                                                            <CheckBox IsChecked="{Binding IsStatic}" Scale="{OnIdiom Desktop=0.7, Phone=0.9}" />
+                                                            <CheckBox IsChecked="{Binding IsStatic}" Scale="0.9" />
                                                         </HorizontalStackLayout>
 
-                                                        <!-- Etiqueta o Valor Dinámico -->
-                                                        <Grid Grid.Row="{OnIdiom Desktop=0, Phone=1}" Grid.Column="{OnIdiom Desktop=4, Phone=1}" Grid.ColumnSpan="{OnIdiom Desktop=2, Phone=4}" ColumnDefinitions="Auto, *" ColumnSpacing="4">
+                                                        <!-- SAFE MODE: Row 1, Column 1, Span 4 -->
+                                                        <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" ColumnDefinitions="Auto, *" ColumnSpacing="4">
                                                             <Label Grid.Column="0" Text="Etiqueta:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" IsVisible="{Binding ShowLabelAndSource}" />
                                                             <Label Grid.Column="0" Text="Valor:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" IsVisible="{Binding ShowStaticValueInput}" />
                                                             
@@ -157,7 +167,6 @@
                                                         </Grid>
                                                     </Grid>
 
-                                                    <!-- Fila 2: Fuente Unificada -->
                                                     <Grid ColumnDefinitions="Auto, *" ColumnSpacing="8" IsVisible="{Binding ShowLabelAndSource}">
                                                         <Label Grid.Column="0" Text="Fuente:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" />
                                                         <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="38" HorizontalOptions="Fill">
@@ -165,8 +174,8 @@
                                                         </Border>
                                                     </Grid>
 
-                                                    <!-- Fila 3: Config y Alineación -->
-                                                    <Grid ColumnDefinitions="Auto, *, Auto, 120, Auto, Auto" ColumnSpacing="{OnIdiom Desktop=6, Phone=4}" VerticalOptions="Center" IsVisible="{Binding IsNotLine}">
+                                                    <!-- SAFE MODE: ColumnSpacing 4 -->
+                                                    <Grid ColumnDefinitions="Auto, *, Auto, 120, Auto, Auto" ColumnSpacing="4" VerticalOptions="Center" IsVisible="{Binding IsNotLine}">
                                                         <Label Grid.Column="0" Text="Pos:" VerticalOptions="Center" FontSize="10" />
                                                         <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="34">
                                                             <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" BackgroundColor="Transparent" />
@@ -177,12 +186,12 @@
                                                             <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" BackgroundColor="Transparent" />
                                                         </Border>
                                                         
-                                                        <CheckBox Grid.Column="4" IsChecked="{Binding IsBold}" Scale="{OnIdiom Desktop=0.7, Phone=0.9}" />
+                                                        <CheckBox Grid.Column="4" IsChecked="{Binding IsBold}" Scale="0.9" />
                                                         <Label Grid.Column="5" Text="N" VerticalOptions="Center" FontAttributes="Bold" Margin="-5,0,0,0" FontSize="10" />
                                                     </Grid>
 
-                                                    <!-- Fila 4: Propiedades Especiales de Tabla (Condicional) -->
-                                                    <Grid ColumnDefinitions="Auto, 60, Auto, *, Auto, Auto" ColumnSpacing="{OnIdiom Desktop=6, Phone=4}" VerticalOptions="Center" 
+                                                    <!-- SAFE MODE: ColumnSpacing 4 -->
+                                                    <Grid ColumnDefinitions="Auto, 60, Auto, *, Auto, Auto" ColumnSpacing="4" VerticalOptions="Center" 
                                                           IsVisible="{Binding ShowTableProperties}">
                                                         <Label Grid.Column="0" Text="Ancho%:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
                                                         <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="32">
@@ -194,7 +203,7 @@
                                                             <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedHeaderSizeIdx}" BackgroundColor="Transparent" />
                                                         </Border>
                                                         
-                                                        <CheckBox Grid.Column="4" IsChecked="{Binding IsHeaderBold}" Scale="{OnIdiom Desktop=0.7, Phone=0.9}" />
+                                                        <CheckBox Grid.Column="4" IsChecked="{Binding IsHeaderBold}" Scale="0.9" />
                                                         <Label Grid.Column="5" Text="N" VerticalOptions="Center" FontAttributes="Bold" FontSize="9" Margin="-5,0,0,0" />
                                                     </Grid>
                                                 </VerticalStackLayout>
@@ -203,7 +212,7 @@
                                         </BindableLayout.ItemTemplate>
                                     </VerticalStackLayout>
                                 </VerticalStackLayout>
-                            </Border>
+                            </Border> 
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
@@ -211,19 +220,22 @@
         </ScrollView>
 
         <!-- Botones de Acción -->
-        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*, *" ColumnSpacing="15" Padding="{OnIdiom Desktop='0,15', Phone='12'}">
-            <Button Grid.Column="0" Text="Cancelar" Command="{Binding CancelCommand}" Style="{StaticResource ButtonOutline}" HeightRequest="{OnIdiom Desktop=45, Phone=42}" FontSize="13" />
-            <Button Grid.Column="1" Text="Guardar Plantilla" Command="{Binding SaveCommand}" HeightRequest="{OnIdiom Desktop=45, Phone=42}" FontSize="13" />
+        <!-- SAFE MODE: Padding 12 -->
+        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*, *" ColumnSpacing="15" Padding="12">
+            <!-- SAFE MODE: HeightRequest 42 -->
+            <Button Grid.Column="0" Text="Cancelar" Command="{Binding CancelCommand}" Style="{StaticResource ButtonOutline}" HeightRequest="42" FontSize="13" />
+            <Button Grid.Column="1" Text="Guardar Plantilla" Command="{Binding SaveCommand}" HeightRequest="42" FontSize="13" />
         </Grid>
 
         <!-- Pantalla de Carga Inicial -->
+        <!-- RESTORED BINDING assuming Linker works. If white screen returns, we know it's stuck. -->
         <Grid Grid.RowSpan="3" Grid.ColumnSpan="3" 
-              ZIndex="99"
-              BackgroundColor="{AppThemeBinding Light=#AAFFFFFF, Dark=#AA000000}" 
-              IsVisible="{Binding IsInitializing}">
-            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="15">
-                <ActivityIndicator IsRunning="{Binding IsInitializing}" Color="{DynamicResource Primary}" WidthRequest="60" HeightRequest="60" />
-                <Label Text="Preparando editor..." FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="{DynamicResource Primary}" />
+              BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}"
+              IsVisible="{Binding IsInitializing}"
+              ZIndex="999">
+            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
+                <ActivityIndicator IsRunning="true" Color="{DynamicResource Primary}" WidthRequest="50" HeightRequest="50" />
+                <Label Text="Cargando editor..." HorizontalOptions="Center" TextColor="{DynamicResource Gray600}" />
             </VerticalStackLayout>
         </Grid>
  
