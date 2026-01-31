@@ -317,7 +317,7 @@
                                             </VerticalStackLayout>
                                         </Border>
                                     </Grid>
-
+                                    
                                     <!-- Status Indicator (Big Doughnut Circle) -->
                                     <Grid WidthRequest="150" HeightRequest="150" HorizontalOptions="Center">
                                         <!-- Outer Ring (Spinner) -->

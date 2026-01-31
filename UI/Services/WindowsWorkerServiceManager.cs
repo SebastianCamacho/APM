@@ -1,4 +1,4 @@
-//#if WINDOWS
+#if WINDOWS
 using AppsielPrintManager.Core.Interfaces;
 using AppsielPrintManager.Infraestructure.Services;
 using System;
@@ -34,7 +34,31 @@ namespace UI.Services
             }
         }
 
-        public bool IsWorkerServiceRunning => _workerProcess != null && !_workerProcess.HasExited;
+        public bool IsWorkerServiceRunning
+        {
+            get
+            {
+                // 1. Si tenemos una referencia local y el proceso sigue vivo, es true.
+                if (_workerProcess != null && !_workerProcess.HasExited)
+                {
+                    return true;
+                }
+
+                // 2. Si no, buscamos procesos de forma más amplia (case-insensitive y contains)
+                var allProcesses = Process.GetProcesses();
+                var serviceProcess = allProcesses.FirstOrDefault(p => p.ProcessName.Contains("WorkerService", StringComparison.OrdinalIgnoreCase));
+
+                if (serviceProcess != null)
+                {
+                    // Lo encontramos (iniciado externamente o reiniciado), actualizamos referencia.
+                    _workerProcess = serviceProcess;
+                    return true;
+                }
+
+                // 3. No está corriendo ni tenemos referencia válida.
+                return false; 
+            }
+        }
 
         public Task<bool> StartWorkerServiceAsync()
         {
@@ -122,8 +146,12 @@ namespace UI.Services
             try
             {
                 _logger.LogInfo($"[WorkerServiceManager] Deteniendo PID: {_workerProcess.Id}");
-                _workerProcess.CancelOutputRead();
-                _workerProcess.CancelErrorRead();
+                
+                // Intentar cancelar lectura de streams si fuimos nosotros quienes lo iniciamos.
+                // Si el proceso es externo, esto lanzará excepción, así que lo ignoramos.
+                try { _workerProcess.CancelOutputRead(); } catch { }
+                try { _workerProcess.CancelErrorRead(); } catch { }
+
                 _workerProcess.Kill();
                 await _workerProcess.WaitForExitAsync();
                 _workerProcess = null;
@@ -137,4 +165,4 @@ namespace UI.Services
         }
     }
 }
-//#endif
+#endif

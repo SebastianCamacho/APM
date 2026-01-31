@@ -125,8 +125,8 @@ namespace UI.ViewModels
             while (_isMonitoring)
             {
                 UpdateServiceStatus();
-                // Check status every 2 seconds
-                await Task.Delay(2000);
+                // Check status every 1 second
+                await Task.Delay(1000);
             }
         }
 
