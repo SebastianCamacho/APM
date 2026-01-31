@@ -40,14 +40,15 @@ namespace UI
 #if ANDROID
             builder.Services.AddSingleton<IPlatformService, UI.Platforms.Android.Services.AndroidPlatformService>();
             builder.Services.AddSingleton<IWebSocketService, AndroidWebSocketService>();
+#elif WINDOWS
+            builder.Services.AddSingleton<IWorkerServiceManager, WindowsWorkerServiceManager>();
+            builder.Services.AddSingleton<ITrayAppService, WindowsTrayAppService>();
+            builder.Services.AddSingleton<IPlatformService, UI.Platforms.Windows.Services.WindowsPlatformService>();
+            // On Windows, assuming UI acts as Controller, but keep WS service available if needed
+            builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>();
 #else
             builder.Services.AddSingleton<IPlatformService, StubPlatformService>();
             builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>();
-#endif
-
-#if WINDOWS
-            builder.Services.AddSingleton<IWorkerServiceManager, WindowsWorkerServiceManager>();
-            builder.Services.AddSingleton<ITrayAppService, WindowsTrayAppService>();
 #endif
 
             builder.Services.AddTransient<HomeViewModel>();

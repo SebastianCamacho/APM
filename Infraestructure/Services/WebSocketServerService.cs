@@ -221,6 +221,23 @@ namespace AppsielPrintManager.Infraestructure.Services
                 {
                     var context = await _httpListener.GetContextAsync().ConfigureAwait(false);
 
+                    if (context.Request.Url.AbsolutePath.EndsWith("/status", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var status = new
+                        {
+                            IsRunning = true,
+                            ConnectedClients = CurrentClientCount
+                        };
+                        var json = JsonSerializer.Serialize(status);
+                        var buffer = Encoding.UTF8.GetBytes(json);
+
+                        context.Response.ContentType = "application/json";
+                        context.Response.ContentLength64 = buffer.Length;
+                        await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+                        context.Response.Close();
+                        continue;
+                    }
+
                     if (context.Request.IsWebSocketRequest)
                     {
                         // No esperamos semáforo, permitimos concurrencia

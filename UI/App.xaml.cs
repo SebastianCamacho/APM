@@ -30,11 +30,11 @@ namespace UI
                 try
                 {
                     var appShell = _serviceProvider.GetService<AppShell>();
-                    if (appShell != null)  // ← Solo esta verificación  
+                    if (appShell != null)
                     {
                         MainThread.BeginInvokeOnMainThread(() =>
                         {
-                            if (Application.Current?.MainPage is LoginView)  // ← Solo si aún estamos en login
+                            if (Application.Current?.MainPage is LoginView)
                             {
                                 MainPage = appShell;
                             }
@@ -48,14 +48,16 @@ namespace UI
             });
 
 #if WINDOWS
-            _workerServiceManager = _serviceProvider.GetService<IWorkerServiceManager>();
-            if (_workerServiceManager != null)
+            // En Windows, usamos IPlatformService para iniciar el Worker, ya que ahora 
+            // IPlatformService (WindowsPlatformService) encapsula la lógica correcta.
+            _platformService = _serviceProvider.GetService<IPlatformService>();
+            if (_platformService != null)
             {
                 Task.Run(async () =>
                 {
                     try
                     {
-                        await _workerServiceManager.StartWorkerServiceAsync();
+                        await _platformService.StartBackgroundServiceAsync();
                     }
                     catch (Exception ex)
                     {
