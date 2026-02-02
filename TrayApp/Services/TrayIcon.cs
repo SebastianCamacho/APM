@@ -93,8 +93,8 @@ public class TrayIcon : IDisposable
         // Asigna el menú contextual al NotifyIcon.
         _icon.ContextMenuStrip = menu;
 
-        // Configura el temporizador para actualizar el estado del servicio cada 5 segundos.
-        _statusUpdateTimer = new System.Timers.Timer(5000);
+        // Configura el temporizador para actualizar el estado del servicio cada 1 segundo.
+        _statusUpdateTimer = new System.Timers.Timer(1000);
         // Asocia el método UpdateServiceStatus al evento Elapsed del temporizador.
         _statusUpdateTimer.Elapsed += (sender, e) => UpdateServiceStatus();
         // Inicia el temporizador.

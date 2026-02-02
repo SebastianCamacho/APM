@@ -76,7 +76,7 @@
                             <!-- Helper Label for Card Title -->
                             <Label Grid.Row="0" Text="SERVICIO" TextColor="Black" HorizontalOptions="Center" Margin="0,0,0,10"/>
                             
-                            <VerticalStackLayout Grid.Row="1" Spacing="15" VerticalOptions="Center">
+                            <VerticalStackLayout Grid.Row="1" Spacing="15" VerticalOptions="Start">
                                 
                                 <!-- Buttons Side-by-Side (Custom Control) -->
                                 <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
@@ -119,7 +119,7 @@
                                         </Border.Triggers>
 
                                         <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
-                                            <Image Source="icono_stop.png" HeightRequest="30" WidthRequest="30" Aspect="AspectFit" />
+                                            <Image Source="icono_stop.png" HeightRequest="25" WidthRequest="25" Aspect="AspectFit" />
                                             <Label Text="Stop" FontSize="12" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center" />
                                         </VerticalStackLayout>
                                     </Border>

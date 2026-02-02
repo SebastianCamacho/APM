@@ -19,7 +19,7 @@ namespace AppsielPrintManager.Core.Services
             return new PrintTemplate
             {
                 DocumentType = type,
-                Name = "Plantilla Estándar",
+                Name = "Plantilla Predetermianda Ticket de Venta",
                 Sections = new List<TemplateSection>
                 {
                     new TemplateSection
