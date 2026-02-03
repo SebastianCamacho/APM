@@ -8,7 +8,7 @@
         body { font-family: Arial, sans-serif; margin: 20px; }
         h1 { color: #333; }
         #status { font-weight: bold; margin-top: 10px; }
-        #messages { border: 1px solid #ccc; padding: 10px; min-height: 150px; overflow-y: scroll; margin-top: 20px; background-color: #f9f9f9; }
+        #messages { border: 1px solid #ccc; padding: 10px; height: 200px; overflow-y: scroll; margin-top: 20px; background-color: #f9f9f9; }
         .log-info { color: blue; }
         .log-success { color: green; }
         .log-error { color: red; }
@@ -28,6 +28,22 @@
     <p>Mensajes del Cliente:</p>
     <div id="messages"></div>
 
+    <hr style="margin: 30px 0;">
+
+    <h2>Prueba de Báscula (Scale Listener)</h2>
+    <div style="background-color: #eef; padding: 15px; border-radius: 5px;">
+        <label for="scaleIdInput" style="font-weight: bold;">ID Báscula:</label>
+        <input type="text" id="scaleIdInput" placeholder="Ej: bascula001" value="bascula001" style="padding: 5px;">
+        
+        <button id="toggleListeningButton" style="margin-left: 10px; padding: 5px 15px; cursor: pointer; background-color: #4CAF50; color: white; border: none;">Empezar a Escuchar</button>
+        
+        <div style="margin-top: 15px;">
+            <strong>Datos Recibidos:</strong>
+            <pre id="scaleDataDisplay" style="background: #fff; border: 1px solid #ccc; padding: 10px; min-height: 50px; font-size: 24px;">Esperando datos...</pre>
+        </div>
+    </div>
+    <hr style="margin: 30px 0;">
+
     <h2>Enviar Mensaje de Prueba (PrintJobRequest)</h2>
     
     <div class="tab-container">
@@ -45,6 +61,9 @@
     </div>
 
     <button id="sendPayloadButton" style="margin-top: 10px; padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; cursor: pointer;">Enviar JSON Seleccionado</button>
+
+
+    
 
     <script src="main.js"></script>
 </body>

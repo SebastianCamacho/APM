@@ -19,6 +19,10 @@ var builder = Host.CreateDefaultBuilder(args) // Changed to CreateDefaultBuilder
         services.AddSingleton<TcpIpPrinterClient>();
         services.AddSingleton<IPrintService, PrintService>();
 
+        // Scale Services
+        services.AddSingleton<IScaleRepository, JsonScaleRepository>();
+        services.AddSingleton<IScaleService, SerialScaleService>();
+
         services.AddHostedService<Worker>();
     });
 

@@ -1,40 +1,52 @@
-using AppsielPrintManager.Core.Models;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using AppsielPrintManager.Core.Models;
 
 namespace AppsielPrintManager.Core.Interfaces
 {
-    /// <summary>
-    /// Define la interfaz para el servicio de báscula, específico para plataformas que lo soporten (ej. Windows).
-    /// Permite la detección, lectura y configuración de básculas físicas.
-    /// </summary>
     public interface IScaleService
     {
-        /// <summary>
-        /// Evento que se dispara cuando se recibe una nueva lectura estable de la báscula.
-        /// </summary>
-        event AsyncEventHandler<ScaleData> OnScaleDataReceived;
+        // Evento único con ScaleId para distinguir origen
+        event EventHandler<ScaleDataEventArgs> OnWeightChanged;
 
-        /// <summary>
-        /// Inicializa el servicio de báscula, intentando detectar y conectar a una báscula.
-        /// </summary>
-        /// <returns>Tarea que representa la operación asíncrona de inicialización.</returns>
         Task InitializeAsync();
+        ScaleStatus GetStatus(string scaleId);
+        List<ScaleStatusInfo> GetAllStatuses();
 
-        /// <summary>
-        /// Detiene la lectura de la báscula y libera los recursos.
-        /// </summary>
-        /// <returns>Tarea que representa la operación asíncrona de detención.</returns>
-        Task StopAsync();
+        // Gestión de transmisión a clientes (Listening logic)
+        void StartListening(string scaleId);
+        void StopListening(string scaleId);
 
-        /// <summary>
-        /// Obtiene la última lectura de peso de la báscula.
-        /// </summary>
-        /// <returns>El objeto ScaleData con la última lectura.</returns>
-        ScaleData GetLastScaleReading();
+        // Recargar configuraciones si cambian en DB/JSON
+        Task ReloadScalesAsync();
 
-        /// <summary>
-        /// Indica si el servicio de báscula está actualmente conectado y leyendo datos.
-        /// </summary>
-        bool IsConnected { get; }
+        ScaleData? GetLastScaleReading(); // Added nullable return type
+    }
+
+    public class ScaleDataEventArgs : EventArgs
+    {
+        public string ScaleId { get; set; }
+        public ScaleData Data { get; set; }
+
+        public ScaleDataEventArgs(string scaleId, ScaleData data)
+        {
+            ScaleId = scaleId;
+            Data = data;
+        }
+    }
+
+    public enum ScaleStatus
+    {
+        Disconnected,
+        Connected,
+        Error
+    }
+
+    public class ScaleStatusInfo
+    {
+        public string ScaleId { get; set; }
+        public ScaleStatus Status { get; set; }
+        public string? ErrorMessage { get; set; } // Added for debugging
     }
 }

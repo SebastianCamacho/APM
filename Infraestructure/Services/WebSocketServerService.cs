@@ -55,13 +55,41 @@ namespace AppsielPrintManager.Infraestructure.Services
         public int CurrentClientCount => _connectedClients.Count;
 
         private readonly IPrintService _printService;
+        private readonly IScaleService _scaleService;
 
-        public WebSocketServerService(ILoggingService logger, IPrintService printService)
+        // Diccionario para mapear ClientID -> ScaleId que está escuchando
+        private ConcurrentDictionary<string, string> _clientScaleSubscriptions = new();
+
+        public WebSocketServerService(ILoggingService logger, IPrintService printService, IScaleService scaleService)
         {
             _logger = logger;
             _printService = printService;
+            _scaleService = scaleService;
             _connectedClients = new ConcurrentDictionary<string, WebSocket>();
             _messageQueue = new ConcurrentQueue<(string, string)>();
+
+            // Suscribirse al evento de peso
+            _scaleService.OnWeightChanged += ScaleService_OnWeightChanged;
+        }
+
+        private void ScaleService_OnWeightChanged(object? sender, ScaleDataEventArgs e)
+        {
+            // Enviar solo a los clientes suscritos a esta báscula
+            var json = JsonSerializer.Serialize(e.Data);
+            var buffer = Encoding.UTF8.GetBytes(json);
+            var segment = new ArraySegment<byte>(buffer);
+
+            foreach (var subscription in _clientScaleSubscriptions)
+            {
+                if (subscription.Value.Equals(e.ScaleId, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (_connectedClients.TryGetValue(subscription.Key, out var ws) && ws.State == WebSocketState.Open)
+                    {
+                        // Fire and forget send
+                        ws.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None).Forget();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -83,6 +111,10 @@ namespace AppsielPrintManager.Infraestructure.Services
             {
                 _httpListener.Start();
                 _logger.LogInfo($"Servidor WebSocket iniciado y escuchando en puerto {port} en http://localhost:{port}/websocket/");
+
+                // Inicializar servicio de básculas
+                await _scaleService.InitializeAsync();
+
                 _ = ListenForConnectionsAsync(_cts.Token);
                 _messageProcessingTask = ProcessMessagesAsync(_cts.Token);
             }
@@ -138,6 +170,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 webSocket.Dispose();
             }
             _connectedClients.Clear();
+            _clientScaleSubscriptions.Clear();
 
             try
             {
@@ -226,7 +259,8 @@ namespace AppsielPrintManager.Infraestructure.Services
                         var status = new
                         {
                             IsRunning = true,
-                            ConnectedClients = CurrentClientCount
+                            ConnectedClients = CurrentClientCount,
+                            ScaleStatuses = _scaleService.GetAllStatuses()
                         };
                         var json = JsonSerializer.Serialize(status);
                         var buffer = Encoding.UTF8.GetBytes(json);
@@ -289,6 +323,12 @@ namespace AppsielPrintManager.Infraestructure.Services
                 if (webSocket != null)
                 {
                     _connectedClients.TryRemove(clientId, out _);
+                    // Remover suscripciones
+                    if (_clientScaleSubscriptions.TryRemove(clientId, out var scaleId))
+                    {
+                        _scaleService.StopListening(scaleId);
+                    }
+
                     _logger.LogInfo($"Cliente desconectado: {clientId}. Total: {CurrentClientCount}");
                     OnClientDisconnected?.Invoke(this, clientId).Forget();
                     webSocket.Dispose();
@@ -335,8 +375,44 @@ namespace AppsielPrintManager.Infraestructure.Services
                     var (clientId, message) = item;
                     try
                     {
+                        // Intentar detectar tipo de mensaje
+                        // 1. comando de báscula (StartListening/StopListening)
+                        // 2. PrintJobRequest
+
+                        using (JsonDocument doc = JsonDocument.Parse(message))
+                        {
+                            if (doc.RootElement.TryGetProperty("Action", out JsonElement actionElement))
+                            {
+                                string? action = actionElement.GetString();
+
+                                if (!string.IsNullOrEmpty(action))
+                                {
+                                    if (string.Equals(action, "StartListening", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        if (doc.RootElement.TryGetProperty("ScaleId", out JsonElement scaleIdElem))
+                                        {
+                                            string? scaleId = scaleIdElem.GetString();
+                                            if (!string.IsNullOrEmpty(scaleId))
+                                            {
+                                                _clientScaleSubscriptions[clientId] = scaleId;
+                                                _scaleService.StartListening(scaleId);
+                                            }
+                                        }
+                                    }
+                                    else if (string.Equals(action, "StopListening", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        if (_clientScaleSubscriptions.TryRemove(clientId, out var scaleId))
+                                        {
+                                            _scaleService.StopListening(scaleId);
+                                        }
+                                    }
+                                }
+                                continue; // Mensaje procesado
+                            }
+                        }
+
                         var request = JsonSerializer.Deserialize<PrintJobRequest>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                        if (request != null)
+                        if (request != null && !string.IsNullOrEmpty(request.JobId))
                         {
                             _logger.LogInfo($"PrintJobRequest deserializado para JobId: {request.JobId} de {clientId}. Iniciando procesamiento.");
 
@@ -379,7 +455,8 @@ namespace AppsielPrintManager.Infraestructure.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error enviando mensaje: {ex.Message}", ex);
+                // Silently swallow disconnected errors
+                _logger.LogWarning($"No se pudo enviar mensaje a cliente: {ex.Message}");
             }
         }
     }

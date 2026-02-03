@@ -37,6 +37,9 @@ namespace UI
             builder.Services.AddSingleton<TcpIpPrinterClient>();
             builder.Services.AddSingleton<IPrintService, PrintService>();
 
+            // Register Scale Repository (Shared with Worker but separate instance/file access)
+            builder.Services.AddSingleton<IScaleRepository, JsonScaleRepository>();
+
 #if ANDROID
             builder.Services.AddSingleton<IPlatformService, UI.Platforms.Android.Services.AndroidPlatformService>();
             builder.Services.AddSingleton<IWebSocketService, AndroidWebSocketService>();
@@ -44,6 +47,10 @@ namespace UI
             builder.Services.AddSingleton<IWorkerServiceManager, WindowsWorkerServiceManager>();
             builder.Services.AddSingleton<ITrayAppService, WindowsTrayAppService>();
             builder.Services.AddSingleton<IPlatformService, UI.Platforms.Windows.Services.WindowsPlatformService>();
+            
+            // Register ScaleService for dependency resolution (used by WebSocketServerService)
+            builder.Services.AddSingleton<IScaleService, SerialScaleService>();
+            
             // On Windows, assuming UI acts as Controller, but keep WS service available if needed
             builder.Services.AddSingleton<IWebSocketService, WebSocketServerService>();
 #else
@@ -54,6 +61,8 @@ namespace UI
             builder.Services.AddTransient<HomeViewModel>();
             builder.Services.AddTransient<PrintersViewModel>();
             builder.Services.AddTransient<PrinterDetailViewModel>();
+            builder.Services.AddTransient<ScalesViewModel>(); // Added
+            builder.Services.AddTransient<ScaleDetailViewModel>(); // Added
             builder.Services.AddTransient<LogsViewModel>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<TemplateEditorViewModel>();
@@ -63,6 +72,7 @@ namespace UI
             builder.Services.AddTransient<HomePage>();
             builder.Services.AddTransient<PrintersPage>();
             builder.Services.AddTransient<ScalesPage>();
+            builder.Services.AddTransient<ScaleDetailPage>(); // Added
             builder.Services.AddTransient<SettingsPage>();
             builder.Services.AddTransient<TemplateEditorPage>();
 
