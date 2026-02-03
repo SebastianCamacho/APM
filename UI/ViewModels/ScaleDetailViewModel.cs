@@ -173,6 +173,18 @@ namespace UI.ViewModels
                     await _scaleRepository.UpdateAsync(scale);
                 }
 
+                // Notificar al WorkerService para que recargue la caché
+                try
+                {
+                    using var client = new System.Net.Http.HttpClient();
+                    client.Timeout = TimeSpan.FromSeconds(2);
+                    await client.GetAsync("http://localhost:7000/websocket/reload-scales");
+                }
+                catch (Exception reloadEx)
+                {
+                    _logger.LogWarning($"No se pudo notificar recarga al WorkerService: {reloadEx.Message}");
+                }
+
                 await Shell.Current.GoToAsync("..");
             }
             catch (Exception ex)

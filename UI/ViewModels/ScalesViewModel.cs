@@ -96,6 +96,16 @@ namespace UI.ViewModels
                 {
                     await _scaleRepository.DeleteAsync(scaleItem.Scale.Id);
                     Scales.Remove(scaleItem);
+
+                    // Notificar al WorkerService para que recargue la caché
+                    try
+                    {
+                        await _httpClient.GetAsync("http://localhost:7000/websocket/reload-scales");
+                    }
+                    catch (Exception reloadEx)
+                    {
+                        _logger.LogWarning($"No se pudo notificar recarga al WorkerService: {reloadEx.Message}");
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -28,8 +28,13 @@ namespace AppsielPrintManager.Infraestructure.Services
         // ScaleId -> Number of listeners
         private readonly ConcurrentDictionary<string, int> _listenersCount = new();
 
+        // Cache de básculas para evitar consultas constantes a DB
+        private List<Scale> _cachedScales = new();
+        private readonly SemaphoreSlim _cacheLock = new(1, 1);
+
         private CancellationTokenSource _cts;
         private Task _monitoringTask;
+        private Task _cacheRefreshTask;
 
         public event EventHandler<ScaleDataEventArgs>? OnWeightChanged;
 
@@ -39,40 +44,62 @@ namespace AppsielPrintManager.Infraestructure.Services
             _logger = logger;
             _cts = new CancellationTokenSource();
             _monitoringTask = Task.CompletedTask; // Estado inicial válido
+            _cacheRefreshTask = Task.CompletedTask;
         }
 
         public async Task InitializeAsync()
         {
             _logger.LogInfo("Inicializando servicio de básculas seriales...");
-            await ReloadScalesAsync();
 
-            // Iniciar tarea de monitoreo de conexiones
+            // Cargar inicial
+            await RefreshCacheAsync();
+
+            // Iniciar tareas
             _monitoringTask = MonitorConnectionsAsync(_cts.Token);
+            _cacheRefreshTask = PeriodicCacheRefreshAsync(_cts.Token);
         }
 
         public async Task ReloadScalesAsync()
         {
+            // Forzar recarga de caché y reinicio de conexiones si es necesario
+            _logger.LogInfo("Recargando configuración de básculas...");
+            await RefreshCacheAsync();
+            // La tarea de monitoreo detectará los cambios en la siguiente iteración
+        }
+
+        private async Task RefreshCacheAsync()
+        {
             try
             {
-                // Cerrar puertos actuales con cuidado
-                foreach (var port in _activePorts.Values)
-                {
-                    if (port.IsOpen) port.Close();
-                    port.Dispose();
-                }
-                _activePorts.Clear();
-                _scaleStatuses.Clear();
-
+                await _cacheLock.WaitAsync();
                 var scales = await _scaleRepository.GetAllAsync();
-                foreach (var scale in scales.Where(s => s.IsActive))
-                {
-                    _scaleStatuses[scale.Id] = ScaleStatus.Disconnected;
-                    TryOpenPort(scale);
-                }
+                _cachedScales = scales.Where(s => s.IsActive).ToList();
+                _logger.LogInfo($"Caché de básculas actualizado. {_cachedScales.Count} activas.");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error recargando básculas: {ex.Message}", ex);
+                _logger.LogError($"Error actualizando caché de básculas: {ex.Message}");
+            }
+            finally
+            {
+                _cacheLock.Release();
+            }
+        }
+
+        private async Task PeriodicCacheRefreshAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(1), token);
+                    await RefreshCacheAsync();
+                }
+                catch (OperationCanceledException) { break; }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error en ciclo de refresco de caché: {ex.Message}");
+                }
             }
         }
 
@@ -194,7 +221,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             }
             catch (Exception ex)
             {
-                // Log error de lectura (con throttle para no saturar log)
+                // Ignorar timeouts de lectura o errores menores
             }
         }
 
@@ -204,42 +231,68 @@ namespace AppsielPrintManager.Infraestructure.Services
             {
                 try
                 {
-                    var scales = await _scaleRepository.GetAllAsync();
-                    foreach (var scale in scales.Where(s => s.IsActive))
+                    // Usar copia de la caché para iterar
+                    List<Scale> currentScales;
+                    await _cacheLock.WaitAsync(token);
+                    try
                     {
-                        if (!_activePorts.TryGetValue(scale.Id, out var port) || !port.IsOpen)
+                        currentScales = _cachedScales.ToList();
+                    }
+                    finally
+                    {
+                        _cacheLock.Release();
+                    }
+
+                    foreach (var scale in currentScales)
+                    {
+                        try
                         {
-                            // Intentar reconectar
-                            TryOpenPort(scale);
+                            bool hasPort = _activePorts.TryGetValue(scale.Id, out var port);
+
+                            if (!hasPort)
+                            {
+                                TryOpenPort(scale);
+                            }
+                            else
+                            {
+                                if (port == null || !port.IsOpen)
+                                {
+                                    _activePorts.TryRemove(scale.Id, out _);
+                                    if (port != null) try { port.Dispose(); } catch { }
+                                    TryOpenPort(scale);
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        var dummy = port.BytesToRead;
+                                        _scaleStatuses[scale.Id] = ScaleStatus.Connected;
+                                    }
+                                    catch (Exception)
+                                    {
+                                        _logger.LogWarning($"Puerto {scale.PortName} detectado como desconectado (fallo health check).");
+                                        try { port.Close(); } catch { }
+                                        try { port.Dispose(); } catch { }
+                                        _activePorts.TryRemove(scale.Id, out _);
+                                        _scaleStatuses[scale.Id] = ScaleStatus.Error;
+                                        _lastErrors[scale.Id] = "Dispositivo desconectado.";
+                                    }
+                                }
+                            }
                         }
-                        else
+                        catch (Exception innerEx)
                         {
-                            // El puerto dice estar abierto, pero verifiquemos si sigue vivo
-                            try
-                            {
-                                // Acceder a una propiedad como BytesToRead suele lanzar excepción si el dispositivo se desconectó
-                                var dummy = port.BytesToRead;
-                                _scaleStatuses[scale.Id] = ScaleStatus.Connected; // Reafirmar conectado
-                            }
-                            catch (Exception)
-                            {
-                                // El puerto está muerto
-                                _logger.LogWarning($"Puerto {scale.PortName} detectado como desconectado (fallo health check).");
-                                try { port.Close(); } catch { }
-                                try { port.Dispose(); } catch { }
-                                _activePorts.TryRemove(scale.Id, out _);
-                                _scaleStatuses[scale.Id] = ScaleStatus.Error;
-                                _lastErrors[scale.Id] = "Dispositivo desconectado.";
-                            }
+                            _logger.LogError($"Error procesando báscula {scale.Id}: {innerEx.Message}");
                         }
                     }
                 }
+                catch (OperationCanceledException) { break; }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error en monitor de conexiones: {ex.Message}");
+                    _logger.LogError($"Error global en monitor de conexiones: {ex.Message}");
                 }
 
-                await Task.Delay(5000, token); // Verificar cada 5 segundos
+                try { await Task.Delay(5000, token); } catch { break; }
             }
         }
 

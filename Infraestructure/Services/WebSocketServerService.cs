@@ -272,6 +272,19 @@ namespace AppsielPrintManager.Infraestructure.Services
                         continue;
                     }
 
+                    if (context.Request.Url.AbsolutePath.EndsWith("/reload-scales", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await _scaleService.ReloadScalesAsync();
+
+                        var responseString = "Scales reloaded";
+                        var buffer = Encoding.UTF8.GetBytes(responseString);
+                        context.Response.ContentType = "text/plain";
+                        context.Response.ContentLength64 = buffer.Length;
+                        await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+                        context.Response.Close();
+                        continue;
+                    }
+
                     if (context.Request.IsWebSocketRequest)
                     {
                         // No esperamos semáforo, permitimos concurrencia
