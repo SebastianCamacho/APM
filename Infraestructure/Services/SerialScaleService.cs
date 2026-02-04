@@ -188,13 +188,24 @@ namespace AppsielPrintManager.Infraestructure.Services
         // Puede ejecutarse 10 veces por segundo si la báscula es muy rápida.
         private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e, string scaleId)
         {
+            // PROTECCIÓN TOTAL: El driver CH340/PL2303 puede lanzar excepciones fatales si el cable se desconecta
+            // durante la lectura. Envolvemos TODO en un try-catch blindado.
             try
             {
                 // 1. Convertir el objeto generico 'sender' a 'SerialPort' para poder usarlo
                 SerialPort sp = (SerialPort)sender;
 
                 // 2. Verificar seguridad: Si el puerto se cerró de golpe (cable desconectado), salir para no chocar.
-                if (!sp.IsOpen) return;
+                // IMPORTANTE: Acceder a 'IsOpen' en un driver muerto puede lanzar excepción, por eso el try interno.
+                try
+                {
+                    if (!sp.IsOpen) return;
+                }
+                catch
+                {
+                    // Si falla leer 'IsOpen', asumimos que el hardware murió.
+                    return;
+                }
 
                 // 3. DIAGNÓSTICO: (Opcional) Ver cuantos bytes hay en espera.
                 // int bytesToRead = sp.BytesToRead;
@@ -210,7 +221,8 @@ namespace AppsielPrintManager.Infraestructure.Services
                 // He corregido esto haciendo el diccionario 'Insensitive'.
                 if (!_listenersCount.TryGetValue(scaleId, out int count) || count <= 0)
                 {
-                    try { if (sp.IsOpen) sp.ReadExisting(); } catch { } // Limpiar basura
+                    // Limpiar basura (Ignorando errores si el puerto ya murió)
+                    try { if (sp.IsOpen) sp.ReadExisting(); } catch { }
                     return;
                 }
 
@@ -254,9 +266,28 @@ namespace AppsielPrintManager.Infraestructure.Services
                     }
                 }
             }
+            // --- BLOQUE DE SEGURIDAD CONTRA DRIVERS MALOS ---
+            catch (System.IO.IOException ex)
+            {
+                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
+            } // Cable desconectado físicamente
+            catch (UnauthorizedAccessException ex )
+            {
+                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
+            } // El puerto fue robado o bloqueado
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
+            } // El puerto se cerró mientras leíamos
+            catch (TimeoutException ex)
+            {
+                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
+            } // La lectura tardó mucho (normal)
             catch (Exception ex)
             {
-                // Capturar errores (timeouts, ruido) para que el programa no se cierre.
+                // Solo loguear errores de lógica inesperados (NullReference, etc), 
+                // pero no errores de hardware para no spamear logs ni crashear.
+                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
             }
         }
 
@@ -308,6 +339,24 @@ namespace AppsielPrintManager.Infraestructure.Services
                                         if (TryOpenPort(scale, candPort))
                                         {
                                             _logger.LogInfo($"Auto-Detect: Báscula {scale.Id} encontrada en {candPort}");
+
+                                            // PERSISTENCIA AUTOMÁTICA: Guardar el nuevo puerto en configuración
+                                            if (!string.Equals(scale.PortName, candPort, StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                try
+                                                {
+                                                    scale.PortName = candPort;
+                                                    await _scaleRepository.UpdateAsync(scale);
+                                                    _logger.LogInfo($"Configuración actualizada: Báscula {scale.Id} movida a {candPort}");
+
+                                                    // Actualizar caché también
+                                                    await RefreshCacheAsync();
+                                                }
+                                                catch (Exception saveEx)
+                                                {
+                                                    _logger.LogError($"Error guardando nuevo puerto {candPort}: {saveEx.Message}");
+                                                }
+                                            }
                                             break;
                                         }
                                     }
@@ -318,25 +367,55 @@ namespace AppsielPrintManager.Infraestructure.Services
                                 // YA CONECTADO -> Health Check
                                 if (port == null || !port.IsOpen)
                                 {
+                                    // El puerto se cerró por alguna razón (o driver crash)
+                                    _logger.LogWarning($"Puerto {port?.PortName ?? "null"} detectado cerrado.");
+
+                                    _listenersCount.TryRemove(scale.Id, out _);
                                     _activePorts.TryRemove(scale.Id, out _);
-                                    if (port != null) try { port.Dispose(); } catch { }
+                                    SafeClose(port);
+
+                                    _scaleStatuses[scale.Id] = ScaleStatus.Error;
+                                    _lastErrors[scale.Id] = "Puerto cerrado inesperadamente.";
+
                                     // Reintentar next loop
                                 }
                                 else
                                 {
                                     try
                                     {
-                                        var dummy = port.BytesToRead;
-                                        _scaleStatuses[scale.Id] = ScaleStatus.Connected;
+                                        // NUEVA VALIDACIÓN: ¿El puerto sigue existiendo en Windows?
+                                        // Si desconectas el USB, "COMx" desaparece de GetPortNames() aunque el objeto SerialPort siga "Open".
+                                        bool portExists = osPorts.Any(p => p.Equals(port.PortName, StringComparison.OrdinalIgnoreCase));
+
+                                        _logger.LogInfo($"Diagnóstico: Verificando {scale.Id} en {port.PortName}. Existe en OS: {portExists}. Lista OS: {string.Join(",", osPorts)}");
+
+                                        if (!portExists)
+                                        {
+                                            throw new IOException($"El puerto {port.PortName} ha desaparecido del sistema operativo.");
+                                        }
+
+                                        // Verificar si el puerto sigue vivo a nivel driver
+                                        if (port.IsOpen)
+                                        {
+                                            var dummy = port.BytesToRead; // Esto lanza excepción si el cable se desconectó
+                                            _scaleStatuses[scale.Id] = ScaleStatus.Connected;
+                                        }
                                     }
-                                    catch (Exception)
+                                    catch (Exception ex)
                                     {
-                                        _logger.LogWarning($"Puerto {port.PortName} muerto. Cerrando.");
-                                        try { port.Close(); } catch { }
-                                        try { port.Dispose(); } catch { }
+                                        _logger.LogWarning($"Puerto {port.PortName} detectado muerto ({ex.Message}). Limpiando...");
+
+                                        // 1. PRIMERO: Cortar escuchas para que el software deje de pedir datos
+                                        _listenersCount.TryRemove(scale.Id, out _);
+
+                                        // 2. SEGUNDO: Olvidar el puerto en la lista de activos
                                         _activePorts.TryRemove(scale.Id, out _);
+
+                                        // 3. TERCERO: Cerrar puerto en segundo plano
+                                        SafeClose(port);
+
                                         _scaleStatuses[scale.Id] = ScaleStatus.Error;
-                                        _lastErrors[scale.Id] = "Desconectado.";
+                                        _lastErrors[scale.Id] = "Dispositivo desconectado.";
                                     }
                                 }
                             }
@@ -362,10 +441,54 @@ namespace AppsielPrintManager.Infraestructure.Services
             _cts.Cancel();
             foreach (var port in _activePorts.Values)
             {
-                if (port.IsOpen) port.Close();
-                port.Dispose();
+                SafeClose(port);
             }
             _activePorts.Clear();
+        }
+
+        /// <summary>
+        /// Intenta cerrar el puerto de forma segura sin bloquear el hilo principal.
+        /// Los drivers USB-Serial (CH340/PL2303) suelen bloquearse si cierras el puerto
+        /// después de desconectar el cable físicamente.
+        /// </summary>
+        private void SafeClose(SerialPort? port)
+        {
+            if (port == null) return;
+
+            // Ejecutar Close en un hilo separado para no congelar el servicio si el driver falla
+            Task.Run(() =>
+            {
+                try
+                {
+                    if (port.IsOpen)
+                    {
+                        try
+                        {
+                            port.DtrEnable = false;
+                            port.RtsEnable = false;
+                        }
+                        catch { }
+
+                        try
+                        {
+                            port.DiscardInBuffer();
+                            port.DiscardOutBuffer();
+                        }
+                        catch { }
+
+                        port.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"{ex.Message}");
+                    // Ignorar errores al cerrar (puerto ya muerto o driver colgado)
+                }
+                finally
+                {
+                    try { port.Dispose(); } catch { }
+                }
+            });
         }
 
         public ScaleData? GetLastScaleReading()

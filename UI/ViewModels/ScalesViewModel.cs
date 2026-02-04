@@ -48,19 +48,7 @@ namespace UI.ViewModels
             IsBusy = true;
             try
             {
-                var loadedScales = await _scaleRepository.GetAllAsync();
-
-                // Actualizar la lista manteniendo el estado actual si es posible
-                var currentStatuses = Scales.ToDictionary(s => s.Scale.Id, s => s.Status);
-
-                Scales.Clear();
-                foreach (var scale in loadedScales.OrderBy(s => s.Id))
-                {
-                    Scales.Add(new ScaleViewModelItem(scale)
-                    {
-                        Status = currentStatuses.TryGetValue(scale.Id, out var status) ? status : ScaleStatus.Disconnected
-                    });
-                }
+                await SmoothRefreshScales();
             }
             catch (Exception ex)
             {
@@ -69,6 +57,41 @@ namespace UI.ViewModels
             finally
             {
                 IsBusy = false;
+            }
+        }
+
+        private async Task SmoothRefreshScales()
+        {
+            var loadedScales = await _scaleRepository.GetAllAsync();
+            var sortedScales = loadedScales.OrderBy(s => s.Id).ToList();
+
+            // 1. Eliminar las que ya no existen
+            for (int i = Scales.Count - 1; i >= 0; i--)
+            {
+                if (!sortedScales.Any(s => s.Id == Scales[i].Scale.Id))
+                {
+                    Scales.RemoveAt(i);
+                }
+            }
+
+            // 2. Agregar o Actualizar
+            foreach (var scale in sortedScales)
+            {
+                var existingItem = Scales.FirstOrDefault(VM => VM.Scale.Id == scale.Id);
+                if (existingItem != null)
+                {
+                    // ACTUALIZAR PROPIEDADES SI CAMBIARON (Ej: PortName)
+                    if (existingItem.Scale.PortName != scale.PortName || existingItem.Scale.Name != scale.Name)
+                    {
+                        int index = Scales.IndexOf(existingItem);
+                        var newItem = new ScaleViewModelItem(scale) { Status = existingItem.Status, ErrorMessage = existingItem.ErrorMessage };
+                        Scales[index] = newItem;
+                    }
+                }
+                else
+                {
+                    Scales.Add(new ScaleViewModelItem(scale));
+                }
             }
         }
 
@@ -147,6 +170,15 @@ namespace UI.ViewModels
                 }
 
                 await Task.Delay(1000, token);
+
+                // RECUPERACIÓN AUTOMÁTICA DE CONFIGURACIÓN
+                // Si el backend cambió el puerto (Auto-Detect), la UI necesita enterarse.
+                // Recargamos la lista completa cada 3 ciclos (3 segundos aprox) para refrescar "COMx"
+                if (DateTime.Now.Second % 3 == 0)
+                {
+                    // Ejecutar en hilo UI principal porque LoadScales toca ObservableCollection
+                    MainThread.BeginInvokeOnMainThread(async () => await LoadScales());
+                }
             }
         }
 
