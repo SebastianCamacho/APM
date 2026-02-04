@@ -11,7 +11,7 @@ function logMessage(message, type = 'info') {
     p.className = `log-${type}`;
     p.textContent = message;
     messagesDiv.appendChild(p);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll automático al final
+    // messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll automático deshabilitado a petición
 }
 
 function connectWebSocket() {
@@ -38,6 +38,19 @@ function connectWebSocket() {
         socket.onmessage = (event) => {
             logMessage('Mensaje recibido del servidor: ' + event.data);
             console.log('Message from server:', event.data);
+
+            try {
+                const data = JSON.parse(event.data);
+                if (data.Weight !== undefined && data.Unit !== undefined) {
+                    // Is Scale Data
+                    const display = document.getElementById('scaleDataDisplay');
+                    if (display) {
+                        display.textContent = `Báscula: ${data.ScaleId}\nPeso: ${data.Weight} ${data.Unit}\nEstable: ${data.Stable}\nTime: ${data.Timestamp}`;
+                    }
+                }
+            } catch (e) {
+                // Not JSON or other error
+            }
         };
 
         socket.onclose = (event) => {
@@ -110,7 +123,7 @@ const templates = {
                     { "Name": "Pan Tajado", "Qty": 1, "UnitPrice": 3500, "Total": 3500 }
                 ],
                 "Subtotal": 8500,
-                "iva": 0,
+                "IVA": 0,
                 "Total": 8500
             },
             "footer": ["Gracias por su compra"]
@@ -123,6 +136,7 @@ const templates = {
         "DocumentType": "comanda",
         "Document": {
             "order": { 
+                "COPY":"ORIGINAL",
                 "Number": "CMD-001",
                 "Table": "Mesa 5", 
                 "Waiter": "Carlos", 
@@ -254,4 +268,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Activar la primera pestaña por defecto
     window.openTab('ticket'); // Abre la pestaña de Ticket por defecto
+
+
+    // --- Scale Test Logic ---
+    const toggleListeningButton = document.getElementById('toggleListeningButton');
+    const scaleIdInput = document.getElementById('scaleIdInput');
+    const scaleDataDisplay = document.getElementById('scaleDataDisplay');
+    let isListeningToScale = false;
+
+    if (toggleListeningButton && scaleIdInput && scaleDataDisplay) {
+        toggleListeningButton.addEventListener('click', () => {
+             if (!isListeningToScale) {
+                 // Start Listening
+                 const scaleId = scaleIdInput.value;
+                 if (!scaleId) {
+                     alert("Por favor ingrese un ID de báscula");
+                     return;
+                 }
+                 
+                 const command = JSON.stringify({
+                     Action: "StartListening",
+                     ScaleId: scaleId
+                 });
+                 
+                 sendTestMessage(command);
+                 
+                 // Update UI
+                 isListeningToScale = true;
+                 toggleListeningButton.textContent = "Dejar de Escuchar";
+                 toggleListeningButton.style.backgroundColor = "#d9534f"; // Red
+                 scaleDataDisplay.textContent = "Escuchando... Esperando datos...";
+             } else {
+                 // Stop Listening
+                 const command = JSON.stringify({
+                     Action: "StopListening"
+                 });
+                 
+                 sendTestMessage(command);
+                 
+                 // Update UI
+                 isListeningToScale = false;
+                 toggleListeningButton.textContent = "Empezar a Escuchar";
+                 toggleListeningButton.style.backgroundColor = "#4CAF50"; // Green
+                 scaleDataDisplay.textContent += "\nStopped listening.";
+             }
+        });
+    }
 });

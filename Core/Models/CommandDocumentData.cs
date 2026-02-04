@@ -17,6 +17,7 @@ namespace AppsielPrintManager.Core.Models
         /// </summary>
         public class CommandInfo
         {
+            public string COPY { get; set; }
             public string Number { get; set; }
             public string Table { get; set; }
             public string Waiter { get; set; }

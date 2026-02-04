@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<linker>
+    <!-- Preserve the main application assembly -->
+    <assembly fullname="AppsielPrintManager">
+        <type fullname="*" />
+    </assembly>
+
+    <!-- Preserve the UI assembly where Views and ViewModels reside -->
+    <assembly fullname="UI">
+        <type fullname="*" />
+    </assembly>
+    
+    <!-- Preserve Core assembly if ViewModels depend on it -->
+    <assembly fullname="Core">
+        <type fullname="*" />
+    </assembly>
+
+    <!-- Preserve CommunityToolkit.Mvvm to ensure commands and observables work -->
+    <assembly fullname="CommunityToolkit.Mvvm">
+        <type fullname="*" />
+    </assembly>
+    
+    <!-- Preserve MAUI Controls to ensure XAML extensions like OnIdiom work -->
+    <assembly fullname="Microsoft.Maui.Controls">
+        <type fullname="Microsoft.Maui.Controls.OnIdiom`1" />
+        <type fullname="Microsoft.Maui.Controls.OnPlatform`1" />
+        <type fullname="Microsoft.Maui.Controls.Xaml.*" />
+    </assembly>
+</linker>

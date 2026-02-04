@@ -13,10 +13,15 @@ var builder = Host.CreateDefaultBuilder(args) // Changed to CreateDefaultBuilder
         services.AddSingleton<ILoggingService, Logger>();
         services.AddSingleton<IWebSocketService, WebSocketServerService>();
         services.AddSingleton<ISettingsRepository, SettingsRepository>();
+        services.AddSingleton<ITemplateRepository, TemplateRepository>(); // Agregado para resolver dependencia en TicketRendererService
         services.AddSingleton<ITicketRenderer, TicketRendererService>();
         services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>();
         services.AddSingleton<TcpIpPrinterClient>();
         services.AddSingleton<IPrintService, PrintService>();
+
+        // Scale Services
+        services.AddSingleton<IScaleRepository, JsonScaleRepository>();
+        services.AddSingleton<IScaleService, SerialScaleService>();
 
         services.AddHostedService<Worker>();
     });

@@ -1,4 +1,4 @@
-#if WINDOWS
+//#if WINDOWS
 using AppsielPrintManager.Core.Interfaces;
 using AppsielPrintManager.Infraestructure.Services; // Para ILoggingService
 using System;
@@ -60,8 +60,8 @@ namespace UI.Services
                 // --- Lógica de Rutas de Desarrollo ---
                 // Si no lo encuentra en la ruta de producción, intentaremos buscarlo en rutas de desarrollo
                 string solutionRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..", "..", "..", ".."));
-                string trayAppProjectBase = Path.Combine(solutionRoot, "AppsielPrintManager", "TrayApp"); // Ruta al proyecto TrayApp
-                string debugPath = Path.Combine(trayAppProjectBase, "bin", "Debug", "net10.0-windows", TrayAppExeName); // Asumiendo net10.0-windows para TrayApp
+                string trayAppProjectBase = Path.Combine(solutionRoot, "TrayApp"); // Ruta corregida al proyecto TrayApp
+                string debugPath = Path.Combine(trayAppProjectBase, "bin", "Debug", "net10.0-windows", TrayAppExeName); 
                 string releasePath = Path.Combine(trayAppProjectBase, "bin", "Release", "net10.0-windows", TrayAppExeName);
 
 
@@ -112,4 +112,4 @@ namespace UI.Services
         }
     }
 }
-#endif
+//#endif

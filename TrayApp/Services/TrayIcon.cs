@@ -25,7 +25,7 @@ public class TrayIcon : IDisposable
 
     // Recursos de iconos para el menú contextual.
     private Image _iconStatusRunning;
-    private Image _iconStatusStopped; 
+    private Image _iconStatusStopped;
     private Image _iconStatusOpen;
     private Image _iconActionStart;
     private Image _iconActionStop;
@@ -71,30 +71,30 @@ public class TrayIcon : IDisposable
         var menu = new ContextMenuStrip();
         menu.Items.Add("Abrir UI", _iconStatusOpen, (_, _) => OpenUI()); // Opción para abrir la interfaz de usuario con icono.
         menu.Items.Add("-"); // Separador visual en el menú.
-        
+
         // Elemento de menú que mostrará el estado actual del WorkerService.
         // Se le asigna un nombre ("ServiceStatusMenuItem") para poder referenciarlo y actualizarlo.
         ToolStripMenuItem statusMenuItem = new ToolStripMenuItem("Estado: Desconocido") { Name = "ServiceStatusMenuItem", Enabled = true };
         menu.Items.Add(statusMenuItem);
-        
+
         menu.Items.Add("-"); // Separador visual.
-        
+
         // Opción para iniciar el WorkerService.
         ToolStripMenuItem startServiceMenuItem = new ToolStripMenuItem("Iniciar WorkerService", _iconActionStart, (_, _) => StartWorkerService()) { Name = "StartServiceMenuItem" };
         menu.Items.Add(startServiceMenuItem);
-        
+
         // Opción para detener el WorkerService.
         ToolStripMenuItem stopServiceMenuItem = new ToolStripMenuItem("Detener WorkerService", _iconActionStop, (_, _) => StopWorkerService()) { Name = "StopServiceMenuItem" };
         menu.Items.Add(stopServiceMenuItem);
-        
+
         menu.Items.Add("-"); // Separador visual.
         menu.Items.Add("Salir", _iconActionStop, (_, _) => Exit()); // Opción para salir de la aplicación con icono.
 
         // Asigna el menú contextual al NotifyIcon.
         _icon.ContextMenuStrip = menu;
 
-        // Configura el temporizador para actualizar el estado del servicio cada 5 segundos.
-        _statusUpdateTimer = new System.Timers.Timer(5000);
+        // Configura el temporizador para actualizar el estado del servicio cada 1 segundo.
+        _statusUpdateTimer = new System.Timers.Timer(1000);
         // Asocia el método UpdateServiceStatus al evento Elapsed del temporizador.
         _statusUpdateTimer.Elapsed += (sender, e) => UpdateServiceStatus();
         // Inicia el temporizador.
@@ -103,7 +103,7 @@ public class TrayIcon : IDisposable
         // Realiza una actualización inicial del estado del servicio al iniciar.
         UpdateServiceStatus();
     }
-    
+
     /// <summary>
     /// Intenta encontrar la ruta del ejecutable del WorkerService.
     /// Reutiliza la lógica de descubrimiento de rutas del proyecto UI.
@@ -135,7 +135,7 @@ public class TrayIcon : IDisposable
         {
             return debugPath;
         }
-        
+
         return null; // Ejecutable no encontrado en ninguna de las rutas esperadas.
     }
 
@@ -175,7 +175,7 @@ public class TrayIcon : IDisposable
         {
             return releasePath;
         }
-        
+
         return null; // Ejecutable no encontrado en ninguna de las rutas esperadas.
     }
 
@@ -317,9 +317,10 @@ public class TrayIcon : IDisposable
             Process.Start(new ProcessStartInfo
             {
                 FileName = workerExePath,
+                WorkingDirectory = Path.GetDirectoryName(workerExePath),
                 UseShellExecute = false, // No usar el shell para la ejecución
-                RedirectStandardOutput = true, // Redirigir la salida estándar
-                RedirectStandardError = true,  // Redirigir el error estándar
+                RedirectStandardOutput = false, // Desactivado para evitar bloqueos si no se lee el pipe
+                RedirectStandardError = false,
                 CreateNoWindow = true          // No crear una ventana para el proceso
             });
             System.Windows.MessageBox.Show("WorkerService iniciado como proceso. Verifique su estado.", "Appsiel Print Manager", MessageBoxButton.OK, MessageBoxImage.Information);

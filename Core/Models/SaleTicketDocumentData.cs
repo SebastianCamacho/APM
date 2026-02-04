@@ -34,7 +34,7 @@ namespace AppsielPrintManager.Core.Models
             public DateTime Date { get; set; }
             public List<SaleItem> Items { get; set; } = new List<SaleItem>();
             public decimal Subtotal { get; set; }
-            public decimal Tax { get; set; }
+            public decimal IVA { get; set; }
             public decimal Total { get; set; }
         }
 

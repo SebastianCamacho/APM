@@ -7,6 +7,10 @@ namespace UI.Services
     {
         public bool IsBackgroundServiceRunning => false;
 
+        public bool IsWebSocketServerRunning => false;
+
+        public int CurrentClientCount => 0;
+
         public Task StartBackgroundServiceAsync()
         {
             // Implementación stub: no hace nada

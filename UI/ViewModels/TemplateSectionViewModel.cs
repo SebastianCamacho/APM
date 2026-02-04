@@ -1,0 +1,217 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using AppsielPrintManager.Core.Models;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Collections.Generic;
+
+namespace UI.ViewModels
+{
+    public partial class TemplateSectionViewModel : ObservableObject
+    {
+        private readonly TemplateSection _model;
+
+        [ObservableProperty]
+        private string name;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsTableSection))]
+        [NotifyPropertyChangedFor(nameof(IsDataSourceVisible))]
+        private string type;
+
+        partial void OnTypeChanged(string value) => UpdateElementsTableStatus();
+
+        partial void OnDocumentTypeChanged(string? value)
+        {
+            if (Elements != null)
+            {
+                foreach (var element in Elements)
+                    element.DocumentType = value;
+            }
+        }
+
+        private void UpdateElementsTableStatus()
+        {
+            if (Elements != null)
+            {
+                foreach (var element in Elements)
+                {
+                    element.IsTableSection = this.IsTableSection;
+                    element.IsRepeatedSection = this.Type == "Repeated";
+                }
+            }
+        }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DisplayDataSourceSuggestions))]
+        private string dataSource;
+
+        [ObservableProperty]
+        private string? align;
+
+        [ObservableProperty]
+        private int? order;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DataSourceSuggestions))]
+        [NotifyPropertyChangedFor(nameof(DisplayDataSourceSuggestions))]
+        private string? documentType;
+
+        [ObservableProperty]
+        private ObservableCollection<TemplateElementViewModel> elements;
+
+        [ObservableProperty]
+        private int? selectedSizeIdx;
+
+        [ObservableProperty]
+        private bool isBold;
+
+
+
+        public bool IsTableSection => Type == "Table";
+        public bool IsDataSourceVisible => Type == "Table" || Type == "Repeated";
+
+        public List<string> SectionTypes { get; } = new() { "Static", "Table", "Repeated" };
+        public List<string> Alignments { get; } = new() { "Ninguno", "Left", "Center", "Right" };
+        public List<string> Sizes { get; } = new() { "Ninguno", "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
+        public List<string> DataSourceSuggestions => AppsielPrintManager.Core.Services.TemplateCatalogService.GetDataSourceSuggestions(DocumentType);
+
+        public List<string> DisplayDataSourceSuggestions
+        {
+            get
+            {
+                var list = DataSourceSuggestions.ToList();
+                if (!string.IsNullOrEmpty(DataSource))
+                {
+                    // Buscar coincidencia exacta
+                    var exactMatch = list.FirstOrDefault(x => x == DataSource);
+                    if (exactMatch == null)
+                    {
+                        // Si no hay exacta, buscar por ignorar mayúsculas y quitarla para evitar duplicados visuales
+                        var caseInsensitiveMatch = list.FirstOrDefault(x => x.Equals(DataSource, StringComparison.OrdinalIgnoreCase));
+                        if (caseInsensitiveMatch != null) list.Remove(caseInsensitiveMatch);
+
+                        list.Insert(0, DataSource);
+                    }
+                }
+                return list;
+            }
+        }
+
+        public TemplateSectionViewModel(TemplateSection model, string? documentType)
+        {
+            _model = model;
+            DocumentType = documentType;
+            Name = model.Name ?? "Nueva Sección";
+            Type = model.Type ?? "Static";
+            DataSource = model.DataSource ?? string.Empty;
+            Align = model.Align ?? "Ninguno";
+            Order = model.Order ?? 0;
+
+            Elements = new ObservableCollection<TemplateElementViewModel>(
+                model.Elements.Select(e => new TemplateElementViewModel(e, DocumentType)
+                {
+                    IsTableSection = IsTableSection,
+                    IsRepeatedSection = Type == "Repeated"
+                })
+            );
+
+            ParseFormat(model.Format);
+        }
+
+        private void ParseFormat(string format)
+        {
+            if (string.IsNullOrEmpty(format))
+            {
+                SelectedSizeIdx = 0; // Ninguno
+                return;
+            }
+
+            IsBold = format.Contains("Bold", StringComparison.OrdinalIgnoreCase);
+
+            if (format.Contains("Size1")) SelectedSizeIdx = 1;
+            else if (format.Contains("Size2")) SelectedSizeIdx = 2;
+            else if (format.Contains("Size3")) SelectedSizeIdx = 3;
+            else if (format.Contains("Size4")) SelectedSizeIdx = 4;
+            else if (format.Contains("Size5")) SelectedSizeIdx = 5;
+            else if (format.Contains("Size6")) SelectedSizeIdx = 6;
+            else SelectedSizeIdx = 0;
+        }
+
+        private string? UpdateFormat()
+        {
+            if (SelectedSizeIdx == null || SelectedSizeIdx == 0)
+            {
+                return IsBold ? "Bold" : null;
+            }
+
+            var parts = new List<string>();
+
+            // Mapeo inverso de los 6 tamaños
+            string sizePart = SelectedSizeIdx switch
+            {
+                1 => "FontA Size1",
+                2 => "FontA Size2",
+                3 => "FontA Size3",
+                4 => "FontB Size1",
+                5 => "FontB Size2",
+                6 => "FontB Size3",
+                _ => null
+            };
+
+            if (sizePart != null) parts.Add(sizePart);
+            if (IsBold) parts.Add("Bold");
+
+            return parts.Count > 0 ? string.Join(" ", parts) : null;
+        }
+
+        [RelayCommand]
+        private void AddElement()
+        {
+            Elements.Add(new TemplateElementViewModel(new TemplateElement { Type = "Text", Align = "Left" }, DocumentType)
+            {
+                IsTableSection = IsTableSection
+            });
+        }
+
+        [RelayCommand]
+        private void MoveElementUp(TemplateElementViewModel element)
+        {
+            var index = Elements.IndexOf(element);
+            if (index > 0)
+            {
+                Elements.Move(index, index - 1);
+            }
+        }
+
+        [RelayCommand]
+        private void MoveElementDown(TemplateElementViewModel element)
+        {
+            var index = Elements.IndexOf(element);
+            if (index < Elements.Count - 1)
+            {
+                Elements.Move(index, index + 1);
+            }
+        }
+
+        [RelayCommand]
+        private void RemoveElement(TemplateElementViewModel element)
+        {
+            if (element != null)
+                Elements.Remove(element);
+        }
+
+        public TemplateSection ToModel()
+        {
+            _model.Name = Name;
+            _model.Type = Type;
+            _model.DataSource = string.IsNullOrEmpty(DataSource) ? null : DataSource;
+            _model.Align = (Align == "Ninguno") ? null : Align;
+            _model.Order = Order;
+            _model.Format = UpdateFormat();
+            _model.Elements = Elements.Select(e => e.ToModel()).ToList();
+
+            return _model;
+        }
+    }
+}

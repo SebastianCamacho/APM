@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:UI.ViewModels"
+             xmlns:converters="clr-namespace:UI.Converters"
+             x:Class="UI.Views.ScaleDetailPage"
+             Title="Detalle de Báscula"
+             x:DataType="viewmodels:ScaleDetailViewModel">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            
+            <Style TargetType="Entry">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+            </Style>
+            <Style TargetType="Picker">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="TitleColor" Value="{DynamicResource Gray500}" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto, *, Auto">
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="10,12" BackgroundColor="{DynamicResource Primary}" StrokeThickness="0">
+            <Label Text="Configuración de Báscula" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource White}" HorizontalOptions="Center" />
+        </Border>
+
+        <ScrollView Grid.Row="1" Padding="20">
+            <Border StrokeShape="RoundRectangle 12" Padding="20" StrokeThickness="1" Stroke="{DynamicResource Gray200}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" HorizontalOptions="Center" VerticalOptions="Start">
+                <VerticalStackLayout Spacing="15" WidthRequest="320">
+
+                    <!-- ID -->
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="ID de Báscula" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                            <Entry Text="{Binding Id}" IsEnabled="{Binding IsNew}" Placeholder="Ej: bascula01" VerticalOptions="Center" Margin="5,0"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Nombre -->
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Nombre" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                            <Entry Text="{Binding Name}" Placeholder="Ej: Báscula Principal" VerticalOptions="Center" Margin="5,0"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Puerto COM -->
+                    <VerticalStackLayout Spacing="5">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Label Grid.Column="0" Text="Puerto COM" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" VerticalOptions="Center" />
+                            <Button Grid.Column="1" Text="⟳" Command="{Binding LoadPortsCommand}" 
+                                    FontSize="18" Padding="0" HeightRequest="30" WidthRequest="30" 
+                                    BackgroundColor="Transparent" TextColor="{DynamicResource Primary}" 
+                                    ToolTipProperties.Text="Actualizar Puertos" />
+                        </Grid>
+                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                            <Picker ItemsSource="{Binding AvailablePorts}" SelectedItem="{Binding PortName}" 
+                                    HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Configuración Serial (Grid) -->
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="10" RowDefinitions="Auto, Auto" RowSpacing="15">
+                        
+                        <!-- Baud Rate -->
+                        <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="5">
+                            <Label Text="Baud Rate" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                <Entry Text="{Binding BaudRate}" Keyboard="Numeric" VerticalOptions="Center" Margin="5,0"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Data Bits -->
+                        <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="5">
+                            <Label Text="Data Bits" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                <Entry Text="{Binding DataBits}" Keyboard="Numeric" VerticalOptions="Center" Margin="5,0"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Parity -->
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="5">
+                            <Label Text="Parity" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                <Picker ItemsSource="{Binding ParityOptions}" SelectedItem="{Binding Parity}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Stop Bits -->
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="5">
+                            <Label Text="Stop Bits" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                <Picker ItemsSource="{Binding StopBitsOptions}" SelectedItem="{Binding StopBits}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                </VerticalStackLayout>
+            </Border>
+        </ScrollView>
+
+        <!-- Botones Pie de Página -->
+        <Border Grid.Row="2" StrokeThickness="0" Padding="15,10" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}">
+            <Button Text="Guardar Báscula" Command="{Binding SaveCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                    HeightRequest="42" FontSize="14" CornerRadius="8" />
+        </Border>
+
+        <ActivityIndicator Grid.RowSpan="3"
+                           IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                           VerticalOptions="Center" HorizontalOptions="Center"
+                           Color="{StaticResource Primary}" WidthRequest="50" HeightRequest="50" />
+    </Grid>
+</ContentPage>

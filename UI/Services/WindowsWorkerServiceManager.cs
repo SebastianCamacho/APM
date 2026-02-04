@@ -20,7 +20,7 @@ namespace UI.Services
         public WindowsWorkerServiceManager(ILoggingService logger)
         {
             _logger = logger;
-            
+
             // Intentar reengancharse si el proceso ya existe
             var existingProcesses = Process.GetProcessesByName(WorkerServiceName);
             if (existingProcesses.Any())
@@ -34,7 +34,31 @@ namespace UI.Services
             }
         }
 
-        public bool IsWorkerServiceRunning => _workerProcess != null && !_workerProcess.HasExited;
+        public bool IsWorkerServiceRunning
+        {
+            get
+            {
+                // 1. Si tenemos una referencia local y el proceso sigue vivo, es true.
+                if (_workerProcess != null && !_workerProcess.HasExited)
+                {
+                    return true;
+                }
+
+                // 2. Si no, buscamos procesos de forma más amplia (case-insensitive y contains)
+                var allProcesses = Process.GetProcesses();
+                var serviceProcess = allProcesses.FirstOrDefault(p => p.ProcessName.Contains("WorkerService", StringComparison.OrdinalIgnoreCase));
+
+                if (serviceProcess != null)
+                {
+                    // Lo encontramos (iniciado externamente o reiniciado), actualizamos referencia.
+                    _workerProcess = serviceProcess;
+                    return true;
+                }
+
+                // 3. No está corriendo ni tenemos referencia válida.
+                return false; 
+            }
+        }
 
         public Task<bool> StartWorkerServiceAsync()
         {
@@ -84,6 +108,7 @@ namespace UI.Services
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = workerExePath,
+                        WorkingDirectory = Path.GetDirectoryName(workerExePath), // Asegura que el worker encuentre su hostpolicy.dll y dependencias
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
@@ -103,7 +128,7 @@ namespace UI.Services
                 _workerProcess.Start();
                 _workerProcess.BeginOutputReadLine();
                 _workerProcess.BeginErrorReadLine();
-                
+
                 _logger.LogInfo($"[WorkerServiceManager] WorkerService iniciado con PID: {_workerProcess.Id}");
                 return Task.FromResult(true);
             }
@@ -121,8 +146,12 @@ namespace UI.Services
             try
             {
                 _logger.LogInfo($"[WorkerServiceManager] Deteniendo PID: {_workerProcess.Id}");
-                _workerProcess.CancelOutputRead();
-                _workerProcess.CancelErrorRead();
+                
+                // Intentar cancelar lectura de streams si fuimos nosotros quienes lo iniciamos.
+                // Si el proceso es externo, esto lanzará excepción, así que lo ignoramos.
+                try { _workerProcess.CancelOutputRead(); } catch { }
+                try { _workerProcess.CancelErrorRead(); } catch { }
+
                 _workerProcess.Kill();
                 await _workerProcess.WaitForExitAsync();
                 _workerProcess = null;

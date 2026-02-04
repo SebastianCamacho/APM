@@ -1,12 +1,415 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:UI.ViewModels"
+             x:DataType="viewmodels:HomeViewModel"
              x:Class="UI.Views.HomePage"
-             Title="Inicio">
-    <VerticalStackLayout>
-        <Label 
-            Text="¡Bienvenido a Appsiel Print Manager!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             Title="Inicio"
+             BackgroundColor="White">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- Gradient for Android Header -->
+            <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Color="#6A4FA3" Offset="0.0" />
+                <GradientStop Color="#5A6FB8" Offset="0.2" />
+                <GradientStop Color="#4A8FD0" Offset="0.4" />
+                <GradientStop Color="#3FB0C6" Offset="0.6" />
+                <GradientStop Color="#3FC6A0" Offset="0.8" />
+                <GradientStop Color="#45D18F" Offset="1.0" />
+            </LinearGradientBrush>
+            
+            <Color x:Key="ServiceRunningColor">#45D18F</Color>
+            <Color x:Key="ServiceStoppedColor">#D9534F</Color>
+            <Color x:Key="CardBackgroundColor">#E0E0E0</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <Grid>
+            <!-- ================================================================================================== -->
+            <!-- ANDROID LAYOUT -->
+            <!-- ================================================================================================== -->
+            <Grid IsVisible="{OnPlatform Android=True, Default=False}" RowDefinitions="Auto, *">
+                
+                <!-- HEADER (Logo & Welcome) WRAPPED IN CARD -->
+                <VerticalStackLayout Grid.Row="0" Spacing="20" Padding="20">
+                    <Border StrokeShape="RoundRectangle 20" 
+                            StrokeThickness="0"
+                            BackgroundColor="White"
+                            Padding="20"
+                            Shadow="{Shadow Brush=Black, Offset='0,5', Radius=10, Opacity=0.1}">
+                        <VerticalStackLayout Spacing="20">
+                            <!-- Logo with Gradient Lines -->
+                            <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
+                                <BoxView HeightRequest="6" WidthRequest="200" Background="{StaticResource HeaderGradient}" CornerRadius="3" />
+                                
+                                <Label Text="APM" 
+                                       TextColor="#4A8FD0" 
+                                       FontSize="64" 
+                                       FontAttributes="None"
+                                       FontFamily="OpenSansRegular" 
+                                       HorizontalOptions="Center" />
+                                
+                                <BoxView HeightRequest="6" WidthRequest="200" Background="{StaticResource HeaderGradient}" CornerRadius="3" />
+                            </VerticalStackLayout>
+                            
+                            <Label Text="¡Bienvenido a&#x0a;Appsiel Print&#x0a;Manager!" 
+                                   TextColor="Black"
+                                   FontSize="32" 
+                                   HorizontalTextAlignment="Center" 
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- MAIN CONTENT (Cards) -->
+                <Grid Grid.Row="1" ColumnDefinitions="*, *" ColumnSpacing="15" Padding="20">
+                    
+                    <!-- SERVICE CARD -->
+                    <Border Grid.Column="0" 
+                            StrokeShape="RoundRectangle 20" 
+                            StrokeThickness="0"
+                            BackgroundColor="{StaticResource CardBackgroundColor}"
+                            Padding="10">
+                        <Grid RowDefinitions="Auto, *">
+                            <!-- Helper Label for Card Title -->
+                            <Label Grid.Row="0" Text="SERVICIO" TextColor="Black" HorizontalOptions="Center" Margin="0,0,0,10"/>
+                            
+                            <VerticalStackLayout Grid.Row="1" Spacing="15" VerticalOptions="Start">
+                                
+                                <!-- Buttons Side-by-Side (Custom Control) -->
+                                <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                                    
+                                    <!-- START BUTTON (Custom Border) -->
+                                    <Border StrokeShape="RoundRectangle 10"
+                                            StrokeThickness="0"
+                                            BackgroundColor="White"
+                                            Padding="10">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding StartForegroundServiceCommand}" />
+                                        </Border.GestureRecognizers>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsServiceRunning}" Value="True">
+                                                <Setter Property="Opacity" Value="0.5" />
+                                                <Setter Property="InputTransparent" Value="True" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        
+                                        <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Image Source="icono_start.png" HeightRequest="30" WidthRequest="30" Aspect="AspectFit" />
+                                            <Label Text="Start" FontSize="12" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+                                    
+                                    <!-- STOP BUTTON (Custom Border) -->
+                                    <Border Grid.Column="1" 
+                                            StrokeShape="RoundRectangle 10"
+                                            StrokeThickness="0"
+                                            BackgroundColor="White"
+                                            Padding="10">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding StopForegroundServiceCommand}" />
+                                        </Border.GestureRecognizers>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsServiceRunning}" Value="False">
+                                                <Setter Property="Opacity" Value="0.5" />
+                                                <Setter Property="InputTransparent" Value="True" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+
+                                        <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Image Source="icono_stop.png" HeightRequest="25" WidthRequest="25" Aspect="AspectFit" />
+                                            <Label Text="Stop" FontSize="12" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Status Indicator (Big Doughnut Circle) -->
+                                <Grid WidthRequest="100" HeightRequest="100" HorizontalOptions="Center">
+                                    <!-- Outer Ring (Spinner) -->
+                                    <Ellipse x:Name="ServiceSpinner" 
+                                             StrokeThickness="12" 
+                                             WidthRequest="100" 
+                                             HeightRequest="100" 
+                                             Aspect="Uniform">
+                                        <Ellipse.Stroke>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#4A8FD0" Offset="0.0"/>
+                                                <GradientStop Color="#4A8FD0" Offset="0.45"/>
+                                                <GradientStop Color="#45D18F" Offset="0.55"/>
+                                                <GradientStop Color="#45D18F" Offset="1.0"/>
+                                            </LinearGradientBrush>
+                                        </Ellipse.Stroke>
+                                    </Ellipse>
+                                    
+                                    <!-- Service Active Indicator (Center Dot) -->
+                                    <Ellipse WidthRequest="60" HeightRequest="60" HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Ellipse.Fill>
+                                             <SolidColorBrush Color="Transparent" /> 
+                                        </Ellipse.Fill>
+                                        <Ellipse.Triggers>
+                                            <DataTrigger TargetType="Ellipse" Binding="{Binding IsServiceRunning}" Value="True">
+                                                <Setter Property="Fill" Value="{StaticResource ServiceRunningColor}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Ellipse" Binding="{Binding IsServiceRunning}" Value="False">
+                                                <Setter Property="Fill" Value="Transparent" />
+                                            </DataTrigger>
+                                        </Ellipse.Triggers>
+                                    </Ellipse>
+                                </Grid>
+                                
+                                <Label Text="{Binding ServiceStatus}" 
+                                       TextColor="Black" 
+                                       HorizontalOptions="Center" 
+                                       FontAttributes="Bold"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <!-- WEBSOCKET CARD -->
+                    <Border Grid.Column="1" 
+                            StrokeShape="RoundRectangle 20"
+                            StrokeThickness="0" 
+                            BackgroundColor="{StaticResource CardBackgroundColor}"
+                            Padding="10">
+                        <Grid RowDefinitions="Auto, *">
+                            <Label Grid.Row="0" Text="CLIENTES WEB SOCKET" TextColor="Black" FontSize="11" HorizontalOptions="Center" Margin="0,0,0,10"/>
+                            
+                            <ScrollView Grid.Row="1">
+                                <VerticalStackLayout Spacing="5">
+                                    <!-- Client List Mockup / Real Data -->
+                                    <Frame Padding="10" CornerRadius="10" HasShadow="False" BackgroundColor="White">
+                                        <Label Text="{Binding CurrentClientCount, StringFormat='Clientes: {0}'}" 
+                                               TextColor="Black" 
+                                               FontSize="12"/>
+                                    </Frame>
+                                    
+                                    <!-- Status of WS Server -->
+                                    <Frame Padding="10" CornerRadius="10" HasShadow="False" BackgroundColor="White">
+                                        <HorizontalStackLayout Spacing="5">
+                                            <Label Text="Estado:" TextColor="Black" FontSize="12" FontAttributes="Bold"/>
+                                            <Label Text="Inactivo" 
+                                                   TextColor="{StaticResource ServiceStoppedColor}" 
+                                                   FontSize="12">
+                                                 <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsWebSocketServerRunning}" Value="True">
+                                                        <Setter Property="Text" Value="Activo" />
+                                                        <Setter Property="TextColor" Value="{StaticResource ServiceRunningColor}" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </HorizontalStackLayout>
+                                    </Frame>
+                                    
+                                    <!-- Side Bar Decoration -->
+                                    <BoxView WidthRequest="4" 
+                                             HorizontalOptions="End" 
+                                             VerticalOptions="Fill" 
+                                             Color="{StaticResource ServiceRunningColor}" 
+                                             IsVisible="{Binding IsWebSocketServerRunning}"/>
+                                </VerticalStackLayout>
+                            </ScrollView>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <!-- ================================================================================================== -->
+            <!-- WINDOWS LAYOUT (Start/End Spacer + Middle Content 65%) -->
+            <!-- ================================================================================================== -->
+            <Grid IsVisible="{OnPlatform WinUI=True, Default=False}" 
+                  ColumnDefinitions="17.5*, 65*, 17.5*"
+                  VerticalOptions="Center"
+                  RowDefinitions="*">
+                  
+                <!-- Middle Column: Main Content -->
+                <Grid Grid.Column="1" RowDefinitions="Auto, *">
+                    <!-- HEADER (Logo & Welcome) WRAPPED IN CARD -->
+                    <VerticalStackLayout Grid.Row="0" Spacing="20" Padding="20">
+                        <Border StrokeShape="RoundRectangle 20" 
+                                StrokeThickness="0"
+                                BackgroundColor="White"
+                                Padding="20"
+                                Shadow="{Shadow Brush=Black, Offset='0,5', Radius=10, Opacity=0.1}">
+                            <VerticalStackLayout Spacing="20">
+                                <!-- Logo with Gradient Lines -->
+                                <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
+                                    <BoxView HeightRequest="6" WidthRequest="200" Background="{StaticResource HeaderGradient}" CornerRadius="3" />
+                                    
+                                    <Label Text="APM" 
+                                           TextColor="#4A8FD0" 
+                                           FontSize="64" 
+                                           FontAttributes="None"
+                                           FontFamily="OpenSansRegular" 
+                                           HorizontalOptions="Center" />
+                                    
+                                    <BoxView HeightRequest="6" WidthRequest="200" Background="{StaticResource HeaderGradient}" CornerRadius="3" />
+                                </VerticalStackLayout>
+                                
+                                <Label Text="¡Bienvenido a&#x0a;Appsiel Print&#x0a;Manager!" 
+                                       TextColor="Black"
+                                       FontSize="32" 
+                                       HorizontalTextAlignment="Center" 
+                                       HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- MAIN CONTENT (Cards) -->
+                    <Grid Grid.Row="1" ColumnDefinitions="*, *" ColumnSpacing="30" Padding="20">
+                        
+                        <!-- SERVICE CARD -->
+                        <Border Grid.Column="0" 
+                                StrokeShape="RoundRectangle 20" 
+                                StrokeThickness="0"
+                                BackgroundColor="{StaticResource CardBackgroundColor}"
+                                Padding="20"> <!-- Increased Padding for Desktop -->
+                            <Grid RowDefinitions="Auto, *">
+                                <!-- Helper Label for Card Title -->
+                                <Label Grid.Row="0" Text="SERVICIO" TextColor="Black" HorizontalOptions="Center" Margin="0,0,0,20"/>
+                                
+                                <VerticalStackLayout Grid.Row="1" Spacing="20" VerticalOptions="Center">
+                                    
+                                    <!-- Buttons Side-by-Side (Custom Control) -->
+                                    <Grid ColumnDefinitions="*, *" ColumnSpacing="20">
+                                        
+                                        <!-- START BUTTON (Custom Border) -->
+                                        <Border StrokeShape="RoundRectangle 10"
+                                                StrokeThickness="0"
+                                                BackgroundColor="White"
+                                                Padding="15">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding StartForegroundServiceCommand}" />
+                                            </Border.GestureRecognizers>
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsServiceRunning}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.5" />
+                                                    <Setter Property="InputTransparent" Value="True" />
+                                                </DataTrigger>
+                                            </Border.Triggers>
+                                            
+                                            <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                                                <Image Source="icono_start.png" HeightRequest="40" WidthRequest="40" Aspect="AspectFit" />
+                                                <Label Text="Start" FontSize="14" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        
+                                        <!-- STOP BUTTON (Custom Border) -->
+                                        <Border Grid.Column="1" 
+                                                StrokeShape="RoundRectangle 10"
+                                                StrokeThickness="0"
+                                                BackgroundColor="White"
+                                                Padding="15">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding StopForegroundServiceCommand}" />
+                                            </Border.GestureRecognizers>
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsServiceRunning}" Value="False">
+                                                    <Setter Property="Opacity" Value="0.5" />
+                                                    <Setter Property="InputTransparent" Value="True" />
+                                                </DataTrigger>
+                                            </Border.Triggers>
+
+                                            <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                                                <Image Source="icono_stop.png" HeightRequest="40" WidthRequest="40" Aspect="AspectFit" />
+                                                <Label Text="Stop" FontSize="14" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </Grid>
+                                    
+                                    <!-- Status Indicator (Big Doughnut Circle) -->
+                                    <Grid WidthRequest="150" HeightRequest="150" HorizontalOptions="Center">
+                                        <!-- Outer Ring (Spinner) -->
+                                        <Ellipse x:Name="ServiceSpinnerWin" 
+                                                 StrokeThickness="15" 
+                                                 WidthRequest="150" 
+                                                 HeightRequest="150" 
+                                                 Aspect="Uniform">
+                                            <Ellipse.Stroke>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#4A8FD0" Offset="0.0"/>
+                                                    <GradientStop Color="#4A8FD0" Offset="0.45"/>
+                                                    <GradientStop Color="#45D18F" Offset="0.55"/>
+                                                    <GradientStop Color="#45D18F" Offset="1.0"/>
+                                                </LinearGradientBrush>
+                                            </Ellipse.Stroke>
+                                        </Ellipse>
+                                        
+                                        <!-- Service Active Indicator (Center Dot) -->
+                                        <Ellipse WidthRequest="90" HeightRequest="90" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Ellipse.Fill>
+                                                 <SolidColorBrush Color="Transparent" /> 
+                                            </Ellipse.Fill>
+                                            <Ellipse.Triggers>
+                                                <DataTrigger TargetType="Ellipse" Binding="{Binding IsServiceRunning}" Value="True">
+                                                    <Setter Property="Fill" Value="{StaticResource ServiceRunningColor}" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Ellipse" Binding="{Binding IsServiceRunning}" Value="False">
+                                                    <Setter Property="Fill" Value="Transparent" />
+                                                </DataTrigger>
+                                            </Ellipse.Triggers>
+                                        </Ellipse>
+                                    </Grid>
+                                    
+                                    <Label Text="{Binding ServiceStatus}" 
+                                           TextColor="Black" 
+                                           HorizontalOptions="Center"
+                                           FontSize="18"
+                                           FontAttributes="Bold"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+
+                        <!-- WEBSOCKET CARD -->
+                        <Border Grid.Column="1" 
+                                StrokeShape="RoundRectangle 20" 
+                                StrokeThickness="0" 
+                                BackgroundColor="{StaticResource CardBackgroundColor}"
+                                Padding="20">
+                            <Grid RowDefinitions="Auto, *">
+                                <Label Grid.Row="0" Text="CLIENTES WEB SOCKET" TextColor="Black" FontSize="14" HorizontalOptions="Center" Margin="0,0,0,20"/>
+                                
+                                <ScrollView Grid.Row="1">
+                                    <VerticalStackLayout Spacing="10">
+                                        <!-- Client List Mockup / Real Data -->
+                                        <Frame Padding="15" CornerRadius="10" HasShadow="False" BackgroundColor="White">
+                                            <Label Text="{Binding CurrentClientCount, StringFormat='Clientes: {0}'}" 
+                                                   TextColor="Black" 
+                                                   FontSize="16"/>
+                                        </Frame>
+                                        
+                                        <!-- Status of WS Server -->
+                                        <Frame Padding="15" CornerRadius="10" HasShadow="False" BackgroundColor="White">
+                                            <HorizontalStackLayout Spacing="10">
+                                                <Label Text="Estado:" TextColor="Black" FontSize="16" FontAttributes="Bold"/>
+                                                <Label Text="Inactivo" 
+                                                       TextColor="{StaticResource ServiceStoppedColor}" 
+                                                       FontSize="16">
+                                                     <Label.Triggers>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding IsWebSocketServerRunning}" Value="True">
+                                                            <Setter Property="Text" Value="Activo" />
+                                                            <Setter Property="TextColor" Value="{StaticResource ServiceRunningColor}" />
+                                                        </DataTrigger>
+                                                    </Label.Triggers>
+                                                </Label>
+                                            </HorizontalStackLayout>
+                                        </Frame>
+                                        
+                                        <!-- Side Bar Decoration -->
+                                        <BoxView WidthRequest="6" 
+                                                 HorizontalOptions="End" 
+                                                 VerticalOptions="Fill" 
+                                                 Color="{StaticResource ServiceRunningColor}" 
+                                                 IsVisible="{Binding IsWebSocketServerRunning}"/>
+                                    </VerticalStackLayout>
+                                </ScrollView>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+            
+        </Grid>
+    </ScrollView>
 </ContentPage>

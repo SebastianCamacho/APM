@@ -1,8 +1,8 @@
-using UI.Views; // Añadir este using
-using CommunityToolkit.Mvvm.Messaging; // Añadir este using para mensajería MVVM
-using Microsoft.Maui.Controls; // Añadir este using para Application.Current
-using AppsielPrintManager.Core.Interfaces; // Add this using for IWorkerServiceManager
-using Microsoft.Extensions.DependencyInjection; // Add this using for IServiceProvider
+using UI.Views;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Maui.Controls;
+using AppsielPrintManager.Core.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 
 namespace UI
@@ -11,7 +11,8 @@ namespace UI
     {
         private readonly IServiceProvider _serviceProvider;
         private IWorkerServiceManager _workerServiceManager;
-        private ITrayAppService _trayAppService; // Nuevo: para el servicio TrayApp
+        private ITrayAppService _trayAppService;
+        private IPlatformService _platformService;
 
         public App(IServiceProvider serviceProvider)
         {
@@ -20,21 +21,48 @@ namespace UI
             _serviceProvider = serviceProvider;
             UserAppTheme = AppTheme.Light;
 
+            // Establecer LoginView como MainPage inicial
+            MainPage = new LoginView();
+
             // Suscribirse al mensaje de login exitoso
             WeakReferenceMessenger.Default.Register<LoginSuccessMessage>(this, (r, m) =>
             {
-                // Al recibir el mensaje de éxito, establecer AppShell como la MainPage de la aplicación
-                Application.Current.MainPage = new AppShell();
+                try
+                {
+                    var appShell = _serviceProvider.GetService<AppShell>();
+                    if (appShell != null)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            if (Application.Current?.MainPage is LoginView)
+                            {
+                                MainPage = appShell;
+                            }
+                        });
+                    }
+                }
+                catch (ObjectDisposedException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"App cerrándose: {ex.Message}");
+                }
             });
 
-            // Try to start WorkerService and TrayApp when the MAUI app initializes (on Windows only)
 #if WINDOWS
-            _workerServiceManager = _serviceProvider.GetService<IWorkerServiceManager>();
-            if (_workerServiceManager != null)
+            // En Windows, usamos IPlatformService para iniciar el Worker, ya que ahora 
+            // IPlatformService (WindowsPlatformService) encapsula la lógica correcta.
+            _platformService = _serviceProvider.GetService<IPlatformService>();
+            if (_platformService != null)
             {
                 Task.Run(async () =>
                 {
-                    await _workerServiceManager.StartWorkerServiceAsync();
+                    try
+                    {
+                        await _platformService.StartBackgroundServiceAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error starting worker service: {ex}");
+                    }
                 });
             }
 
@@ -43,21 +71,53 @@ namespace UI
             {
                 Task.Run(async () =>
                 {
-                    await _trayAppService.StartTrayAppAsync();
+                    try
+                    {
+                        await _trayAppService.StartTrayAppAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error starting tray app: {ex}");
+                    }
+                });
+            }
+#elif ANDROID 
+            _platformService = _serviceProvider.GetService<IPlatformService>();
+            if (_platformService != null)
+            {
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (!_platformService.IsBackgroundServiceRunning)
+                        {
+                            await _platformService.StartBackgroundServiceAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error starting background service: {ex}");
+                    }
                 });
             }
 #endif
         }
 
-        protected override Window CreateWindow(IActivationState? activationState)
+        protected override void OnStart()
         {
-            // La ventana inicial contendrá la LoginView.
-            // Una vez que el login sea exitoso, la MainPage de la aplicación se reemplazará por AppShell.
-            var window = new Window(new LoginView());
-            return window;
+            base.OnStart();
+        }
+
+        protected override void OnSleep()
+        {
+            base.OnSleep();
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
         }
     }
 
-    // Definir un mensaje simple para comunicar el éxito del login
     public class LoginSuccessMessage { }
 }
