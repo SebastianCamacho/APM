@@ -10,5 +10,6 @@ namespace AppsielPrintManager.Core.Interfaces
         Task SaveTemplateAsync(PrintTemplate template);
         Task<List<PrintTemplate>> GetAllTemplatesAsync();
         Task DeleteTemplateAsync(string templateId);
+        Task EnsureDefaultTemplatesAsync();
     }
 }

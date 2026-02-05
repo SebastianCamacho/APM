@@ -144,13 +144,31 @@ namespace AppsielPrintManager.Infraestructure.Services
                             textValue = "";
                         }
 
-                        renderedSection.Elements.Add(new RenderedElement
+                        var renderedElement = new RenderedElement
                         {
                             Type = element.Type ?? "Text",
                             TextValue = textValue,
                             Align = element.Align ?? section.Align,
                             Format = element.Format ?? section.Format
-                        });
+                        };
+
+                        // SOPORTE MULTIMEDIA Y QR
+                        if (string.Equals(element.Type, "QR", StringComparison.OrdinalIgnoreCase))
+                        {
+                            renderedElement.QrValue = val; // El valor del QR viene del Source o Static
+                            if (element.Properties != null && element.Properties.ContainsKey("Size"))
+                            {
+                                int.TryParse(element.Properties["Size"], out int size);
+                                renderedElement.Size = size;
+                            }
+                        }
+                        else if (string.Equals(element.Type, "Image", StringComparison.OrdinalIgnoreCase))
+                        {
+                            renderedElement.Base64Image = val; // El Base64 viene del Source o Static
+                            // Propiedades adicionales si fuera necesario
+                        }
+
+                        renderedSection.Elements.Add(renderedElement);
                     }
                     break;
             }

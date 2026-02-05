@@ -7,12 +7,14 @@ namespace WorkerService
     {
         private readonly ILogger<Worker> _logger;
         private readonly IWebSocketService _webSocketService;
+        private readonly ITemplateRepository _templateRepository; // Inyectar Repositorio
         private const int WebSocketPort = 7000;
 
-        public Worker(ILogger<Worker> logger, IWebSocketService webSocketService)
+        public Worker(ILogger<Worker> logger, IWebSocketService webSocketService, ITemplateRepository templateRepository)
         {
             _logger = logger;
             _webSocketService = webSocketService;
+            _templateRepository = templateRepository;
 
             // Subscribe to WebSocketService events
             _webSocketService.OnClientConnected += (sender, clientId) =>
@@ -40,6 +42,10 @@ namespace WorkerService
 
             try
             {
+                // Validación de Plantillas al inicio
+                await _templateRepository.EnsureDefaultTemplatesAsync();
+                _logger.LogInformation("Plantillas predeterminadas validadas/creadas exitosamente.");
+
                 await _webSocketService.StartServerAsync(WebSocketPort);
                 _logger.LogInformation($"Servidor WebSocket {(_webSocketService.IsRunning ? "iniciado" : "falló al iniciar")} en puerto {WebSocketPort}.");
             }

@@ -156,13 +156,73 @@ const templates = {
     factura: {
         "JobId": "FE-2025",
         "StationId": "ADMIN",
-        "PrinterId": "printHambuger",
+        "PrinterId": "123",
         "DocumentType": "factura_electronica",
         "Document": {
-            "header": { "Title": "FACTURA ELECTRÓNICA DE VENTA", "Number": "FE-2025" },
-            "customer": { "Name": "Empresa Cliente S.A.S", "Nit": "800.111.222-3", "Address": "Av. Empresarial 55" },
-            "totals": { "Subtotal": 100000, "Tax": 19000, "Total": 119000 },
-            "cufe": "abc1234567890def..."
+            "Seller": {
+                "Name": "Appsiel S.A.S",
+                "Nit": "900.123.456-7",
+                "TaxRegime": "Responsable de IVA",
+                "Address": "Calle 123 #45-67",
+                "City": "Bogotá, Colombia",
+                "Phone": "300 123 4567",
+                "Email": "facturacion@appsiel.com.co",
+                "ResolutionNumber": "18760000001",
+                "ResolutionDate": "2024-01-01T00:00:00",
+                "ResolutionPrefix": "FE",
+                "ResolutionFrom": "1",
+                "ResolutionTo": "10000",
+                "ResolutionText": "Autorización de Numeración de Facturación Electrónica No. 18760000001 del 2024-01-01 al 2025-01-01 del FE-1 al FE-10000"
+            },
+            "Buyer": {
+                "Name": "Cliente VIP Ltda",
+                "Nit": "800.987.654-3",
+                "Address": "Carrera 7 #80-20, Bogotá",
+                "Email": "facturacion@clientevip.com"
+            },
+            "Invoice": {
+                "Number": "FE-9876",
+                "IssueDate": new Date().toISOString(),
+                "DueDate": new Date(new Date().getTime() + 30*24*60*60*1000).toISOString(), // +30 días
+                "PaymentMethod": "Crédito 30 Días",
+                "PaymentMeans": "Transferencia Bancaria",
+                "Currency": "COP",
+                "Items": [
+                    { 
+                        "Code": "SERV-001", 
+                        "Description": "Servicio de Consultoría Software", 
+                        "Quantity": 10, 
+                        "UnitPrice": 150000, 
+                        "Discount": 0, 
+                        "IvaRate": 19, 
+                        "IvaAmount": 285000, 
+                        "Total": 1785000 
+                    },
+                    { 
+                        "Code": "LIC-005", 
+                        "Description": "Licencia Anual Appsiel Pro", 
+                        "Quantity": 1, 
+                        "UnitPrice": 2500000, 
+                        "Discount": 250000, // 10%
+                        "IvaRate": 19, 
+                        "IvaAmount": 427500, 
+                        "Total": 2677500 
+                    }
+                ],
+                "Subtotal": 3750000,
+                "Discount": 250000,
+                "Iva": 712500,
+                "Total": 4462500,
+                "Taxes": [
+                    { "Name": "IVA 19%", "Base": 3750000, "Rate": 19, "Amount": 712500 }
+                ]
+            },
+            "TechKey": "de30fc14561023a134...", // CUFE real suele ser muy largo
+            "QrString": "https://catalogo-vpfe.dian.gov.co/document/searchqr?documentkey=de30fc14...",
+            "LegalNotes": [
+                "Esta factura se asimila en todos sus efectos a una letra de cambio (Art. 774 C.Co)",
+                "Régimen Común - Iva Responsable"
+            ]
         }
     },
     sticker: { // Nuevo tipo de documento

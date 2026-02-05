@@ -111,5 +111,23 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             }
             return Task.CompletedTask;
         }
+
+        public async Task EnsureDefaultTemplatesAsync()
+        {
+            var requiredTypes = new[] { "ticket_venta", "comanda", "factura_electronica" };
+
+            foreach (var type in requiredTypes)
+            {
+                var fileName = $"{type.ToLower()}.json";
+                var filePath = Path.Combine(_directoryPath, fileName);
+
+                if (!File.Exists(filePath))
+                {
+                    _logger.LogInfo($"Validación inicial: Plantilla '{type}' no existe. Creándola...");
+                    var defaultTemplate = AppsielPrintManager.Core.Services.DefaultTemplateProvider.GetDefaultTemplate(type);
+                    await SaveTemplateAsync(defaultTemplate);
+                }
+            }
+        }
     }
 }
