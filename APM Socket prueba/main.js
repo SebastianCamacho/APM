@@ -156,7 +156,7 @@ const templates = {
     factura: {
         "JobId": "FE-2025",
         "StationId": "ADMIN",
-        "PrinterId": "123",
+        "PrinterId": "printHambuger",
         "DocumentType": "factura_electronica",
         "Document": {
             "Seller": {
@@ -218,7 +218,7 @@ const templates = {
                 ]
             },
             "TechKey": "de30fc14561023a134...", // CUFE real suele ser muy largo
-            "QrString": "https://catalogo-vpfe.dian.gov.co/document/searchqr?documentkey=de30fc14...",
+            "QrString": "https://www.appsiel.com.co/",
             "LegalNotes": [
                 "Esta factura se asimila en todos sus efectos a una letra de cambio (Art. 774 C.Co)",
                 "Régimen Común - Iva Responsable"

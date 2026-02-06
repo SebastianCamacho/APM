@@ -15,6 +15,16 @@ namespace AppsielPrintManager.Infraestructure.Services
         private readonly ILoggingService _logger;
         private readonly ITemplateRepository _templateRepository;
 
+        // Diccionario para normalizar tipos conocidos y evitar problemas de Case-Sensitivity
+        private static readonly Dictionary<string, string> _knownTypes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "QR", "QR" },
+            { "BARCODE", "Barcode" },
+            { "IMAGE", "Image" },
+            { "TEXT", "Text" },
+            { "LINE", "Line" }
+        };
+
         public TicketRendererService(ILoggingService logger, ITemplateRepository templateRepository)
         {
             _logger = logger;
@@ -144,16 +154,30 @@ namespace AppsielPrintManager.Infraestructure.Services
                             textValue = "";
                         }
 
+                        // Normalizar el tipo usando el diccionario (o dejar el original si no se conoce)
+                        string rawType = element.Type ?? "Text";
+                        string normalizedType = _knownTypes.TryGetValue(rawType, out var known) ? known : rawType;
+
+                        // DEBUG LOG: Ver qué está pasando con los QRs
+                        string sizeDebug = "Default";
+                        if (element.Properties != null && element.Properties.TryGetValue("Size", out var sProp)) sizeDebug = sProp;
+
+                        if (normalizedType == "QR" || rawType.Contains("QR", StringComparison.OrdinalIgnoreCase))
+                        {
+                            //_logger.LogInfo($"Procesando Elemento QR. RawType: '{rawType}', Source: '{element.Source}', SizeProp: '{sizeDebug}', ValueLen: {val?.ToString()?.Length ?? 0}");
+                        }
+
                         var renderedElement = new RenderedElement
                         {
-                            Type = element.Type ?? "Text",
+                            Type = normalizedType,
                             TextValue = textValue,
                             Align = element.Align ?? section.Align,
                             Format = element.Format ?? section.Format
                         };
 
                         // SOPORTE MULTIMEDIA Y QR
-                        if (string.Equals(element.Type, "QR", StringComparison.OrdinalIgnoreCase))
+                        // Usamos normalizedType para el check
+                        if (string.Equals(normalizedType, "QR", StringComparison.OrdinalIgnoreCase))
                         {
                             renderedElement.QrValue = val; // El valor del QR viene del Source o Static
                             if (element.Properties != null && element.Properties.ContainsKey("Size"))
@@ -162,7 +186,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                                 renderedElement.Size = size;
                             }
                         }
-                        else if (string.Equals(element.Type, "Image", StringComparison.OrdinalIgnoreCase))
+                        else if (string.Equals(normalizedType, "Image", StringComparison.OrdinalIgnoreCase))
                         {
                             renderedElement.Base64Image = val; // El Base64 viene del Source o Static
                             // Propiedades adicionales si fuera necesario

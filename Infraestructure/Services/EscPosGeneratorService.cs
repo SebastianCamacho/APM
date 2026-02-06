@@ -343,14 +343,38 @@ namespace AppsielPrintManager.Infraestructure.Services
         {
             var cmds = new List<byte>();
             byte[] data = GetPosBytes(element.QrValue ?? "");
+
+            // 1. Configurar Modelo QR: Usar Modelo 2 (Mejor compatibilidad y eficiencia)
+            // GS ( k pL pH cn fn n1 n2 --> cn=49 (31 hex), fn=65 (41 hex) para seleccionar modelo
+            // n1=50 (32 hex) = Modelo 2
             cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00 });
-            byte size = (byte)Math.Clamp(element.Size ?? 3, 1, 16);
+
+            // 2. Configurar Tamaño del Módulo (Size)
+            // Range recomendado: 1 a 16. Para URLs largas, mejor usar 3 o 4.
+            // Si el usuario puso algo > 6 en la plantilla, lo forzamos a 4 para prevenir overflow.
+            int requestedSize = element.Size ?? 3;
+            if (requestedSize > 8) requestedSize = 4; // Protección anti-overflow
+            byte size = (byte)Math.Clamp(requestedSize, 1, 16);
+
             cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, size });
-            cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x32 });
-            int len = data.Length;
-            cmds.AddRange(new byte[] { GS, 0x28, 0x6B, (byte)(len % 256), (byte)(len / 256), 0x31, 0x50, 0x30 });
+
+            // 3. Nivel de Corrección de Errores
+            // Cambiamos a Nivel 'L' (7%) en lugar de 'M' o 'H', para que el QR sea menos denso y quepa mejor.
+            // 48 (30 hex) = L, 49 (31 hex) = M, 50 (32 hex) = Q, 51 (33 hex) = H
+            cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x30 }); // Nivel L (0x30)
+
+            // 4. Almacenar datos del QR
+            // GS ( k pL pH cn fn m d1...dk
+            int len = data.Length + 3; // +3 por los parametros m, d1...dk
+            int pL = len % 256;
+            int pH = len / 256;
+
+            cmds.AddRange(new byte[] { GS, 0x28, 0x6B, (byte)pL, (byte)pH, 0x31, 0x50, 0x30 });
             cmds.AddRange(data);
+
+            // 5. Imprimir el símbolo QR
             cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30 });
+
             cmds.Add(0x0A);
             return cmds.ToArray();
         }

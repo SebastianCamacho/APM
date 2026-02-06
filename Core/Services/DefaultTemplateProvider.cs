@@ -42,6 +42,7 @@ namespace AppsielPrintManager.Core.Services
                             new TemplateElement { Type = "Line" }
                         }
                     },
+
                     // Buyer Info
                     new TemplateSection
                     {
@@ -87,9 +88,9 @@ namespace AppsielPrintManager.Core.Services
                         {
                             new TemplateElement { Label = "Cant", Source = "Quantity", WidthPercentage = 10 },
                             new TemplateElement { Label = "Desc", Source = "Description", WidthPercentage = 40 },
-                            new TemplateElement { Label = "Precio", Source = "UnitPrice", WidthPercentage = 15, Align = "Right" },
+                            new TemplateElement { Label = "Precio", Source = "UnitPrice", WidthPercentage = 19, Align = "Right" },
                             new TemplateElement { Label = "IVA", Source = "IvaRate", WidthPercentage = 10, Align = "Right" },
-                            new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 25, Align = "Right" }
+                            new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 21, Align = "Right" }
                         }
                     },
                     // Totals
@@ -109,6 +110,7 @@ namespace AppsielPrintManager.Core.Services
                             new TemplateElement { Type = "Line" }
                         }
                     },
+
                     // QR & Legal (Resolución, CUFE)
                     new TemplateSection
                     {
@@ -119,7 +121,7 @@ namespace AppsielPrintManager.Core.Services
                         Elements = new List<TemplateElement>
                         {
                             new TemplateElement { Type = "Text", Label = "CUFE: ", Source = "TechKey", Format = "FontB" },
-                            new TemplateElement { Type = "QR", Source = "QrString", Properties = new Dictionary<string, string> { { "Size", "6" }, { "Align", "Center" } } },
+                            new TemplateElement { Type = "QR", Source = "QrString", Properties = new Dictionary<string, string> { { "Size", "8" } } },
                             new TemplateElement { Type = "Text", StaticValue = "Factura generada por Software APPSIEL POS" }
                         }
                     }
@@ -173,7 +175,6 @@ namespace AppsielPrintManager.Core.Services
                             new TemplateElement { Label = "Cant", Source = "Qty", WidthPercentage = 13 },
                             new TemplateElement { Label = "Producto", Source = "Name", WidthPercentage = 55 },
                             new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 17, Align = "Right" },
-                            new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 15, Align = "Right" }
                         }
                     },
                     new TemplateSection
@@ -187,7 +188,7 @@ namespace AppsielPrintManager.Core.Services
                             new TemplateElement { Type = "Line" },
                             new TemplateElement { Type = "Text", Source = "sale.Subtotal", Label = "Subtotal: " },
                             new TemplateElement { Type = "Text", Source = "sale.IVA", Label = "IVA: " },
-                            new TemplateElement { Type = "Text", Source = "sale.Total", Label = "TOTAL: ", Format = "Bold FontB Size2" },
+                            new TemplateElement { Type = "Text", Source = "sale.Total", Label = "TOTAL: ", Format = "Bold FontA Size2" },
                             new TemplateElement { Type = "Line" }
                         }
                     },
