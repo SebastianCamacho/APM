@@ -357,18 +357,32 @@ namespace AppsielPrintManager.Infraestructure.Services
             {
                 while (webSocket.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
                 {
-                    var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                    using (var ms = new System.IO.MemoryStream())
+                    {
+                        WebSocketReceiveResult result;
+                        do
+                        {
+                            result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
 
-                    if (result.MessageType == WebSocketMessageType.Text && result.Count > 0)
-                    {
-                        var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                        _logger.LogInfo($"Mensaje de {clientId}: {message}");
-                        // Encolar mensaje CON el ID del cliente
-                        _messageQueue.Enqueue((clientId, message));
-                    }
-                    else if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken);
+                            if (result.MessageType == WebSocketMessageType.Close)
+                            {
+                                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken);
+                                return;
+                            }
+
+                            if (result.Count > 0)
+                            {
+                                ms.Write(buffer, 0, result.Count);
+                            }
+
+                        } while (!result.EndOfMessage && !cancellationToken.IsCancellationRequested);
+
+                        if (result.MessageType == WebSocketMessageType.Text && ms.Length > 0)
+                        {
+                            var message = Encoding.UTF8.GetString(ms.ToArray());
+                            // _logger.LogInfo($"Mensaje completo recibido de {clientId}. Longitud: {message.Length}"); // Log opcional para debug
+                            _messageQueue.Enqueue((clientId, message));
+                        }
                     }
                 }
             }
