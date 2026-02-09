@@ -19,6 +19,7 @@ namespace AppsielPrintManager.Core.Models
         /// La altura deseada del código de barras.
         /// </summary>
         public int Height { get; set; }
+        public int? Width { get; set; } // Ancho del módulo
 
         /// <summary>
         /// Indica si se debe imprimir la interpretación legible por humanos (Human Readable Interpretation - HRI)

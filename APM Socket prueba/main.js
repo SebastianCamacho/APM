@@ -233,22 +233,24 @@ const templates = {
         "Document": {
             "stickers": [
                 {
-                    "type": "CODE128",
-                    "item_id": "170",
-                    "name": "BLUSA VERONICA XS",
-                    "price": "$90.000",
-                    "height": 80,
-                    "hri": true,
-                    "value": "123456" 
+                    "Type": "CODE128",
+                    "ItemId": "170",
+                    "Name": "BLUSA VERONICA XS",
+                    "Price": "$90.000",
+                    "Height": 80,
+                    "Width": 3,
+                    "Hri": false,
+                    "Value": "123456" 
                 },
                 {
-                    "type": "CODE128",
-                    "item_id": "171",
-                    "name": "PANTALON JEAN 30",
-                    "price": "$120.000",
-                    "height": 80,
-                    "hri": true,
-                    "value": "654321" 
+                    "Type": "CODE128",
+                    "ItemId": "171",
+                    "Name": "PANTALON JEAN 30",
+                    "Price": "$120.000",
+                    "Height": 40,
+                    "Width": 5,
+                    "Hri": true,
+                    "Value": "654321" 
                 }
             ]
         }

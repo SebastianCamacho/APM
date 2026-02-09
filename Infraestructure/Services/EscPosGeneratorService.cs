@@ -343,7 +343,19 @@ namespace AppsielPrintManager.Infraestructure.Services
             // 2. Imprimir Código de Barras
             // Nota: El alineamiento ya debería estar seteado, pero aseguramos Center si no se especificó
             cmds.AddRange(SetAlignment(element.Align ?? "Center"));
-            cmds.AddRange(new byte[] { GS, 0x68, (byte)(element.Height ?? 50) }); // Altura
+
+            // Configurar Ancho del Módulo (GS w n)
+            if (element.BarWidth.HasValue)
+            {
+                // Rango típico 1-5 (User requested limit: max 5)
+                byte width = (byte)Math.Clamp(element.BarWidth.Value, 1, 5);
+                cmds.AddRange(new byte[] { GS, 0x77, width });
+            }
+
+            // Altura (User requested limit: max 500)
+            int height = Math.Clamp(element.Height ?? 100, 1, 500);
+            cmds.AddRange(new byte[] { GS, 0x68, (byte)(height > 255 ? 255 : height) }); 
+
 
             // HRI (Human Readable Interpretation) - Números debajo de las barras
             // 0x00 = Ninguno, 0x02 = Debajo

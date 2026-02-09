@@ -103,7 +103,7 @@ namespace AppsielPrintManager.Core.Services
             if (type == "sticker_codigo_barras")
             {
                 // Para stickers, retornamos SOLO las propiedades relevantes y salimos
-                return new List<string> { "item_id", "name", "price", "value", "height", "hri" };
+                return new List<string> { "ItemId", "Name", "Price", "Value", "Height", "Width", "Hri" };
             }
 
             // Lista base para otros documentos

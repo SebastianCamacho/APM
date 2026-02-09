@@ -15,13 +15,14 @@ namespace AppsielPrintManager.Core.Models
         /// </summary>
         public class StickerData
         {
-            public string item_id { get; set; }
-            public string name { get; set; }
-            public string price { get; set; }
-            public string value { get; set; } // El valor del código de barras
-            public string type { get; set; } // Ej. "EAN13", "CODE128"
-            public int? height { get; set; }
-            public bool? hri { get; set; }
+            public string ItemId { get; set; }
+            public string Name { get; set; }
+            public string Price { get; set; }
+            public string Value { get; set; } // El valor del código de barras
+            public string Type { get; set; } // Ej. "EAN13", "CODE128"
+            public int? Height { get; set; }
+            public int? Width { get; set; } // Ancho del módulo (1-6)
+            public bool? Hri { get; set; }
         }
     }
 }

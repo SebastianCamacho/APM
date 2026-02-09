@@ -37,15 +37,15 @@ namespace AppsielPrintManager.Core.Services
                             new TemplateElement
                             {
                                 Type = "Barcode",
-                                Source = "value", // El valor del código de barras
+                                Source = "Value", // El valor del código de barras
                                 Align = "Center",
                                 Properties = new Dictionary<string, string>
                                 {
                                     { "Hri", "true" },
-                                    { "Height", "80" },
-                                    { "NameSource", "name" },
-                                    { "ItemIdSource", "item_id" },
-                                    { "PriceSource", "price" }
+                                    { "Height", "160" },
+                                    { "NameSource", "Name" },
+                                    { "ItemIdSource", "ItemId" },
+                                    { "PriceSource", "Price" }
                                 }
                             }
                         }

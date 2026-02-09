@@ -12,6 +12,7 @@ namespace AppsielPrintManager.Core.Models
         public string Align { get; set; } // Processed alignment
         public int? WidthMm { get; set; } // For images
         public int? Height { get; set; } // For barcodes
+        public int? BarWidth { get; set; } // For barcode module width
         public bool? Hri { get; set; } // For barcodes
         public int? Size { get; set; } // For QR
         public int? WidthPercentage { get; set; } // For dynamic table column width
