@@ -20,11 +20,20 @@ namespace UI.ViewModels
         [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
         [NotifyPropertyChangedFor(nameof(ShowStaticValueInput))]
         [NotifyPropertyChangedFor(nameof(ShowTableProperties))]
+        [NotifyPropertyChangedFor(nameof(IsBarcode))]
+        [NotifyPropertyChangedFor(nameof(IsQR))]
+        [NotifyPropertyChangedFor(nameof(IsImage))]
+        [NotifyPropertyChangedFor(nameof(ShowBarcodeProperties))]
+        [NotifyPropertyChangedFor(nameof(ShowQRProperties))]
+        [NotifyPropertyChangedFor(nameof(ShowLabelEntry))]
+        [NotifyPropertyChangedFor(nameof(ShowGenericSourcePicker))]
+        [NotifyPropertyChangedFor(nameof(ShowImageProperties))]
         private string type;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
         [NotifyPropertyChangedFor(nameof(ShowStaticValueInput))]
+        [NotifyPropertyChangedFor(nameof(ShowGenericSourcePicker))]
         private bool isStatic;
 
         partial void OnIsStaticChanged(bool value)
@@ -42,11 +51,23 @@ namespace UI.ViewModels
         public bool IsLine => Type == "Line";
         public bool IsNotLine => !IsLine;
         public bool IsText => Type == "Text";
+        public bool IsBarcode => Type == "Barcode";
+        public bool IsQR => Type == "QR";
+        public bool IsImage => Type == "Image";
 
         public bool ShowStaticToggle => IsText;
-        public bool ShowLabelAndSource => IsNotLine && !(IsText && IsStatic);
+        public bool ShowLabelEntry => IsText;
+        public bool ShowGenericSourcePicker => (IsText && !IsStatic) || IsImage;
         public bool ShowStaticValueInput => IsText && IsStatic;
         public bool ShowTableProperties => IsTableSection && IsNotLine;
+
+        public bool ShowBarcodeProperties => IsBarcode;
+        public bool ShowQRProperties => IsQR;
+        public bool ShowSourceSelector => IsBarcode || IsQR;
+        public bool ShowTextFormatting => IsText;
+        public bool ShowImageProperties => IsImage;
+
+        public bool ShowLabelAndSource => ShowLabelEntry || ShowGenericSourcePicker;
 
         [ObservableProperty]
         private string label;
@@ -86,6 +107,15 @@ namespace UI.ViewModels
         [NotifyPropertyChangedFor(nameof(AllSuggestions))]
         [NotifyPropertyChangedFor(nameof(DisplaySuggestions))]
         private string? documentType;
+
+        [ObservableProperty]
+        private int? barWidth;
+
+        [ObservableProperty]
+        private int? height;
+
+        [ObservableProperty]
+        private int? size;
 
         [ObservableProperty]
         private bool isHeaderBold;
@@ -135,6 +165,9 @@ namespace UI.ViewModels
             StaticValue = model.StaticValue ?? string.Empty;
             Align = model.Align ?? "Ninguno";
             WidthPercentage = model.WidthPercentage;
+            BarWidth = model.BarWidth;
+            Height = model.Height;
+            Size = model.Size;
 
             ParseFormat(model.Format ?? string.Empty);
             ParseHeaderFormat(model.HeaderFormat ?? string.Empty);
@@ -197,6 +230,9 @@ namespace UI.ViewModels
             _model.StaticValue = string.IsNullOrEmpty(StaticValue) ? null : StaticValue;
             _model.Align = (Align == "Ninguno") ? null : Align;
             _model.WidthPercentage = WidthPercentage;
+            _model.BarWidth = BarWidth;
+            _model.Height = Height;
+            _model.Size = Size;
             _model.Format = GenerateFormat();
             _model.HeaderFormat = GenerateHeaderFormat();
 
