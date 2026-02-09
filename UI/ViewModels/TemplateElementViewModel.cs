@@ -17,7 +17,8 @@ namespace UI.ViewModels
         [NotifyPropertyChangedFor(nameof(IsNotLine))]
         [NotifyPropertyChangedFor(nameof(IsText))]
         [NotifyPropertyChangedFor(nameof(ShowStaticToggle))]
-        [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
+        [NotifyPropertyChangedFor(nameof(ShowLabelEntry))]
+        [NotifyPropertyChangedFor(nameof(ShowGenericSourcePicker))]
         [NotifyPropertyChangedFor(nameof(ShowStaticValueInput))]
         [NotifyPropertyChangedFor(nameof(ShowTableProperties))]
         [NotifyPropertyChangedFor(nameof(IsBarcode))]
@@ -25,15 +26,16 @@ namespace UI.ViewModels
         [NotifyPropertyChangedFor(nameof(IsImage))]
         [NotifyPropertyChangedFor(nameof(ShowBarcodeProperties))]
         [NotifyPropertyChangedFor(nameof(ShowQRProperties))]
-        [NotifyPropertyChangedFor(nameof(ShowLabelEntry))]
-        [NotifyPropertyChangedFor(nameof(ShowGenericSourcePicker))]
+        [NotifyPropertyChangedFor(nameof(ShowTextFormatting))]
         [NotifyPropertyChangedFor(nameof(ShowImageProperties))]
+        [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
         private string type;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
-        [NotifyPropertyChangedFor(nameof(ShowStaticValueInput))]
+        [NotifyPropertyChangedFor(nameof(ShowLabelEntry))]
         [NotifyPropertyChangedFor(nameof(ShowGenericSourcePicker))]
+        [NotifyPropertyChangedFor(nameof(ShowStaticValueInput))]
         private bool isStatic;
 
         partial void OnIsStaticChanged(bool value)
@@ -56,7 +58,7 @@ namespace UI.ViewModels
         public bool IsImage => Type == "Image";
 
         public bool ShowStaticToggle => IsText;
-        public bool ShowLabelEntry => IsText;
+        public bool ShowLabelEntry => IsText && !IsStatic;
         public bool ShowGenericSourcePicker => (IsText && !IsStatic) || IsImage;
         public bool ShowStaticValueInput => IsText && IsStatic;
         public bool ShowTableProperties => IsTableSection && IsNotLine;
@@ -67,6 +69,7 @@ namespace UI.ViewModels
         public bool ShowTextFormatting => IsText;
         public bool ShowImageProperties => IsImage;
 
+        // Mantener por compatibilidad o transición en XAML, pero ahora responde a cambios en IsStatic también
         public bool ShowLabelAndSource => ShowLabelEntry || ShowGenericSourcePicker;
 
         [ObservableProperty]
