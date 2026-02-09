@@ -11,7 +11,46 @@ namespace AppsielPrintManager.Core.Services
             {
                 "comanda" => CreateDefaultCommandTemplate(),
                 "factura_electronica" => CreateDefaultElectronicInvoiceTemplate(),
+                "sticker_codigo_barras" => CreateDefaultStickerTemplate(),
                 _ => CreateDefaultTicketTemplate(documentType) // Por defecto un ticket estándar
+            };
+        }
+
+        private static PrintTemplate CreateDefaultStickerTemplate()
+        {
+            return new PrintTemplate
+            {
+                DocumentType = "sticker_codigo_barras",
+                Name = "Plantilla Etiquetas Código de Barras",
+                Sections = new List<TemplateSection>
+                {
+                    new TemplateSection
+                    {
+                        Name = "Stickers",
+                        Type = "Repeated",
+                        DataSource = "stickers", // Mapea a 'Document.stickers'
+                        Align = "Center",
+                        Elements = new List<TemplateElement>
+                        {
+                            // Elemento BARCODE genérico. El Renderer se encarga de extraer
+                            // Name, ItemId, Price del objeto actual de la lista.
+                            new TemplateElement
+                            {
+                                Type = "Barcode",
+                                Source = "value", // El valor del código de barras
+                                Align = "Center",
+                                Properties = new Dictionary<string, string>
+                                {
+                                    { "Hri", "true" },
+                                    { "Height", "80" },
+                                    { "NameSource", "name" },
+                                    { "ItemIdSource", "item_id" },
+                                    { "PriceSource", "price" }
+                                }
+                            }
+                        }
+                    }
+                }
             };
         }
 

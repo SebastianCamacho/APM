@@ -124,15 +124,69 @@ namespace AppsielPrintManager.Infraestructure.Services
                                     ? GetValueFromPath(item, element.Source!)?.ToString()
                                     : (element.Source == "." ? item?.ToString() : element.StaticValue);
 
+                                string rawType = element.Type ?? "Text";
+                                string normalizedType = _knownTypes.TryGetValue(rawType, out var known) ? known : rawType;
+
                                 var textValue = $"{(element.Label ?? string.Empty)}{val}";
 
-                                renderedSection.Elements.Add(new RenderedElement
+                                var renderedElement = new RenderedElement
                                 {
-                                    Type = element.Type ?? "Text",
+                                    Type = normalizedType,
                                     TextValue = textValue,
                                     Align = element.Align ?? section.Align,
                                     Format = element.Format ?? section.Format
-                                });
+                                };
+
+                                if (normalizedType == "Barcode")
+                                {
+                                    renderedElement.BarcodeValue = val;
+
+                                    // 1. Obtener nombres de campos desde el diccionario de Propiedades
+                                    string nameField = (element.Properties != null && element.Properties.ContainsKey("NameSource")) ? element.Properties["NameSource"] : "name";
+                                    string idField = (element.Properties != null && element.Properties.ContainsKey("ItemIdSource")) ? element.Properties["ItemIdSource"] : "item_id";
+                                    string priceField = (element.Properties != null && element.Properties.ContainsKey("PriceSource")) ? element.Properties["PriceSource"] : "price";
+
+                                    // 2. Extraer valores
+                                    renderedElement.ProductName = GetValueFromPath(item, nameField)?.ToString();
+                                    if (string.IsNullOrEmpty(renderedElement.ProductName) && nameField == "name")
+                                        renderedElement.ProductName = GetValueFromPath(item, "ProductName")?.ToString();
+
+                                    renderedElement.ItemId = GetValueFromPath(item, idField)?.ToString();
+                                    if (string.IsNullOrEmpty(renderedElement.ItemId) && idField == "item_id")
+                                        renderedElement.ItemId = GetValueFromPath(item, "ItemId")?.ToString();
+
+                                    renderedElement.ProductPrice = GetValueFromPath(item, priceField)?.ToString();
+                                    if (string.IsNullOrEmpty(renderedElement.ProductPrice) && priceField == "price")
+                                        renderedElement.ProductPrice = GetValueFromPath(item, "ProductPrice")?.ToString();
+
+                                    // DEBUG LOGS
+                                    _logger.LogInfo($"[TicketRenderer] Barcode processing. Item: {JsonSerializer.Serialize(item)}");
+                                    _logger.LogInfo($"[TicketRenderer] Extracted - Name ({nameField}): {renderedElement.ProductName}, Id ({idField}): {renderedElement.ItemId}, Price ({priceField}): {renderedElement.ProductPrice}");
+
+
+                                    // Propiedades HRI y Height
+                                    if (element.Properties != null && element.Properties.ContainsKey("Height"))
+                                        renderedElement.Height = int.Parse(element.Properties["Height"]);
+                                    else
+                                        renderedElement.Height = GetValueFromPath(item, "height") as int? ?? (int.TryParse(GetValueFromPath(item, "height")?.ToString(), out int h) ? h : null);
+
+                                    if (element.Properties != null && element.Properties.ContainsKey("Hri"))
+                                        renderedElement.Hri = bool.Parse(element.Properties["Hri"]);
+                                    else
+                                        renderedElement.Hri = GetValueFromPath(item, "hri") as bool? ?? (bool.TryParse(GetValueFromPath(item, "hri")?.ToString(), out bool b) ? b : null);
+
+                                }
+                                else if (normalizedType == "QR")
+                                {
+                                    renderedElement.QrValue = val;
+                                    if (element.Properties != null && element.Properties.ContainsKey("Size"))
+                                    {
+                                        int.TryParse(element.Properties["Size"], out int size);
+                                        renderedElement.Size = size;
+                                    }
+                                }
+
+                                renderedSection.Elements.Add(renderedElement);
                             }
                         }
                     }
@@ -158,15 +212,6 @@ namespace AppsielPrintManager.Infraestructure.Services
                         string rawType = element.Type ?? "Text";
                         string normalizedType = _knownTypes.TryGetValue(rawType, out var known) ? known : rawType;
 
-                        // DEBUG LOG: Ver qué está pasando con los QRs
-                        string sizeDebug = "Default";
-                        if (element.Properties != null && element.Properties.TryGetValue("Size", out var sProp)) sizeDebug = sProp;
-
-                        if (normalizedType == "QR" || rawType.Contains("QR", StringComparison.OrdinalIgnoreCase))
-                        {
-                            //_logger.LogInfo($"Procesando Elemento QR. RawType: '{rawType}', Source: '{element.Source}', SizeProp: '{sizeDebug}', ValueLen: {val?.ToString()?.Length ?? 0}");
-                        }
-
                         var renderedElement = new RenderedElement
                         {
                             Type = normalizedType,
@@ -175,21 +220,25 @@ namespace AppsielPrintManager.Infraestructure.Services
                             Format = element.Format ?? section.Format
                         };
 
-                        // SOPORTE MULTIMEDIA Y QR
-                        // Usamos normalizedType para el check
-                        if (string.Equals(normalizedType, "QR", StringComparison.OrdinalIgnoreCase))
+                        if (normalizedType == "Barcode")
                         {
-                            renderedElement.QrValue = val; // El valor del QR viene del Source o Static
+                            renderedElement.BarcodeValue = val;
+                            // Para secciones estáticas, 'data' es el contexto.
+                            renderedElement.ProductName = GetValueFromPath(data, "name")?.ToString(); // Context dependent
+                            // ... logica similar si fuera necesario, pero usualmente barcodes en static son simples
+                        }
+                        else if (normalizedType == "QR")
+                        {
+                            renderedElement.QrValue = val;
                             if (element.Properties != null && element.Properties.ContainsKey("Size"))
                             {
                                 int.TryParse(element.Properties["Size"], out int size);
                                 renderedElement.Size = size;
                             }
                         }
-                        else if (string.Equals(normalizedType, "Image", StringComparison.OrdinalIgnoreCase))
+                        else if (normalizedType == "Image")
                         {
                             renderedElement.Base64Image = val; // El Base64 viene del Source o Static
-                            // Propiedades adicionales si fuera necesario
                         }
 
                         renderedSection.Elements.Add(renderedElement);
@@ -249,7 +298,19 @@ namespace AppsielPrintManager.Infraestructure.Services
             if (request.Barcodes != null)
             {
                 foreach (var bc in request.Barcodes)
-                    ticketContent.ExtraMedia.Add(new RenderedElement { Type = "Barcode", BarcodeValue = bc.Value, BarcodeType = bc.Type, Align = bc.Align, Height = bc.Height, Hri = bc.Hri });
+                {
+                    ticketContent.ExtraMedia.Add(new RenderedElement
+                    {
+                        Type = "Barcode",
+                        BarcodeValue = bc.Value,
+                        BarcodeType = bc.Type,
+                        Height = bc.Height,
+                        Hri = bc.Hri,
+                        ProductName = bc.Name,
+                        ItemId = bc.ItemId,
+                        ProductPrice = bc.Price
+                    });
+                }
             }
 
             if (request.QRs != null)

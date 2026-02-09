@@ -330,12 +330,52 @@ namespace AppsielPrintManager.Infraestructure.Services
         private byte[] HandleBarcode(RenderedElement element, PrinterSettings printerSettings)
         {
             var cmds = new List<byte>();
-            cmds.AddRange(new byte[] { GS, 0x68, (byte)(element.Height ?? 50) });
+
+            // 1. Imprimir Nombre del Producto Arriba (Si existe)
+            if (!string.IsNullOrEmpty(element.ProductName))
+            {
+                cmds.AddRange(SetAlignment("Center"));
+                cmds.AddRange(SetTextFormat("FontA")); // Fuente legible estándar
+                cmds.AddRange(GetPosBytes(element.ProductName));
+                cmds.Add(0x0A); // Salto de línea
+            }
+
+            // 2. Imprimir Código de Barras
+            // Nota: El alineamiento ya debería estar seteado, pero aseguramos Center si no se especificó
+            cmds.AddRange(SetAlignment(element.Align ?? "Center"));
+            cmds.AddRange(new byte[] { GS, 0x68, (byte)(element.Height ?? 50) }); // Altura
+
+            // HRI (Human Readable Interpretation) - Números debajo de las barras
+            // 0x00 = Ninguno, 0x02 = Debajo
             cmds.AddRange(new byte[] { GS, 0x48, (byte)(element.Hri == true ? 0x02 : 0x00) });
+
             byte[] data = GetPosBytes(element.BarcodeValue ?? "");
+
+            // CODE128 (Tipo B genérico, simplificado)
+            // GS k m n d1...dn
+            // m=73 (CODE128)
+            // Calculamos longitud + 2 bytes de cabecera CODE128 (ej {B + data)
+            // Para simplificar, asumimos que el cliente envía datos limpios o usamos CODE128 auto (más complejo).
+            // Mantenemos la lógica original simple: GS k I (Code128) len {B data 
             cmds.AddRange(new byte[] { GS, 0x6B, 0x49, (byte)(data.Length + 2), 0x7B, 0x42 });
             cmds.AddRange(data);
-            cmds.Add(0x0A);
+            cmds.Add(0x0A); // Un salto de línea post-barcode suele ser necesario para evitar solapamiento
+
+            // 3. Imprimir ItemId y Precio Abajo (Si existen)
+            if (!string.IsNullOrEmpty(element.ItemId) || !string.IsNullOrEmpty(element.ProductPrice))
+            {
+                cmds.AddRange(SetAlignment("Center"));
+                cmds.AddRange(SetTextFormat("FontB")); // Fuente un poco más pequeña para info secundaria
+
+                var parts = new List<string>();
+                if (!string.IsNullOrEmpty(element.ItemId)) parts.Add(element.ItemId);
+                if (!string.IsNullOrEmpty(element.ProductPrice)) parts.Add(element.ProductPrice);
+
+                string footerText = string.Join(" | ", parts);
+                cmds.AddRange(GetPosBytes(footerText));
+                cmds.Add(0x0A);
+            }
+
             return cmds.ToArray();
         }
 

@@ -16,6 +16,11 @@ namespace AppsielPrintManager.Core.Models
         public int? Size { get; set; } // For QR
         public int? WidthPercentage { get; set; } // For dynamic table column width
 
+        // Propiedades para Barcode extendido
+        public string? ItemId { get; set; }
+        public string? ProductName { get; set; }
+        public string? ProductPrice { get; set; }
+
         // Add any other properties that might be needed after rendering and before ESC/POS generation
     }
 }

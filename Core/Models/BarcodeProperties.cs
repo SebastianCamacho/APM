@@ -29,6 +29,9 @@ namespace AppsielPrintManager.Core.Models
         /// <summary>
         /// La alineación del código de barras en el ticket (ej. "center", "left", "right").
         /// </summary>
-        public string Align { get; set; }
+
+        public string ItemId { get; set; }
+        public string Name { get; set; }
+        public string Price { get; set; }
     }
 }

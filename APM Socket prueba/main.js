@@ -233,28 +233,22 @@ const templates = {
         "Document": {
             "stickers": [
                 {
-                    "ProductName": "Manzana Roja",
-                    "ProductCode": "MZN-001",
-                    "BarcodeValue": "1234567890128", // EAN-13
-                    "BarcodeType": "EAN13"
+                    "type": "CODE128",
+                    "item_id": "170",
+                    "name": "BLUSA VERONICA XS",
+                    "price": "$90.000",
+                    "height": 80,
+                    "hri": true,
+                    "value": "123456" 
                 },
                 {
-                    "ProductName": "Pera Verde",
-                    "ProductCode": "PER-002",
-                    "BarcodeValue": "0987654321093", // EAN-13
-                    "BarcodeType": "EAN13"
-                },
-                {
-                    "ProductName": "Uvas Importadas",
-                    "ProductCode": "UVA-003",
-                    "BarcodeValue": "9876543210987", // EAN-13
-                    "BarcodeType": "EAN13"
-                },
-                {
-                    "ProductName": "Banano Nacional",
-                    "ProductCode": "BAN-004",
-                    "BarcodeValue": "1122334455667", // EAN-13
-                    "BarcodeType": "EAN13"
+                    "type": "CODE128",
+                    "item_id": "171",
+                    "name": "PANTALON JEAN 30",
+                    "price": "$120.000",
+                    "height": 80,
+                    "hri": true,
+                    "value": "654321" 
                 }
             ]
         }

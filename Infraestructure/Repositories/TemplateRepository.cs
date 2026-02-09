@@ -114,18 +114,36 @@ namespace AppsielPrintManager.Infraestructure.Repositories
 
         public async Task EnsureDefaultTemplatesAsync()
         {
-            var requiredTypes = new[] { "ticket_venta", "comanda", "factura_electronica" };
+            var requiredTypes = new[] { "ticket_venta", "comanda", "factura_electronica", "sticker_codigo_barras" };
 
             foreach (var type in requiredTypes)
             {
-                var fileName = $"{type.ToLower()}.json";
-                var filePath = Path.Combine(_directoryPath, fileName);
-
-                if (!File.Exists(filePath))
+                try
                 {
-                    _logger.LogInfo($"Validación inicial: Plantilla '{type}' no existe. Creándola...");
-                    var defaultTemplate = AppsielPrintManager.Core.Services.DefaultTemplateProvider.GetDefaultTemplate(type);
-                    await SaveTemplateAsync(defaultTemplate);
+                    _logger.LogInfo($"[TemplateRepository] Verificando plantilla: '{type}'");
+                    var fileName = $"{type.ToLower()}.json";
+                    var filePath = Path.Combine(_directoryPath, fileName);
+
+                    if (!File.Exists(filePath))
+                    {
+                        _logger.LogInfo($"Validación inicial: Plantilla '{type}' no existe en '{filePath}'. Creándola...");
+                        var defaultTemplate = AppsielPrintManager.Core.Services.DefaultTemplateProvider.GetDefaultTemplate(type);
+                        if (defaultTemplate == null)
+                        {
+                            _logger.LogError($"[TemplateRepository] FATAL: GetDefaultTemplate devolvió null para '{type}'");
+                            continue;
+                        }
+                        await SaveTemplateAsync(defaultTemplate);
+                        _logger.LogInfo($"[TemplateRepository] Plantilla '{type}' creada exitosamente.");
+                    }
+                    else
+                    {
+                        _logger.LogInfo($"[TemplateRepository] Plantilla '{type}' ya existe.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"[TemplateRepository] Error verificando/creando plantilla '{type}': {ex.Message}", ex);
                 }
             }
         }

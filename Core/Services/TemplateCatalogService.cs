@@ -9,6 +9,12 @@ namespace AppsielPrintManager.Core.Services
             var list = new List<string>();
             var type = documentType?.ToLower();
 
+            if (type == "sticker_codigo_barras")
+            {
+                list.Add("stickers");
+                return list;
+            }
+
             if (type == "comanda")
             {
                 list.Add("order.Items");
@@ -23,9 +29,9 @@ namespace AppsielPrintManager.Core.Services
             {
                 list.Add("sale.Items");
                 list.Add("footer");
+                list.Add("barcode.Items");
             }
 
-            list.Add("barcode.Items");
             return list;
         }
 
@@ -33,6 +39,14 @@ namespace AppsielPrintManager.Core.Services
         {
             var list = new List<string>();
             var type = documentType?.ToLower();
+
+            if (type == "sticker_codigo_barras")
+            {
+                // Los stickers generalmente no tienen datos globales complejos, 
+                // pero si se enviaran datos de empresa se podrian agregar aqui.
+                // Por ahora retornamos vacio para no confundir.
+                return list;
+            }
 
             if (type == "comanda")
             {
@@ -84,8 +98,16 @@ namespace AppsielPrintManager.Core.Services
 
         public static List<string> GetItemSourceSuggestions(string? documentType = null)
         {
-            var list = new List<string> { "Quantity", "Description" };
             var type = documentType?.ToLower();
+
+            if (type == "sticker_codigo_barras")
+            {
+                // Para stickers, retornamos SOLO las propiedades relevantes y salimos
+                return new List<string> { "item_id", "name", "price", "value", "height", "hri" };
+            }
+
+            // Lista base para otros documentos
+            var list = new List<string> { "Quantity", "Description" };
 
             if (type == "comanda")
             {
@@ -98,11 +120,11 @@ namespace AppsielPrintManager.Core.Services
             }
             else
             {
-                // Ticket venta
+                // Ticket venta standard
                 list.AddRange(new[] { "Name", "Qty", "UnitPrice", "Total" });
             }
 
-            // Sugerencias adicionales comunes
+            // Sugerencias adicionales comunes (No agregar a stickers)
             list.AddRange(new[] { "Code", "Price" });
 
             return list;
