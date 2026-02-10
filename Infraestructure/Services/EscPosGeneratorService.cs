@@ -6,6 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SkiaSharp;
+using ZXing;
+using ZXing.SkiaSharp;
+using ZXing.Common;
 
 namespace AppsielPrintManager.Infraestructure.Services
 {
@@ -129,17 +133,63 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
                 else // Static (Default)
                 {
+                    var barcodeBuffer = new List<RenderedElement>();
                     foreach (var element in section.Elements)
                     {
-                        commands.AddRange(ProcessRenderedElement(element, printerSettings));
+                        if (element.Type == "Barcode" && (element.Columns ?? 1) > 1)
+                        {
+                            barcodeBuffer.Add(element);
+                            if (barcodeBuffer.Count >= element.Columns)
+                            {
+                                commands.AddRange(HandleBarcodeRowImage(barcodeBuffer, printerSettings));
+                                barcodeBuffer.Clear();
+                            }
+                        }
+                        else
+                        {
+                            if (barcodeBuffer.Any())
+                            {
+                                commands.AddRange(HandleBarcodeRowImage(barcodeBuffer, printerSettings));
+                                barcodeBuffer.Clear();
+                            }
+                            commands.AddRange(ProcessRenderedElement(element, printerSettings));
+                        }
+                    }
+                    if (barcodeBuffer.Any())
+                    {
+                        commands.AddRange(HandleBarcodeRowImage(barcodeBuffer, printerSettings));
+                        barcodeBuffer.Clear();
                     }
                 }
             }
 
             // --- MEDIA ADICIONAL (Logo, etc) ---
+            var extraMediaBuffer = new List<RenderedElement>();
             foreach (var element in ticketContent.ExtraMedia)
             {
-                commands.AddRange(ProcessRenderedElement(element, printerSettings));
+                if (element.Type == "Barcode" && (element.Columns ?? 1) > 1)
+                {
+                    extraMediaBuffer.Add(element);
+                    if (extraMediaBuffer.Count >= element.Columns)
+                    {
+                        commands.AddRange(HandleBarcodeRowImage(extraMediaBuffer, printerSettings));
+                        extraMediaBuffer.Clear();
+                    }
+                }
+                else
+                {
+                    if (extraMediaBuffer.Any())
+                    {
+                        commands.AddRange(HandleBarcodeRowImage(extraMediaBuffer, printerSettings));
+                        extraMediaBuffer.Clear();
+                    }
+                    commands.AddRange(ProcessRenderedElement(element, printerSettings));
+                }
+            }
+            if (extraMediaBuffer.Any())
+            {
+                commands.AddRange(HandleBarcodeRowImage(extraMediaBuffer, printerSettings));
+                extraMediaBuffer.Clear();
             }
 
             commands.AddRange(FeedLines(5));
@@ -329,6 +379,11 @@ namespace AppsielPrintManager.Infraestructure.Services
 
         private byte[] HandleBarcode(RenderedElement element, PrinterSettings printerSettings)
         {
+            if ((element.Columns ?? 1) > 1)
+            {
+                return HandleBarcodeRowImage(new List<RenderedElement> { element }, printerSettings);
+            }
+
             var cmds = new List<byte>();
 
             // 1. Imprimir Nombre del Producto Arriba (Si existe)
@@ -354,7 +409,7 @@ namespace AppsielPrintManager.Infraestructure.Services
 
             // Altura (User requested limit: max 500)
             int height = Math.Clamp(element.Height ?? 100, 1, 500);
-            cmds.AddRange(new byte[] { GS, 0x68, (byte)(height > 255 ? 255 : height) }); 
+            cmds.AddRange(new byte[] { GS, 0x68, (byte)(height > 255 ? 255 : height) });
 
 
             // HRI (Human Readable Interpretation) - Números debajo de las barras
@@ -386,6 +441,131 @@ namespace AppsielPrintManager.Infraestructure.Services
                 string footerText = string.Join(" | ", parts);
                 cmds.AddRange(GetPosBytes(footerText));
                 cmds.Add(0x0A);
+            }
+
+            return cmds.ToArray();
+        }
+
+        private byte[] HandleBarcodeRowImage(List<RenderedElement> row, PrinterSettings printerSettings)
+        {
+            if (row == null || !row.Any()) return Array.Empty<byte>();
+
+            // Configuración del canvas (8 puntos por mm aprox -> 80mm = 576 dots útiles)
+            int totalWidth = (printerSettings.PaperWidthMm >= 80 ? 576 : 384);
+            int cols = row.FirstOrDefault()?.Columns ?? row.Count;
+            if (cols < 1) cols = 1;
+            int stickerWidth = totalWidth / cols;
+
+            // Altura dinámica: Nombre(~45) + Barcode(var) + HRI(~30) + Price(~30)
+            int maxBarcodeHeight = row.Max(e => e.Height ?? 80);
+            int totalHeight = 50 + maxBarcodeHeight + 70; // Más espacio vertical
+
+            using var surface = SKSurface.Create(new SKImageInfo(totalWidth, totalHeight));
+            var canvas = surface.Canvas;
+            canvas.Clear(SKColors.White);
+
+            // Pintura para texto centrado
+            using var paintName = new SKPaint { Color = SKColors.Black, TextSize = 24, IsAntialias = true, TextAlign = SKTextAlign.Center, Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright) };
+            using var paintHri = new SKPaint { Color = SKColors.Black, TextSize = 20, IsAntialias = true, TextAlign = SKTextAlign.Center, Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright) };
+            using var paintPrice = new SKPaint { Color = SKColors.Black, TextSize = 24, IsAntialias = true, TextAlign = SKTextAlign.Center, Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright) };
+
+            var barcodeWriter = new ZXing.SkiaSharp.BarcodeWriter
+            {
+                Format = BarcodeFormat.CODE_128,
+                Options = new EncodingOptions
+                {
+                    Width = stickerWidth - 30, // Más margen para centrado
+                    Height = maxBarcodeHeight,
+                    Margin = 0,
+                    PureBarcode = true // Dibujamos el HRI nosotros para mayor control
+                }
+            };
+
+            for (int i = 0; i < row.Count; i++)
+            {
+                var element = row[i];
+                int xCenter = (i * stickerWidth) + (stickerWidth / 2);
+
+                // 1. Dibujar Nombre (Centrado)
+                if (!string.IsNullOrEmpty(element.ProductName))
+                {
+                    string name = element.ProductName;
+                    if (name.Length > 22) name = name.Substring(0, 20) + "..";
+                    canvas.DrawText(name, xCenter, 35, paintName);
+                }
+
+                // 2. Dibujar Barcode (Basado en xCenter)
+                if (!string.IsNullOrEmpty(element.BarcodeValue))
+                {
+                    try
+                    {
+                        using var barcodeBitmap = barcodeWriter.Write(element.BarcodeValue);
+                        int bcX = xCenter - (barcodeBitmap.Width / 2);
+                        canvas.DrawBitmap(barcodeBitmap, bcX, 55);
+
+                        // 3. Dibujar HRI (El valor justo debajo de las barras, más grande y separado)
+                        if (element.Hri == true)
+                        {
+                            canvas.DrawText(element.BarcodeValue, xCenter, 55 + maxBarcodeHeight + 25, paintHri);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Error generando barcode para {element.BarcodeValue}: {ex.Message}");
+                    }
+                }
+
+                // 4. Dibujar Precio (Solo el precio, sin el ID redundante)
+                if (!string.IsNullOrEmpty(element.ProductPrice))
+                {
+                    canvas.DrawText(element.ProductPrice, xCenter, 55 + maxBarcodeHeight + 55, paintPrice);
+                }
+            }
+
+            // Convertir SKBitmap a ESC/POS Bit Image (GS v 0)
+            using var image = surface.Snapshot();
+            using var bitmap = SKBitmap.FromImage(image);
+            return ConvertBitmapToEscPos(bitmap);
+        }
+
+        private byte[] ConvertBitmapToEscPos(SKBitmap bitmap)
+        {
+            var cmds = new List<byte>();
+            int width = bitmap.Width;
+            int height = bitmap.Height;
+
+            // Comando GS v 0 m xL xH yL yH
+            // m = 0 (Normal), 1 (Double width), 2 (Double height), 3 (Quadruple)
+            int bytesPerRow = (width + 7) / 8;
+            cmds.AddRange(new byte[] { GS, 0x76, 0x30, 0x00 });
+            cmds.Add((byte)(bytesPerRow % 256));
+            cmds.Add((byte)(bytesPerRow / 256));
+            cmds.Add((byte)(height % 256));
+            cmds.Add((byte)(height / 256));
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int xByte = 0; xByte < bytesPerRow; xByte++)
+                {
+                    byte b = 0;
+                    for (int bit = 0; bit < 8; bit++)
+                    {
+                        int x = (xByte * 8) + bit;
+                        if (x < width)
+                        {
+                            var color = bitmap.GetPixel(x, y);
+                            // Cálculo de luminancia (estándar ITU-R BT.601)
+                            double luminance = (color.Red * 0.299) + (color.Green * 0.587) + (color.Blue * 0.114);
+
+                            // Si es oscuro (luminancia < 180 para ser más "agresivo" con el negro en térmicas)
+                            if (luminance < 180)
+                            {
+                                b |= (byte)(0x80 >> bit);
+                            }
+                        }
+                    }
+                    cmds.Add(b);
+                }
             }
 
             return cmds.ToArray();

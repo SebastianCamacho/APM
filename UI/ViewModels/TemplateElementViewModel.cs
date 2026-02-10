@@ -64,7 +64,7 @@ namespace UI.ViewModels
         public bool ShowStaticValueInput => IsText && IsStatic;
         public bool ShowTableProperties => IsTableSection && IsNotLine;
 
-        public List<int> ColumnOptions { get; } = new() { 1, 2, 3, 4 };
+        public List<int> ColumnOptions { get; } = new() { 1, 2 };
 
         public bool ShowBarcodeProperties => IsBarcode;
         public bool ShowBarWidth => IsBarcode && Columns <= 1;

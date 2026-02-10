@@ -134,7 +134,8 @@ namespace AppsielPrintManager.Infraestructure.Services
                                     Type = normalizedType,
                                     TextValue = textValue,
                                     Align = element.Align ?? section.Align,
-                                    Format = element.Format ?? section.Format
+                                    Format = element.Format ?? section.Format,
+                                    Columns = element.Columns
                                 };
 
                                 if (normalizedType == "Barcode")
@@ -230,7 +231,8 @@ namespace AppsielPrintManager.Infraestructure.Services
                             Type = normalizedType,
                             TextValue = textValue,
                             Align = element.Align ?? section.Align,
-                            Format = element.Format ?? section.Format
+                            Format = element.Format ?? section.Format,
+                            Columns = element.Columns
                         };
 
                         if (normalizedType == "Barcode")
