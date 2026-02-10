@@ -25,6 +25,9 @@ namespace AppsielPrintManager.Infraestructure.Services
         private const byte ESC = 0x1B;
         private const byte GS = 0x1D;
 
+        // Persistir el alto de la plantilla para asegurar uniformidad en ExtraMedia y elementos impares
+        private int _lastTemplateBarcodeHeight = 80;
+
         public EscPosGeneratorService(ILoggingService logger)
         {
             _logger = logger;
@@ -46,6 +49,9 @@ namespace AppsielPrintManager.Infraestructure.Services
         public Task<byte[]> GenerateEscPosCommandsAsync(TicketContent ticketContent, PrinterSettings printerSettings)
         {
             _logger.LogInfo($"Generando comandos ESC/POS para impresora {printerSettings.PrinterId} (ancho: {printerSettings.PaperWidthMm}mm).");
+
+            // Iniciar con un alto por defecto razonable (80), se actualizará con el primer barcode del template
+            _lastTemplateBarcodeHeight = 80;
 
             var commands = new List<byte>();
 
@@ -136,10 +142,18 @@ namespace AppsielPrintManager.Infraestructure.Services
                     var barcodeBuffer = new List<RenderedElement>();
                     foreach (var element in section.Elements)
                     {
-                        if (element.Type == "Barcode" && (element.Columns ?? 1) > 1)
+                        // Capturar el alto de la plantilla si es un barcode
+                        if (element.Type == "Barcode" && element.Height.HasValue)
+                        {
+                            _lastTemplateBarcodeHeight = element.Height.Value;
+                            _logger.LogInfo($"[EscPosGenerator] Captured Template Barcode Height: {_lastTemplateBarcodeHeight}");
+                        }
+
+                        if (element.Type == "Barcode")
                         {
                             barcodeBuffer.Add(element);
-                            if (barcodeBuffer.Count >= element.Columns)
+                            int maxCols = element.Columns ?? 1;
+                            if (barcodeBuffer.Count >= maxCols)
                             {
                                 commands.AddRange(HandleBarcodeRowImage(barcodeBuffer, printerSettings));
                                 barcodeBuffer.Clear();
@@ -300,7 +314,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     elementCommands.Add(0x0A);
                     break;
                 case "Barcode":
-                    elementCommands.AddRange(HandleBarcode(element, printerSettings));
+                    elementCommands.AddRange(HandleBarcodeRowImage(new List<RenderedElement> { element }, printerSettings));
                     break;
                 case "QR":
                     elementCommands.AddRange(HandleQR(element, printerSettings));
@@ -456,9 +470,11 @@ namespace AppsielPrintManager.Infraestructure.Services
             if (cols < 1) cols = 1;
             int stickerWidth = totalWidth / cols;
 
-            // Altura dinámica: Nombre(~45) + Barcode(var) + HRI(~30) + Price(~30)
-            int maxBarcodeHeight = row.Max(e => e.Height ?? 80);
-            int totalHeight = 50 + maxBarcodeHeight + 70; // Más espacio vertical
+            // El alto depende de la plantilla (prioridad al valor capturado del flujo principal) 
+            int barcodeHeight = _lastTemplateBarcodeHeight;
+            int totalHeight = 50 + barcodeHeight + 70;
+
+            _logger.LogInfo($"[EscPosGenerator] HandleBarcodeRowImage: Using height {barcodeHeight}, Columns: {row.Count}");
 
             using var surface = SKSurface.Create(new SKImageInfo(totalWidth, totalHeight));
             var canvas = surface.Canvas;
@@ -472,19 +488,25 @@ namespace AppsielPrintManager.Infraestructure.Services
             var barcodeWriter = new ZXing.SkiaSharp.BarcodeWriter
             {
                 Format = BarcodeFormat.CODE_128,
-                Options = new EncodingOptions
-                {
-                    Width = stickerWidth - 30, // Más margen para centrado
-                    Height = maxBarcodeHeight,
-                    Margin = 0,
-                    PureBarcode = true // Dibujamos el HRI nosotros para mayor control
-                }
             };
 
             for (int i = 0; i < row.Count; i++)
             {
                 var element = row[i];
                 int xCenter = (i * stickerWidth) + (stickerWidth / 2);
+
+                // Configuración dinámica por cada barcode para respetar anchos individuales si los hay
+                int elementBarWidth = element.BarWidth ?? 2;
+                int elementCalculatedWidth = (int)((stickerWidth - 30) * (Math.Clamp(elementBarWidth, 1, 6) / 5.0));
+                barcodeWriter.Options = new EncodingOptions
+                {
+                    Width = elementCalculatedWidth,
+                    Height = barcodeHeight,
+                    Margin = 0,
+                    PureBarcode = true
+                };
+
+                _logger.LogInfo($"[EscPosGenerator] Processing Barcode {i + 1}/{row.Count}: Value={element.BarcodeValue}, TemplateBarWidth={elementBarWidth}, CalculatedImageWidth={elementCalculatedWidth}");
 
                 // 1. Dibujar Nombre (Centrado)
                 if (!string.IsNullOrEmpty(element.ProductName))
@@ -494,19 +516,25 @@ namespace AppsielPrintManager.Infraestructure.Services
                     canvas.DrawText(name, xCenter, 35, paintName);
                 }
 
-                // 2. Dibujar Barcode (Basado en xCenter)
+                // 2. Dibujar Barcode (Basado en xCenter - Forzado al alto de la plantilla)
                 if (!string.IsNullOrEmpty(element.BarcodeValue))
                 {
                     try
                     {
                         using var barcodeBitmap = barcodeWriter.Write(element.BarcodeValue);
-                        int bcX = xCenter - (barcodeBitmap.Width / 2);
-                        canvas.DrawBitmap(barcodeBitmap, bcX, 55);
+                        int bcWidth = barcodeBitmap.Width;
+                        int bcX = xCenter - (bcWidth / 2);
+
+                        // Forzamos el alto estirando el bitmap si es necesario para asegurar que cumple con la plantilla
+                        var destRect = new SKRect(bcX, 55, bcX + bcWidth, 55 + barcodeHeight);
+                        canvas.DrawBitmap(barcodeBitmap, destRect);
+
+                        _logger.LogInfo($"[EscPosGenerator] Drew barcode {element.BarcodeValue}. Bitmap size: {bcWidth}x{barcodeBitmap.Height}, Forced height: {barcodeHeight}");
 
                         // 3. Dibujar HRI (El valor justo debajo de las barras, más grande y separado)
                         if (element.Hri == true)
                         {
-                            canvas.DrawText(element.BarcodeValue, xCenter, 55 + maxBarcodeHeight + 25, paintHri);
+                            canvas.DrawText(element.BarcodeValue, xCenter, 55 + barcodeHeight + 25, paintHri);
                         }
                     }
                     catch (Exception ex)
@@ -518,7 +546,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 // 4. Dibujar Precio (Solo el precio, sin el ID redundante)
                 if (!string.IsNullOrEmpty(element.ProductPrice))
                 {
-                    canvas.DrawText(element.ProductPrice, xCenter, 55 + maxBarcodeHeight + 55, paintPrice);
+                    canvas.DrawText(element.ProductPrice, xCenter, 55 + barcodeHeight + 55, paintPrice);
                 }
             }
 

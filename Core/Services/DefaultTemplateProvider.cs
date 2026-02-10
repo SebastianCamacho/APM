@@ -20,6 +20,7 @@ namespace AppsielPrintManager.Core.Services
         {
             return new PrintTemplate
             {
+                TemplateId = null,
                 DocumentType = "sticker_codigo_barras",
                 Name = "Plantilla Etiquetas Código de Barras",
                 Sections = new List<TemplateSection>
@@ -28,29 +29,35 @@ namespace AppsielPrintManager.Core.Services
                     {
                         Name = "Stickers",
                         Type = "Repeated",
-                        DataSource = "stickers", // Mapea a 'Document.stickers'
+                        DataSource = "stickers",
                         Align = "Center",
+                        Order = 1,
                         Elements = new List<TemplateElement>
                         {
-                            // Elemento BARCODE genérico. El Renderer se encarga de extraer
-                            // Name, ItemId, Price del objeto actual de la lista.
                             new TemplateElement
                             {
                                 Type = "Barcode",
-                                Source = "Value", // El valor del código de barras
+                                Label = null,
+                                Source = "ItemId",
+                                StaticValue = null,
+                                Format = "",
                                 Align = "Center",
+                                HeaderFormat = null,
+                                HeaderAlign = null,
+                                WidthPercentage = null,
+                                Columns = 1,
+                                BarWidth = 2,
+                                Height = 200,
+                                Size = null,
                                 Properties = new Dictionary<string, string>
                                 {
-                                    { "Hri", "true" },
-                                    { "Height", "160" },
-                                    { "NameSource", "Name" },
-                                    { "ItemIdSource", "ItemId" },
-                                    { "PriceSource", "Price" }
+                                    { "Hri", "true" }
                                 }
                             }
                         }
                     }
-                }
+                },
+                GlobalStyles = new Dictionary<string, string>()
             };
         }
 

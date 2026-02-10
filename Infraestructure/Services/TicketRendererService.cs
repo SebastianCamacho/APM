@@ -140,55 +140,7 @@ namespace AppsielPrintManager.Infraestructure.Services
 
                                 if (normalizedType == "Barcode")
                                 {
-                                    renderedElement.BarcodeValue = val;
-
-                                    // 1. Obtener nombres de campos desde el diccionario de Propiedades (Default to PascalCase)
-                                    string nameField = (element.Properties != null && element.Properties.ContainsKey("NameSource")) ? element.Properties["NameSource"] : "Name";
-                                    string idField = (element.Properties != null && element.Properties.ContainsKey("ItemIdSource")) ? element.Properties["ItemIdSource"] : "ItemId";
-                                    string priceField = (element.Properties != null && element.Properties.ContainsKey("PriceSource")) ? element.Properties["PriceSource"] : "Price";
-
-                                    // 2. Extraer valores STRICT MODE: Solo lo que diga la plantilla
-                                    renderedElement.ProductName = GetValueFromPath(item, nameField)?.ToString();
-                                    renderedElement.ItemId = GetValueFromPath(item, idField)?.ToString();
-                                    renderedElement.ProductPrice = GetValueFromPath(item, priceField)?.ToString();
-
-                                    // DEBUG LOGS
-                                    _logger.LogInfo($"[TicketRenderer] Barcode processing. Item: {JsonSerializer.Serialize(item)}");
-                                    _logger.LogInfo($"[TicketRenderer] Extracted - Name ({nameField}): {renderedElement.ProductName}, Id ({idField}): {renderedElement.ItemId}, Price ({priceField}): {renderedElement.ProductPrice}");
-
-
-
-                                    // Propiedades HRI y Height (Prioridad: Datos > Plantilla)
-                                    // 1. Intentar obtener de los datos
-                                    int? dataHeight = GetValueFromPath(item, "Height") as int? ?? (int.TryParse(GetValueFromPath(item, "Height")?.ToString(), out int h) ? h : null);
-
-                                    // 2. Si no hay dato, usar plantilla
-                                    if (dataHeight.HasValue)
-                                        renderedElement.Height = dataHeight;
-                                    else if (element.Properties != null && element.Properties.ContainsKey("Height"))
-                                        renderedElement.Height = int.Parse(element.Properties["Height"]);
-
-
-                                    // 1. Intentar obtener de los datos
-                                    bool? dataHri = GetValueFromPath(item, "Hri") as bool? ?? (bool.TryParse(GetValueFromPath(item, "Hri")?.ToString(), out bool b) ? b : null);
-
-                                    // 2. Si no hay dato, usar plantilla
-                                    if (dataHri.HasValue)
-                                        renderedElement.Hri = dataHri;
-                                    else if (element.Properties != null && element.Properties.ContainsKey("Hri"))
-                                        renderedElement.Hri = bool.Parse(element.Properties["Hri"]);
-
-
-                                    // Propiedad WIDTH (Ancho del módulo)
-                                    // 1. Intentar obtener de los datos
-                                    int? dataWidth = GetValueFromPath(item, "Width") as int? ?? (int.TryParse(GetValueFromPath(item, "Width")?.ToString(), out int w) ? w : null);
-
-                                    // 2. Si no hay dato, usar plantilla
-                                    if (dataWidth.HasValue)
-                                        renderedElement.BarWidth = dataWidth;
-                                    else if (element.Properties != null && element.Properties.ContainsKey("Width"))
-                                        renderedElement.BarWidth = int.Parse(element.Properties["Width"]);
-
+                                    PopulateBarcodeProperties(element, renderedElement, item);
                                 }
                                 else if (normalizedType == "QR")
                                 {
@@ -237,10 +189,7 @@ namespace AppsielPrintManager.Infraestructure.Services
 
                         if (normalizedType == "Barcode")
                         {
-                            renderedElement.BarcodeValue = val;
-                            // Para secciones estáticas, 'data' es el contexto.
-                            renderedElement.ProductName = GetValueFromPath(data, "name")?.ToString(); // Context dependent
-                            // ... logica similar si fuera necesario, pero usualmente barcodes en static son simples
+                            PopulateBarcodeProperties(element, renderedElement, data);
                         }
                         else if (normalizedType == "QR")
                         {
@@ -264,7 +213,56 @@ namespace AppsielPrintManager.Infraestructure.Services
             return renderedSection;
         }
 
-        private object? GetValueFromPath(object data, string path)
+        private void PopulateBarcodeProperties(TemplateElement element, RenderedElement rendered, object? item)
+        {
+            rendered.BarcodeValue = !string.IsNullOrEmpty(element.Source) && element.Source != "."
+                ? GetValueFromPath(item, element.Source)?.ToString()
+                : (element.Source == "." ? item?.ToString() : element.StaticValue);
+
+            // 1. Mapeo de campos de texto (Nombre, ID, Precio)
+            string nameField = (element.Properties != null && element.Properties.ContainsKey("NameSource")) ? element.Properties["NameSource"] : "Name";
+            string idField = (element.Properties != null && element.Properties.ContainsKey("ItemIdSource")) ? element.Properties["ItemIdSource"] : "ItemId";
+            string priceField = (element.Properties != null && element.Properties.ContainsKey("PriceSource")) ? element.Properties["PriceSource"] : "Price";
+
+            rendered.ProductName = GetValueFromPath(item, nameField)?.ToString();
+            rendered.ItemId = GetValueFromPath(item, idField)?.ToString();
+            rendered.ProductPrice = GetValueFromPath(item, priceField)?.ToString();
+
+            // 2. PRIORIDAD DE PROPIEDADES (Template Root > Template Properties > Data)
+            var props = element.Properties != null ? new Dictionary<string, string>(element.Properties, StringComparer.OrdinalIgnoreCase) : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // HEIGHT: Priorizar el campo directo (el que usa el slider/campo del editor)
+            int? tHeight = element.Height;
+            if (!tHeight.HasValue && props.ContainsKey("Height") && int.TryParse(props["Height"], out int h)) tHeight = h;
+
+            var dataHeightRaw = GetValueFromPath(item, "Height");
+            int? dHeight = dataHeightRaw as int? ?? (int.TryParse(dataHeightRaw?.ToString(), out int h2) ? h2 : null);
+
+            rendered.Height = tHeight ?? dHeight;
+            _logger.LogInfo($"[TicketRenderer] Barcode Height Result: {rendered.Height} (Root: {element.Height}, AdvProps: {(props.ContainsKey("Height") ? props["Height"] : "N/A")}, Data: {dHeight})");
+
+            // HRI
+            bool? tHri = null;
+            if (props.ContainsKey("Hri") && bool.TryParse(props["Hri"], out bool b)) tHri = b;
+
+            var dataHriRaw = GetValueFromPath(item, "Hri");
+            bool? dHri = dataHriRaw as bool? ?? (bool.TryParse(dataHriRaw?.ToString(), out bool b2) ? b2 : null);
+
+            rendered.Hri = tHri ?? dHri;
+
+            // WIDTH / BARWIDTH
+            int? tWidth = element.BarWidth;
+            if (!tWidth.HasValue && props.ContainsKey("Width") && int.TryParse(props["Width"], out int w)) tWidth = w;
+            if (!tWidth.HasValue && props.ContainsKey("BarWidth") && int.TryParse(props["BarWidth"], out int w3)) tWidth = w3;
+
+            var dataWidthRaw = GetValueFromPath(item, "Width");
+            int? dWidth = dataWidthRaw as int? ?? (int.TryParse(dataWidthRaw?.ToString(), out int w2) ? w2 : null);
+
+            rendered.BarWidth = tWidth ?? dWidth;
+            _logger.LogInfo($"[TicketRenderer] Barcode Width Result: {rendered.BarWidth} (Root: {element.BarWidth}, AdvProps: {(props.ContainsKey("Width") ? props["Width"] : "N/A")}, Data: {dWidth})");
+        }
+
+        private object? GetValueFromPath(object? data, string path)
         {
             if (string.IsNullOrEmpty(path) || path == "." || data == null) return data;
 
