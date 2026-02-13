@@ -55,8 +55,24 @@
                         </Border>
                     </VerticalStackLayout>
 
-                    <!-- IP Address -->
+                    <!-- Tipo de Impresora -->
                     <VerticalStackLayout Spacing="5">
+                        <Label Text="Tipo de Impresora" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                            <Picker SelectedItem="{Binding SelectedPrinterType}" ItemsSource="{Binding PrinterTypes}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Tipo de Conexión -->
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Tipo de Conexión" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                            <Picker SelectedItem="{Binding SelectedConnectionType}" ItemsSource="{Binding ConnectionTypes}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- IP Address (Solo TCP) -->
+                    <VerticalStackLayout Spacing="5" IsVisible="{Binding IsTcpConnection}">
                         <Label Text="Dirección IP" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
                         <Grid ColumnDefinitions="*,Auto,*,Auto,*,Auto,*" ColumnSpacing="4">
                             <Border Grid.Column="0" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
@@ -80,24 +96,32 @@
                         </Grid>
                     </VerticalStackLayout>
 
-                    <!-- Puerto -->
-                    <VerticalStackLayout Spacing="5">
+                    <!-- Puerto (Solo TCP y si no es Matricial limitada) -->
+                    <VerticalStackLayout Spacing="5" IsVisible="{Binding IsTcpConnection}">
                         <Label Text="Puerto" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
                         <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
                             <Entry Text="{Binding Printer.Port, Converter={StaticResource NumericToStringConverter}}" Keyboard="Numeric" VerticalOptions="Center" Margin="5,0"/>
                         </Border>
                     </VerticalStackLayout>
 
-                    <!-- Ancho Papel -->
-                    <VerticalStackLayout Spacing="5">
+                    <!-- Nombre Impresora Local (Solo USB) -->
+                    <VerticalStackLayout Spacing="5" IsVisible="{Binding IsUsbConnection}">
+                        <Label Text="Nombre Impresora Local (Windows)" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                            <Entry Text="{Binding Printer.LocalPrinterName}" Placeholder="Ej: EPSON LX-300+ II" VerticalOptions="Center" Margin="5,0"/>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Ancho Papel (Solo Térmica o Matricial TCP) -->
+                    <VerticalStackLayout Spacing="5" IsVisible="{Binding ShowThermalFields}">
                         <Label Text="Ancho Papel (mm)" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
                         <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
                             <Picker SelectedItem="{Binding SelectedPaperWidthMm}" ItemsSource="{Binding AvailablePaperWidths}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
                         </Border>
                     </VerticalStackLayout>
 
-                    <!-- Switches -->
-                    <VerticalStackLayout Spacing="10" Margin="0,5,0,0">
+                    <!-- Switches (Ocultar si es Matricial USB) -->
+                    <VerticalStackLayout Spacing="10" Margin="0,5,0,0" IsVisible="{Binding ShowThermalFields}">
                         <Grid ColumnDefinitions="*, Auto">
                             <Label Grid.Column="0" Text="Beep al imprimir" VerticalOptions="Center" FontSize="14" />
                             <Switch Grid.Column="1" IsToggled="{Binding Printer.BeepOnPrint}" />

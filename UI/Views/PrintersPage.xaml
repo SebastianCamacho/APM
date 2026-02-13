@@ -67,10 +67,50 @@
                                            VerticalOptions="Center" HorizontalOptions="Center"
                                            Margin="0,0,10,0" />
                                     <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                        <Label Text="{Binding PrinterId}" FontAttributes="Bold" FontSize="Medium" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                                        <Label Text="{Binding IpAddress}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
-                                        <Label Text="{Binding Port, StringFormat='Puerto: {0}'}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
-                                        <Label Text="{Binding PaperWidthMm, StringFormat='Ancho Papel: {0}mm'}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+                                        <HorizontalStackLayout Spacing="5">
+                                            <Label Text="{Binding PrinterId}" FontAttributes="Bold" FontSize="Medium" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                            <Border StrokeShape="RoundRectangle 4" BackgroundColor="{DynamicResource Primary}" Padding="5,0" VerticalOptions="Center">
+                                                <Label Text="{Binding PrinterType}" FontSize="10" TextColor="White" FontAttributes="Bold" />
+                                            </Border>
+                                            <Border StrokeShape="RoundRectangle 4" Stroke="{StaticResource Gray400}" Padding="5,0" VerticalOptions="Center">
+                                                <Label Text="{Binding ConnectionType}" FontSize="10" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+                                            </Border>
+                                        </HorizontalStackLayout>
+                                        
+                                        <!-- Detalles de Conexión Dinámicos -->
+                                        <HorizontalStackLayout Spacing="5">
+                                            <Label Text="Conexión:" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
+                                            <Label Text="{Binding IpAddress}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="USB">
+                                                        <Setter Property="IsVisible" Value="False" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                            <Label Text="{Binding Port, StringFormat=':{0}'}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="USB">
+                                                        <Setter Property="IsVisible" Value="False" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                            <Label Text="{Binding LocalPrinterName}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" IsVisible="False">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="USB">
+                                                        <Setter Property="IsVisible" Value="True" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </HorizontalStackLayout>
+
+                                        <!-- Ancho de Papel (Solo Térmica) -->
+                                        <Label Text="{Binding PaperWidthMm, StringFormat='Ancho: {0}mm'}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding PrinterType}" Value="Matricial">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
                                     </VerticalStackLayout>
                                     <ImageButton Grid.Column="2" Source="icono_eliminar_impresora.png"
                                                  Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PrintersViewModel}}, Path=DeletePrinterCommand}"

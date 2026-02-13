@@ -11,5 +11,9 @@ namespace AppsielPrintManager.Core.Interfaces
         Task<List<PrintTemplate>> GetAllTemplatesAsync();
         Task DeleteTemplateAsync(string templateId);
         Task EnsureDefaultTemplatesAsync();
+
+        // Soporte para plantillas matriciales
+        Task<DotMatrixTemplate?> GetDotMatrixTemplateByTypeAsync(string documentType);
+        Task SaveDotMatrixTemplateAsync(DotMatrixTemplate template);
     }
 }

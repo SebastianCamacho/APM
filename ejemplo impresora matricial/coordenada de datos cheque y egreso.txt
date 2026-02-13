@@ -1,0 +1,87 @@
+
++---------------------------------------------------------------------------------------------------------------------------------------+
+| UNO - VER 8.5.                                   FUNDACION COLEGIO BILLIGUE DE VALLE                               FECHA : 2026/02/09 |
+| UN002216.P01                                         ** CATALOGO DE FORMATOS **                                    HORA  : 10:09 AM   |
+|                                                                                                                    PAGINA:        1   |
++---------------------------------------------------------------------------------------------------------------------------------------+
+| Sec. Tipo    Campo  Descripcion                              Ind         Nro Nro Efecto   Formato                                     |
+|                                                              Imp Lin Col Dig Dec Campo.   Edicion                                     |
+|                    Tipo Campo  Sec  Operando             Oper.   Tipo Campo  Operando                                                 |
++---------------------------------------------------------------------------------------------------------------------------------------+
+
+ 01 ENCABEZADO DEL FORMATO
+ 01 ENCABEZADO DEL FORMATO
+ ---------------------------------------------
+ ---------------------------------------------
+ 0010 Campo   000920 AÑO DEL DOCUMENTO - 4 DIGITOS             Si  02  060 04  0
+ 0020 Campo   000921 MES DEL DOCUMENTO - 2 DIGITOS             Si  02  070 02  0
+ 0030 Campo   000922 DIA DEL DOCUMENTO - 2 DIGITOS             Si  02  076 02  0
+ 0040 Campo   220014 VALOR DOCUMENTO                           Si  02  087 15  0            Protegido
+ 0050 Campo   000927 NOMBRE TERCERO - SEGURIDAD                Si  04  013 40  0
+ 0058 Texto   000000 ******************************            Si  04  053 99  0
+ 0059 Texto   000000 ******************************            Si  04  082 99  0
+ 0060 Campo   000940 MONTO ESCRITO LINEA 1 - SEGURIDAD         Si  06  013 99  0
+ 0065 Texto   000000 ******************************            Si  08  001 30  0
+ 0068 Texto   000000 **********                                Si  08  031 10  0
+ 0080 Campo   000920 AÑO DEL DOCUMENTO - 4 DIGITOS             Si  20  043 04  0
+ 0090 Campo   000921 MES DEL DOCUMENTO - 2 DIGITOS             Si  20  051 02  0
+ 0100 Campo   000922 DIA DEL DOCUMENTO - 2 DIGITOS             Si  20  057 02  0
+ 0110 Campo   220001 NUMERO DOCUMENTO                          Si  20  070 06  0
+ 0120 Campo   235001 CODIGO BANCO                              Si  20  110 04  0
+ 0130 Texto   000000 Por Concepto de:                          Si  23  001 16  0
+ 0140 Campo   220100 DETALLE ADICIONAL 1                       Si  25  001 60  0
+ 0150 Campo   220101 DETALLE ADICIONAL 2                       Si  26  001 60  0
+ 0160 Campo   220102 DETALLE ADICIONAL 3                       Si  27  001 60  0
+ 0170 Campo   220103 DETALLE ADICIONAL 4                       Si  28  001 60  0
+ 0180 Campo   220013 DETALLE                                   Si  24  001 60  0
+ 0190 Campo   220104 DETALLE ADICIONAL 5                       Si  29  001 60  0
+ 0200 Campo   220105 DETALLE ADICIONAL 6                       Si  30  001 60  0
+ 0210 Campo   220106 DETALLE ADICIONAL 7                       Si  31  001 60  0
+ 0220 Campo   220107 DETALLE ADICIONAL 8                       Si  32  001 60  0
+ 0230 Texto   000000 Entregado a:                              Si  22  001 13  0
+ 0240 Campo   000295 NOMBRES Y APELLIDOS                       Si  22  015 50  0
+ 0250 Texto   000000 CC o NIT:                                 Si  22  067 10  0
+ 0260 Campo   000297 NIT TERCERO NUMERICO                      Si  22  077 15  0            Editado
+ 0270 Texto   000000 Cuenta                                    Si  39  001 06  0
+ 0280 Texto   000000 C.O                                       Si  39  010 04  0
+ 0290 Texto   000000 Tercero                                   Si  39  015 07  0
+ 0300 Texto   000000 Dcto_Cruce/Provee.                        Si  39  030 18  0
+ 0310 Texto   000000 D e b i t o s                             Si  39  053 13  0
+ 0320 Texto   000000 C r e d i t o s                           Si  39  071 15  0
+ 0330 Texto   000000 ------------------------------            Si  38  001 30  0
+ 0340 Texto   000000 [ CONTABILIZACION ]                       Si  38  031 19  0
+ 0350 Texto   000000 ------------------------------            Si  38  050 30  0
+ 0360 Texto   000000 ------                                    Si  38  081 06  0
+
+ 06 CONTABILIZACION
+ 06 CONTABILIZACION
+ ---------------------------------------------
+ ---------------------------------------------
+ 0010 Campo   231030 CODIGO DE CUENTA CONTABLE                 Si  00  001 08  0
+ 0020 Campo   231031 CO DEL MOVIMIENTO                         Si  00  010 03  0
++---------------------------------------------------------------------------------------------------------------------------------------+
+| UNO - VER 8.5.                                   FUNDACION COLEGIO BILLIGUE DE VALLE                               FECHA : 2026/02/09 |
+| UN002216.P01                                         ** CATALOGO DE FORMATOS **                                    HORA  : 10:09 AM   |
+|                                                                                                                    PAGINA:        2   |
++---------------------------------------------------------------------------------------------------------------------------------------+
+| Sec. Tipo    Campo  Descripcion                              Ind         Nro Nro Efecto   Formato                                     |
+|                                                              Imp Lin Col Dig Dec Campo.   Edicion                                     |
+|                    Tipo Campo  Sec  Operando             Oper.   Tipo Campo  Operando                                                 |
++---------------------------------------------------------------------------------------------------------------------------------------+
+ 0030 Campo   231032 CODIGO TERCERO                            Si  00  015 13  0
+ 0040 Campo   231017 TIPO DOCUMENTO CRUCE                      Si  00  030 02  0
+ 0050 Campo   231018 NUMERO CRUCE                              Si  00  033 06  0
+ 0060 Campo   231019 NUMERO CUOTA CRUCE                        Si  00  040 02  0
+ 0070 Campo   231004 VALOR MOVIMIENTO - DEBITO                 Si  00  050 15  2            Con signo
+ 0080 Campo   231033 VALOR MOVIMIENTO - CREDITO                Si  00  068 15  2            Con signo
+ 0090 Texto   000000 -                                         Si  00  032 01  0
+ 0100 Texto   000000 -                                         Si  00  039 01  0
+
+ 08 TOTALES CONTABILIZACION
+ 08 TOTALES CONTABILIZACION
+ ---------------------------------------------
+ ---------------------------------------------
+ 0010 Texto   000000 SUMAS IGUALES                             Si  51  020 15  0
+ 0020 Campo   220015 VALOR TOTAL DEBITO                        Si  51  050 15  2            Con signo
+ 0030 Campo   220016 VALOR TOTAL CREDITO                       Si  51  068 15  2            Con signo
+ 0040 Campo   220022 USUARIO - ELABORO                         Si  60  001 08  0

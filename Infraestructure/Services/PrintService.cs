@@ -16,20 +16,32 @@ namespace AppsielPrintManager.Infraestructure.Services
         private readonly ILoggingService _logger;
         private readonly ISettingsRepository _settingsRepository;
         private readonly ITicketRenderer _ticketRenderer;
+        private readonly ITemplateRepository _templateRepository;
         private readonly IEscPosGenerator _escPosGenerator;
         private readonly TcpIpPrinterClient _tcpIpPrinterClient;
+        private readonly DotMatrixRendererService _dotMatrixRenderer;
+        private readonly EscPGeneratorService _escPGenerator;
+        private readonly LocalRawPrinterClient _localRawPrinterClient;
 
         public PrintService(ILoggingService logger,
                             ISettingsRepository settingsRepository,
                             ITicketRenderer ticketRenderer,
+                            ITemplateRepository templateRepository,
                             IEscPosGenerator escPosGenerator,
-                            TcpIpPrinterClient tcpIpPrinterClient)
+                            TcpIpPrinterClient tcpIpPrinterClient,
+                            DotMatrixRendererService dotMatrixRenderer,
+                            EscPGeneratorService escPGenerator,
+                            LocalRawPrinterClient localRawPrinterClient)
         {
             _logger = logger;
             _settingsRepository = settingsRepository;
             _ticketRenderer = ticketRenderer;
+            _templateRepository = templateRepository;
             _escPosGenerator = escPosGenerator;
             _tcpIpPrinterClient = tcpIpPrinterClient;
+            _dotMatrixRenderer = dotMatrixRenderer;
+            _escPGenerator = escPGenerator;
+            _localRawPrinterClient = localRawPrinterClient;
         }
 
         /// <summary>
@@ -55,7 +67,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
 
                 // 2. Deserializar el documento
-                object documentData = null;
+                object? documentData = null;
                 try
                 {
                     var jsonDocument = JsonSerializer.Serialize(request.Document); // request.Document es un objeto, lo serializamos a string para luego deserializarlo al tipo correcto
@@ -72,6 +84,9 @@ namespace AppsielPrintManager.Infraestructure.Services
                             break;
                         case "sticker_codigo_barras":
                             documentData = JsonSerializer.Deserialize<BarcodeStickerDocumentData>(jsonDocument, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            break;
+                        case "comprobante_egreso":
+                            documentData = JsonSerializer.Deserialize<ComprobanteEgresoDocumentData>(jsonDocument, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                             break;
                         default:
                             result.ErrorMessage = $"DocumentType '{request.DocumentType}' no soportado para deserialización.";
@@ -99,47 +114,85 @@ namespace AppsielPrintManager.Infraestructure.Services
                     return result;
                 }
 
-                // 3. Renderizar el TicketContent (pasando el request original para media y el documento tipado)
-                var ticketContent = await _ticketRenderer.RenderTicketAsync(request, documentData);
+                // 3. OBTENER PLANTILLA Y RENDERIZAR
+                // Primero intentamos ver si hay una plantilla matricial para este documento
+                var dotMatrixTemplate = await _settingsRepository.GetPrinterSettingsAsync(request.PrinterId) != null
+                    ? await _templateRepository.GetDotMatrixTemplateByTypeAsync(request.DocumentType)
+                    : null;
 
-                // 4. Generar comandos ESC/POS
-                var escPosCommands = await _escPosGenerator.GenerateEscPosCommandsAsync(ticketContent, printerSettings);
-
-                // 4. Enviar a la impresora principal
-                bool primaryPrintSuccess = await _tcpIpPrinterClient.PrintAsync(printerSettings.IpAddress, printerSettings.Port, escPosCommands);
-
-                if (!primaryPrintSuccess)
+                if (dotMatrixTemplate != null)
                 {
-                    result.ErrorMessage = $"Fallo al imprimir en la impresora principal '{request.PrinterId}' ({printerSettings.IpAddress}:{printerSettings.Port}).";
-                    _logger.LogError(result.ErrorMessage);
-                    return result;
-                }
+                    _logger.LogInfo($"Usando flujo MATRICIAL para JobId: {request.JobId}");
 
-                // 5. Enviar a impresoras de copia si existen
-                if (printerSettings.CopyToPrinterIds != null && printerSettings.CopyToPrinterIds.Any())
-                {
-                    foreach (var copyPrinterId in printerSettings.CopyToPrinterIds)
+                    // A. Renderizar a grilla de texto
+                    var gridContent = await _dotMatrixRenderer.RenderToStringAsync(request, documentData, dotMatrixTemplate);
+                    _logger.LogInfo($"Grilla Matricial Renderizada:\n{gridContent}");
+
+                    // B. Generar comandos ESC/P
+                    var escPCommands = await _escPGenerator.GenerateEscPCommandsAsync(gridContent, printerSettings);
+
+                    // C. Enviar según el tipo de conexión
+                    bool success = false;
+                    if (printerSettings.ConnectionType == "USB" && !string.IsNullOrEmpty(printerSettings.LocalPrinterName))
                     {
-                        var copyPrinterSettings = await _settingsRepository.GetPrinterSettingsAsync(copyPrinterId);
-                        if (copyPrinterSettings == null)
-                        {
-                            _logger.LogWarning($"Impresora de copia con ID '{copyPrinterId}' no encontrada. Se omite la copia.");
-                            continue;
-                        }
+                        success = await _localRawPrinterClient.SendRawDataAsync(printerSettings.LocalPrinterName, escPCommands, $"APM_{request.JobId}");
+                    }
+                    else
+                    {
+                        // Fallback a TCP si no es USB (ej. servidor IPP o adaptador de red)
+                        success = await _tcpIpPrinterClient.PrintAsync(printerSettings.IpAddress ?? string.Empty, printerSettings.Port, escPCommands);
+                    }
 
-                        _logger.LogInfo($"Enviando copia a impresora '{copyPrinterId}' ({copyPrinterSettings.IpAddress}:{copyPrinterSettings.Port}).");
-                        var copyEscPosCommands = await _escPosGenerator.GenerateEscPosCommandsAsync(ticketContent, copyPrinterSettings); // Regenerar por si la configuración de copia es diferente
-                        bool copyPrintSuccess = await _tcpIpPrinterClient.PrintAsync(copyPrinterSettings.IpAddress, copyPrinterSettings.Port, copyEscPosCommands);
+                    if (success) result.Status = "DONE";
+                    else result.ErrorMessage = "Fallo al enviar datos a la impresora matricial.";
+                }
+                else
+                {
+                    _logger.LogInfo($"Usando flujo TÉRMICO para JobId: {request.JobId}");
 
-                        if (!copyPrintSuccess)
+                    // 3. Renderizar el TicketContent (pasando el request original para media y el documento tipado)
+                    var ticketContent = await _ticketRenderer.RenderTicketAsync(request, documentData);
+
+                    // 4. Generar comandos ESC/POS
+                    var escPosCommands = await _escPosGenerator.GenerateEscPosCommandsAsync(ticketContent, printerSettings);
+
+                    // 4. Enviar a la impresora principal
+                    bool primaryPrintSuccess = await _tcpIpPrinterClient.PrintAsync(printerSettings.IpAddress ?? string.Empty, printerSettings.Port, escPosCommands);
+
+                    if (!primaryPrintSuccess)
+                    {
+                        result.ErrorMessage = $"Fallo al imprimir en la impresora principal '{request.PrinterId}' ({printerSettings.IpAddress}:{printerSettings.Port}).";
+                        _logger.LogError(result.ErrorMessage);
+                        return result;
+                    }
+
+                    // 5. Enviar a impresoras de copia si existen
+                    if (printerSettings.CopyToPrinterIds != null && printerSettings.CopyToPrinterIds.Any())
+                    {
+                        foreach (var copyPrinterId in printerSettings.CopyToPrinterIds)
                         {
-                            _logger.LogError($"Fallo al imprimir en impresora de copia '{copyPrinterId}'. Continúa el proceso principal.");
-                            // No se detiene el proceso principal si falla una copia, solo se registra.
+                            var copyPrinterSettings = await _settingsRepository.GetPrinterSettingsAsync(copyPrinterId);
+                            if (copyPrinterSettings == null)
+                            {
+                                _logger.LogWarning($"Impresora de copia con ID '{copyPrinterId}' no encontrada. Se omite la copia.");
+                                continue;
+                            }
+
+                            _logger.LogInfo($"Enviando copia a impresora '{copyPrinterId}' ({copyPrinterSettings.IpAddress}:{copyPrinterSettings.Port}).");
+                            var copyEscPosCommands = await _escPosGenerator.GenerateEscPosCommandsAsync(ticketContent, copyPrinterSettings); // Regenerar por si la configuración de copia es diferente
+                            bool copyPrintSuccess = await _tcpIpPrinterClient.PrintAsync(copyPrinterSettings.IpAddress ?? string.Empty, copyPrinterSettings.Port, copyEscPosCommands);
+
+                            if (!copyPrintSuccess)
+                            {
+                                _logger.LogError($"Fallo al imprimir en impresora de copia '{copyPrinterId}'. Continúa el proceso principal.");
+                                // No se detiene el proceso principal si falla una copia, solo se registra.
+                            }
                         }
                     }
+
+                    result.Status = "DONE";
                 }
 
-                result.Status = "DONE";
                 _logger.LogInfo($"Trabajo de impresión '{request.JobId}' completado exitosamente.");
             }
             catch (System.Exception ex)

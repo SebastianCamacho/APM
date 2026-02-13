@@ -35,6 +35,12 @@ namespace UI
             builder.Services.AddSingleton<ITicketRenderer, TicketRendererService>();
             builder.Services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>();
             builder.Services.AddSingleton<TcpIpPrinterClient>();
+
+            // Servicios para Impresoras Matriciales
+            builder.Services.AddSingleton<DotMatrixRendererService>();
+            builder.Services.AddSingleton<EscPGeneratorService>();
+            builder.Services.AddSingleton<LocalRawPrinterClient>();
+
             builder.Services.AddSingleton<IPrintService, PrintService>();
 
             // Register Scale Repository (Shared with Worker but separate instance/file access)
