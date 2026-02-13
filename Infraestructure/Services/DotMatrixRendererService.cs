@@ -52,7 +52,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                                 if (currentRow > template.TotalRows) break;
 
                                 var val = GetValueFromPath(item, element.Source ?? string.Empty)?.ToString() ?? string.Empty;
-                                WriteAt(canvas, currentRow, element.Column, val, element.MaxLength, template);
+                                WriteAt(canvas, currentRow, element.Column, val, element, template);
 
                                 currentRow += (element.RowIncrement ?? 1);
                             }
@@ -66,7 +66,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                             : element.StaticValue ?? string.Empty;
 
                         string finalValue = $"{element.Label}{val}";
-                        WriteAt(canvas, element.Row, element.Column, finalValue, element.MaxLength, template);
+                        WriteAt(canvas, element.Row, element.Column, finalValue, element, template);
                     }
                 }
                 catch (Exception ex)
@@ -85,7 +85,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             return Task.FromResult(sb.ToString());
         }
 
-        private void WriteAt(char[][] canvas, int row, int col, string value, int maxLength, DotMatrixTemplate template)
+        private void WriteAt(char[][] canvas, int row, int col, string value, DotMatrixElement element, DotMatrixTemplate template)
         {
             // Ajustar a 0-indexado
             int r = row - 1;
@@ -94,15 +94,70 @@ namespace AppsielPrintManager.Infraestructure.Services
             if (r < 0 || r >= template.TotalRows || c < 0 || c >= template.TotalColumns) return;
 
             string text = value;
-            if (maxLength > 0 && text.Length > maxLength)
+
+            // 1. Aplicar Padding si está configurado
+            if (element.PaddingChar.HasValue && element.MaxLength > 0)
             {
-                text = text.Substring(0, maxLength);
+                if (element.PaddingType?.Equals("Left", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    text = text.PadLeft(element.MaxLength, element.PaddingChar.Value);
+                }
+                else
+                {
+                    text = text.PadRight(element.MaxLength, element.PaddingChar.Value);
+                }
             }
 
-            int lengthToCopy = Math.Min(text.Length, template.TotalColumns - c);
+            // 2. Manejo de MaxLength (sin wrapping) o preparación para Wrapping
+            int primaryLimit = element.MaxLength > 0 ? element.MaxLength : (template.TotalColumns - c);
+
+            string primaryPart = text;
+            string overflowPart = string.Empty;
+
+            if (text.Length > primaryLimit)
+            {
+                primaryPart = text.Substring(0, primaryLimit);
+                overflowPart = text.Substring(primaryLimit);
+            }
+
+            // 3. Escribir parte principal
+            int lengthToCopy = Math.Min(primaryPart.Length, template.TotalColumns - c);
             for (int i = 0; i < lengthToCopy; i++)
             {
-                canvas[r][c + i] = text[i];
+                canvas[r][c + i] = primaryPart[i];
+            }
+
+            // 4. Manejo de Wrapping (Salto de línea a coordenadas específicas)
+            if (element.WrapToRow.HasValue && element.WrapToColumn.HasValue)
+            {
+                int wrapR = element.WrapToRow.Value - 1;
+                int wrapC = element.WrapToColumn.Value - 1;
+
+                if (wrapR >= 0 && wrapR < template.TotalRows && wrapC >= 0 && wrapC < template.TotalColumns)
+                {
+                    int wrapLimit = element.WrapMaxLength ?? (template.TotalColumns - wrapC);
+                    string secondPart = overflowPart;
+
+                    if (secondPart.Length > wrapLimit)
+                    {
+                        secondPart = secondPart.Substring(0, wrapLimit);
+                    }
+
+                    // Aplicar padding a la segunda parte si es necesario (garantiza asteriscos aunque no haya overflow)
+                    if (element.PaddingChar.HasValue && wrapLimit > 0)
+                    {
+                        secondPart = secondPart.PadRight(wrapLimit, element.PaddingChar.Value);
+                    }
+
+                    if (!string.IsNullOrEmpty(secondPart))
+                    {
+                        int lengthToCopyWrap = Math.Min(secondPart.Length, template.TotalColumns - wrapC);
+                        for (int i = 0; i < lengthToCopyWrap; i++)
+                        {
+                            canvas[wrapR][wrapC + i] = secondPart[i];
+                        }
+                    }
+                }
             }
         }
 

@@ -278,36 +278,34 @@ const templates = {
         "Document": {
             "cheque": {
                 "Number": "002216",
-                "Date": "2025-02-13",
                 "DateInfo": {
-                    "Day": "13",
+                    "Day": "15",
                     "Month": "02",
-                    "Year": "2025"
+                    "Year": "2026"
                 },
-                "PayTo": "JUAN PEREZ",
+                "PayTo": "JUAN SEBASTIAN CAMACHO MUÑOZ",
                 "AmountText": "UN MILLON DE PESOS M/CTE",
                 "Amount": "1.000.000,00",
                 "City": "VALLEDUPAR"
             },
             "egreso": {
                 "Number": "CE-456",
-                "Date": "2025-02-13",
                 "DateInfo": {
                     "Day": "13",
                     "Month": "02",
                     "Year": "2025"
                 },
                 "BankCode": "007",
-                "ReceiverName": "LESMES HURTADO YISSETH MAYERLY",
-                "ReceiverId": "1.121.825.689",
-                "Concept": "PAGO DE FACTURAS DE SERVICIOS PUBLICOS MES ENERO",
+                "ReceiverName": "JUAN SEBASTIAN CAMACHO MUÑOZ",
+                "ReceiverId": "1.003.376.130",
+                "Concept": ["PAGO DE SERVICIO DE DESARROLLO DE SOFTWARE", "APM ENERO - FEBRERO 2026", "ADICIONAL LINEA 3", "ADICIONAL LINEA 4"],
                 "Description": "F\nF",
                 "Items": [
-                    { "Account": "250501", "CO": "001", "ThirdParty": "1121825689", "Reference": "-", "Debit": "$60,532.00", "Credit": "$0.00" },
-                    { "Account": "11100506", "CO": "001", "ThirdParty": "1121825689", "Reference": "-", "Debit": "$0.00", "Credit": "$60,532.00" }
+                    { "Account": "250501", "CO": "001", "ThirdParty": "1121825689", "Reference": "-", "Debit": "$939,360,532.00", "Credit": "$0.00" },
+                    { "Account": "11100506", "CO": "001", "ThirdParty": "1121825689", "Reference": "-", "Debit": "$0.00", "Credit": "$939,360,532.00" }
                 ],
-                "TotalDebit": "$60,532.00",
-                "TotalCredit": "$60,532.00",
+                "TotalDebit": "$939,360,532.00",
+                "TotalCredit": "$939,360,532.00",
                 "CreatedBy": "S. CAMACHO"
             }
         }

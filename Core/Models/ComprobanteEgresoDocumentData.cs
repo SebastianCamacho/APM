@@ -34,7 +34,7 @@ namespace AppsielPrintManager.Core.Models
         public string? BankCode { get; set; }
         public string? ReceiverName { get; set; }
         public string? ReceiverId { get; set; }
-        public string? Concept { get; set; }
+        public List<string>? Concept { get; set; }
         public string? Description { get; set; }
         public List<AccountingItem>? Items { get; set; }
         public string? TotalDebit { get; set; }

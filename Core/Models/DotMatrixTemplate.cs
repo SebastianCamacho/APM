@@ -63,5 +63,30 @@ namespace AppsielPrintManager.Core.Models
         /// Espaciado entre filas para secciones repetidas.
         /// </summary>
         public int? RowIncrement { get; set; }
+
+        /// <summary>
+        /// Carácter de relleno (ej: '*')
+        /// </summary>
+        public char? PaddingChar { get; set; }
+
+        /// <summary>
+        /// Tipo de relleno ("Left" o "Right")
+        /// </summary>
+        public string? PaddingType { get; set; }
+
+        /// <summary>
+        /// Fila a la que salta el texto si se desborda.
+        /// </summary>
+        public int? WrapToRow { get; set; }
+
+        /// <summary>
+        /// Columna a la que salta el texto si se desborda.
+        /// </summary>
+        public int? WrapToColumn { get; set; }
+
+        /// <summary>
+        /// Longitud máxima permitida en la segunda línea.
+        /// </summary>
+        public int? WrapMaxLength { get; set; }
     }
 }
