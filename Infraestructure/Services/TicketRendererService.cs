@@ -15,6 +15,16 @@ namespace AppsielPrintManager.Infraestructure.Services
         private readonly ILoggingService _logger;
         private readonly ITemplateRepository _templateRepository;
 
+        // Diccionario para normalizar tipos conocidos y evitar problemas de Case-Sensitivity
+        private static readonly Dictionary<string, string> _knownTypes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "QR", "QR" },
+            { "BARCODE", "Barcode" },
+            { "IMAGE", "Image" },
+            { "TEXT", "Text" },
+            { "LINE", "Line" }
+        };
+
         public TicketRendererService(ILoggingService logger, ITemplateRepository templateRepository)
         {
             _logger = logger;
@@ -114,15 +124,35 @@ namespace AppsielPrintManager.Infraestructure.Services
                                     ? GetValueFromPath(item, element.Source!)?.ToString()
                                     : (element.Source == "." ? item?.ToString() : element.StaticValue);
 
+                                string rawType = element.Type ?? "Text";
+                                string normalizedType = _knownTypes.TryGetValue(rawType, out var known) ? known : rawType;
+
                                 var textValue = $"{(element.Label ?? string.Empty)}{val}";
 
-                                renderedSection.Elements.Add(new RenderedElement
+                                var renderedElement = new RenderedElement
                                 {
-                                    Type = element.Type ?? "Text",
+                                    Type = normalizedType,
                                     TextValue = textValue,
                                     Align = element.Align ?? section.Align,
-                                    Format = element.Format ?? section.Format
-                                });
+                                    Format = element.Format ?? section.Format,
+                                    Columns = element.Columns
+                                };
+
+                                if (normalizedType == "Barcode")
+                                {
+                                    PopulateBarcodeProperties(element, renderedElement, item);
+                                }
+                                else if (normalizedType == "QR")
+                                {
+                                    renderedElement.QrValue = val;
+                                    if (element.Properties != null && element.Properties.ContainsKey("Size"))
+                                    {
+                                        int.TryParse(element.Properties["Size"], out int size);
+                                        renderedElement.Size = size;
+                                    }
+                                }
+
+                                renderedSection.Elements.Add(renderedElement);
                             }
                         }
                     }
@@ -144,13 +174,38 @@ namespace AppsielPrintManager.Infraestructure.Services
                             textValue = "";
                         }
 
-                        renderedSection.Elements.Add(new RenderedElement
+                        // Normalizar el tipo usando el diccionario (o dejar el original si no se conoce)
+                        string rawType = element.Type ?? "Text";
+                        string normalizedType = _knownTypes.TryGetValue(rawType, out var known) ? known : rawType;
+
+                        var renderedElement = new RenderedElement
                         {
-                            Type = element.Type ?? "Text",
+                            Type = normalizedType,
                             TextValue = textValue,
                             Align = element.Align ?? section.Align,
-                            Format = element.Format ?? section.Format
-                        });
+                            Format = element.Format ?? section.Format,
+                            Columns = element.Columns
+                        };
+
+                        if (normalizedType == "Barcode")
+                        {
+                            PopulateBarcodeProperties(element, renderedElement, data);
+                        }
+                        else if (normalizedType == "QR")
+                        {
+                            renderedElement.QrValue = val;
+                            if (element.Properties != null && element.Properties.ContainsKey("Size"))
+                            {
+                                int.TryParse(element.Properties["Size"], out int size);
+                                renderedElement.Size = size;
+                            }
+                        }
+                        else if (normalizedType == "Image")
+                        {
+                            renderedElement.Base64Image = val; // El Base64 viene del Source o Static
+                        }
+
+                        renderedSection.Elements.Add(renderedElement);
                     }
                     break;
             }
@@ -158,7 +213,56 @@ namespace AppsielPrintManager.Infraestructure.Services
             return renderedSection;
         }
 
-        private object? GetValueFromPath(object data, string path)
+        private void PopulateBarcodeProperties(TemplateElement element, RenderedElement rendered, object? item)
+        {
+            rendered.BarcodeValue = !string.IsNullOrEmpty(element.Source) && element.Source != "."
+                ? GetValueFromPath(item, element.Source)?.ToString()
+                : (element.Source == "." ? item?.ToString() : element.StaticValue);
+
+            // 1. Mapeo de campos de texto (Nombre, ID, Precio)
+            string nameField = (element.Properties != null && element.Properties.ContainsKey("NameSource")) ? element.Properties["NameSource"] : "Name";
+            string idField = (element.Properties != null && element.Properties.ContainsKey("ItemIdSource")) ? element.Properties["ItemIdSource"] : "ItemId";
+            string priceField = (element.Properties != null && element.Properties.ContainsKey("PriceSource")) ? element.Properties["PriceSource"] : "Price";
+
+            rendered.ProductName = GetValueFromPath(item, nameField)?.ToString();
+            rendered.ItemId = GetValueFromPath(item, idField)?.ToString();
+            rendered.ProductPrice = GetValueFromPath(item, priceField)?.ToString();
+
+            // 2. PRIORIDAD DE PROPIEDADES (Template Root > Template Properties > Data)
+            var props = element.Properties != null ? new Dictionary<string, string>(element.Properties, StringComparer.OrdinalIgnoreCase) : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // HEIGHT: Priorizar el campo directo (el que usa el slider/campo del editor)
+            int? tHeight = element.Height;
+            if (!tHeight.HasValue && props.ContainsKey("Height") && int.TryParse(props["Height"], out int h)) tHeight = h;
+
+            var dataHeightRaw = GetValueFromPath(item, "Height");
+            int? dHeight = dataHeightRaw as int? ?? (int.TryParse(dataHeightRaw?.ToString(), out int h2) ? h2 : null);
+
+            rendered.Height = tHeight ?? dHeight;
+            _logger.LogInfo($"[TicketRenderer] Barcode Height Result: {rendered.Height} (Root: {element.Height}, AdvProps: {(props.ContainsKey("Height") ? props["Height"] : "N/A")}, Data: {dHeight})");
+
+            // HRI
+            bool? tHri = null;
+            if (props.ContainsKey("Hri") && bool.TryParse(props["Hri"], out bool b)) tHri = b;
+
+            var dataHriRaw = GetValueFromPath(item, "Hri");
+            bool? dHri = dataHriRaw as bool? ?? (bool.TryParse(dataHriRaw?.ToString(), out bool b2) ? b2 : null);
+
+            rendered.Hri = tHri ?? dHri;
+
+            // WIDTH / BARWIDTH
+            int? tWidth = element.BarWidth;
+            if (!tWidth.HasValue && props.ContainsKey("Width") && int.TryParse(props["Width"], out int w)) tWidth = w;
+            if (!tWidth.HasValue && props.ContainsKey("BarWidth") && int.TryParse(props["BarWidth"], out int w3)) tWidth = w3;
+
+            var dataWidthRaw = GetValueFromPath(item, "Width");
+            int? dWidth = dataWidthRaw as int? ?? (int.TryParse(dataWidthRaw?.ToString(), out int w2) ? w2 : null);
+
+            rendered.BarWidth = tWidth ?? dWidth;
+            _logger.LogInfo($"[TicketRenderer] Barcode Width Result: {rendered.BarWidth} (Root: {element.BarWidth}, AdvProps: {(props.ContainsKey("Width") ? props["Width"] : "N/A")}, Data: {dWidth})");
+        }
+
+        private object? GetValueFromPath(object? data, string path)
         {
             if (string.IsNullOrEmpty(path) || path == "." || data == null) return data;
 
@@ -207,7 +311,20 @@ namespace AppsielPrintManager.Infraestructure.Services
             if (request.Barcodes != null)
             {
                 foreach (var bc in request.Barcodes)
-                    ticketContent.ExtraMedia.Add(new RenderedElement { Type = "Barcode", BarcodeValue = bc.Value, BarcodeType = bc.Type, Align = bc.Align, Height = bc.Height, Hri = bc.Hri });
+                {
+                    ticketContent.ExtraMedia.Add(new RenderedElement
+                    {
+                        Type = "Barcode",
+                        BarcodeValue = bc.Value,
+                        BarcodeType = bc.Type,
+                        Height = bc.Height,
+                        BarWidth = bc.Width,
+                        Hri = bc.Hri,
+                        ProductName = bc.Name,
+                        ItemId = bc.ItemId,
+                        ProductPrice = bc.Price
+                    });
+                }
             }
 
             if (request.QRs != null)

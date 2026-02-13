@@ -4,7 +4,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>Exe</OutputType>
     <UserSecretsId>dotnet-WorkerService-bacb0c0e-ae24-4aba-9101-8154eeb8bdac</UserSecretsId>
+    <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

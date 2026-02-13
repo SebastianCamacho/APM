@@ -12,9 +12,16 @@ namespace AppsielPrintManager.Core.Models
         public string Align { get; set; } // Processed alignment
         public int? WidthMm { get; set; } // For images
         public int? Height { get; set; } // For barcodes
+        public int? BarWidth { get; set; } // For barcode module width
         public bool? Hri { get; set; } // For barcodes
         public int? Size { get; set; } // For QR
         public int? WidthPercentage { get; set; } // For dynamic table column width
+        public int? Columns { get; set; } // For grouping barcodes/elements in a row
+
+        // Propiedades para Barcode extendido
+        public string? ItemId { get; set; }
+        public string? ProductName { get; set; }
+        public string? ProductPrice { get; set; }
 
         // Add any other properties that might be needed after rendering and before ESC/POS generation
     }

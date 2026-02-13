@@ -34,24 +34,18 @@ namespace UI.ViewModels
             IsBusy = true;
             try
             {
+                // Asegurar que siempre existan las 4 plantillas base (sin sobreescribir las existentes)
+                await _templateRepository.EnsureDefaultTemplatesAsync();
+
                 var templateList = await _templateRepository.GetAllTemplatesAsync();
 
-                if (templateList == null || !templateList.Any())
-                {
-                    // Generar plantillas por defecto si no hay ninguna
-                    var defaultComanda = DefaultTemplateProvider.GetDefaultTemplate("comanda");
-                    var defaultTicket = DefaultTemplateProvider.GetDefaultTemplate("ticket_venta");
-
-                    await _templateRepository.SaveTemplateAsync(defaultComanda);
-                    await _templateRepository.SaveTemplateAsync(defaultTicket);
-
-                    templateList = await _templateRepository.GetAllTemplatesAsync();
-                }
-
                 Templates.Clear();
-                foreach (var template in templateList)
+                if (templateList != null)
                 {
-                    Templates.Add(template);
+                    foreach (var template in templateList)
+                    {
+                        Templates.Add(template);
+                    }
                 }
             }
             catch (System.Exception ex)

@@ -19,6 +19,7 @@ namespace AppsielPrintManager.Core.Models
         /// La altura deseada del código de barras.
         /// </summary>
         public int Height { get; set; }
+        public int? Width { get; set; } // Ancho del módulo
 
         /// <summary>
         /// Indica si se debe imprimir la interpretación legible por humanos (Human Readable Interpretation - HRI)
@@ -29,6 +30,9 @@ namespace AppsielPrintManager.Core.Models
         /// <summary>
         /// La alineación del código de barras en el ticket (ej. "center", "left", "right").
         /// </summary>
-        public string Align { get; set; }
+
+        public string ItemId { get; set; }
+        public string Name { get; set; }
+        public string Price { get; set; }
     }
 }

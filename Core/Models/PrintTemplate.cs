@@ -42,6 +42,10 @@ namespace AppsielPrintManager.Core.Models
         public string? HeaderFormat { get; set; } // Nuevo: Formato específico para el encabezado
         public string? HeaderAlign { get; set; } // Nuevo: Alineación específica para el encabezado
         public int? WidthPercentage { get; set; } // Para columnas de tabla
+        public int? Columns { get; set; } // Para elementos múltiples por fila (ej: barcodes)
+        public int? BarWidth { get; set; } // Ancho del módulo de código de barras (1-5)
+        public int? Height { get; set; } // Altura del código de barras o imagen (1-255)
+        public int? Size { get; set; } // Tamaño para QR (1-16) u otros elementos
         public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
     }
 }

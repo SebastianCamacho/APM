@@ -17,13 +17,25 @@ namespace UI.ViewModels
         [NotifyPropertyChangedFor(nameof(IsNotLine))]
         [NotifyPropertyChangedFor(nameof(IsText))]
         [NotifyPropertyChangedFor(nameof(ShowStaticToggle))]
-        [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
+        [NotifyPropertyChangedFor(nameof(ShowLabelEntry))]
+        [NotifyPropertyChangedFor(nameof(ShowGenericSourcePicker))]
         [NotifyPropertyChangedFor(nameof(ShowStaticValueInput))]
         [NotifyPropertyChangedFor(nameof(ShowTableProperties))]
+        [NotifyPropertyChangedFor(nameof(IsBarcode))]
+        [NotifyPropertyChangedFor(nameof(IsQR))]
+        [NotifyPropertyChangedFor(nameof(IsImage))]
+        [NotifyPropertyChangedFor(nameof(ShowBarcodeProperties))]
+        [NotifyPropertyChangedFor(nameof(ShowBarWidth))]
+        [NotifyPropertyChangedFor(nameof(ShowQRProperties))]
+        [NotifyPropertyChangedFor(nameof(ShowTextFormatting))]
+        [NotifyPropertyChangedFor(nameof(ShowImageProperties))]
+        [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
         private string type;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
+        [NotifyPropertyChangedFor(nameof(ShowLabelEntry))]
+        [NotifyPropertyChangedFor(nameof(ShowGenericSourcePicker))]
         [NotifyPropertyChangedFor(nameof(ShowStaticValueInput))]
         private bool isStatic;
 
@@ -42,11 +54,31 @@ namespace UI.ViewModels
         public bool IsLine => Type == "Line";
         public bool IsNotLine => !IsLine;
         public bool IsText => Type == "Text";
+        public bool IsBarcode => Type == "Barcode";
+        public bool IsQR => Type == "QR";
+        public bool IsImage => Type == "Image";
 
         public bool ShowStaticToggle => IsText;
-        public bool ShowLabelAndSource => IsNotLine && !(IsText && IsStatic);
+        public bool ShowLabelEntry => IsText && !IsStatic;
+        public bool ShowGenericSourcePicker => (IsText && !IsStatic) || IsImage;
         public bool ShowStaticValueInput => IsText && IsStatic;
         public bool ShowTableProperties => IsTableSection && IsNotLine;
+
+        public List<int> ColumnOptions { get; } = new() { 1, 2 };
+
+        public bool ShowBarcodeProperties => IsBarcode;
+        public bool ShowBarWidth => IsBarcode && Columns <= 1;
+        public bool ShowQRProperties => IsQR;
+        public bool ShowSourceSelector => IsBarcode || IsQR;
+        public bool ShowTextFormatting => IsText;
+        public bool ShowImageProperties => IsImage;
+
+        // Mantener por compatibilidad o transición en XAML, pero ahora responde a cambios en IsStatic también
+        public bool ShowLabelAndSource => ShowLabelEntry || ShowGenericSourcePicker;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowBarWidth))]
+        private int columns = 1;
 
         [ObservableProperty]
         private string label;
@@ -86,6 +118,15 @@ namespace UI.ViewModels
         [NotifyPropertyChangedFor(nameof(AllSuggestions))]
         [NotifyPropertyChangedFor(nameof(DisplaySuggestions))]
         private string? documentType;
+
+        [ObservableProperty]
+        private int? barWidth;
+
+        [ObservableProperty]
+        private int? height;
+
+        [ObservableProperty]
+        private int? size;
 
         [ObservableProperty]
         private bool isHeaderBold;
@@ -135,6 +176,10 @@ namespace UI.ViewModels
             StaticValue = model.StaticValue ?? string.Empty;
             Align = model.Align ?? "Ninguno";
             WidthPercentage = model.WidthPercentage;
+            Columns = model.Columns ?? 1;
+            BarWidth = model.BarWidth;
+            Height = model.Height;
+            Size = model.Size;
 
             ParseFormat(model.Format ?? string.Empty);
             ParseHeaderFormat(model.HeaderFormat ?? string.Empty);
@@ -197,6 +242,10 @@ namespace UI.ViewModels
             _model.StaticValue = string.IsNullOrEmpty(StaticValue) ? null : StaticValue;
             _model.Align = (Align == "Ninguno") ? null : Align;
             _model.WidthPercentage = WidthPercentage;
+            _model.Columns = Columns;
+            _model.BarWidth = BarWidth;
+            _model.Height = Height;
+            _model.Size = Size;
             _model.Format = GenerateFormat();
             _model.HeaderFormat = GenerateHeaderFormat();
 

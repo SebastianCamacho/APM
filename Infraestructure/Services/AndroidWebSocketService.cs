@@ -39,6 +39,11 @@ namespace AppsielPrintManager.Infraestructure.Services
         public event AsyncEventHandler<WebSocketMessageReceivedEventArgs<PrintJobRequest>>? OnPrintJobReceived;
 
         /// <summary>
+        /// Evento que se dispara cuando se recibe una solicitud de actualización de plantilla.
+        /// </summary>
+        public event AsyncEventHandler<WebSocketMessageReceivedEventArgs<PrintTemplate>>? OnTemplateUpdateReceived;
+
+        /// <summary>
         /// Indica si el servidor WebSocket está actualmente escuchando conexiones.
         /// </summary>
         public bool IsRunning
@@ -255,6 +260,41 @@ namespace AppsielPrintManager.Infraestructure.Services
         }
 
         /// <summary>
+        /// Envía el resultado de una actualización de plantilla a un cliente específico.
+        /// </summary>
+        public async Task SendTemplateUpdateResultAsync(string clientId, TemplateUpdateResult result)
+        {
+            WatsonWsServer? server;
+            lock (_lockObject)
+            {
+                server = _server;
+            }
+
+            if (server == null)
+            {
+                _logger.LogWarning("AndroidWebSocketService: No se puede enviar TemplateUpdateResult, el servidor no está en ejecución.");
+                return;
+            }
+
+            try
+            {
+                if (!Guid.TryParse(clientId, out var clientGuid))
+                {
+                    _logger.LogError($"AndroidWebSocketService: Client ID inválido para TemplateUpdateResult: {clientId}");
+                    return;
+                }
+
+                var json = JsonSerializer.Serialize(result);
+                await server.SendAsync(clientGuid, json);
+                _logger.LogInfo($"AndroidWebSocketService: TemplateUpdateResult enviado al cliente {clientId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"AndroidWebSocketService: Error al enviar TemplateUpdateResult al cliente {clientId}: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
         /// Envía datos de báscula a todos los clientes WebSocket conectados.
         /// NO IMPLEMENTADO para Android según especificaciones del proyecto.
         /// </summary>
@@ -322,7 +362,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     PropertyNameCaseInsensitive = true
                 });
 
-                if (request != null)
+                if (request != null && !string.IsNullOrEmpty(request.JobId))
                 {
                     _logger.LogInfo($"AndroidWebSocketService: PrintJobRequest deserializado para JobId: {request.JobId}");
 
@@ -332,7 +372,24 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
                 else
                 {
-                    _logger.LogWarning($"AndroidWebSocketService: No se pudo deserializar PrintJobRequest desde el mensaje: {message}");
+                    // Intentar detectar si es una actualización de plantilla
+                    using (JsonDocument doc = JsonDocument.Parse(message))
+                    {
+                        if (doc.RootElement.TryGetProperty("Action", out JsonElement actionProp) &&
+                            string.Equals(actionProp.GetString(), "UpdateTemplate", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var updateReq = JsonSerializer.Deserialize<UpdateTemplateRequest>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            if (updateReq?.Template != null)
+                            {
+                                _logger.LogInfo($"AndroidWebSocketService: UpdateTemplateRequest recibido de {clientId} para {updateReq.Template.DocumentType}");
+                                var updateArgs = new WebSocketMessageReceivedEventArgs<PrintTemplate>(clientId, updateReq.Template);
+                                OnTemplateUpdateReceived?.Invoke(this, updateArgs);
+                                return;
+                            }
+                        }
+                    }
+
+                    _logger.LogWarning($"AndroidWebSocketService: No se pudo procesar el mensaje como PrintJobRequest o UpdateTemplate: {message}");
                 }
             }
             catch (JsonException jex)

@@ -73,33 +73,41 @@ namespace UI.Services
                 string appDirectory = AppContext.BaseDirectory;
                 string workerExePath = string.Empty;
 
-                // 1. RUTA DE PRODUCCIÓN (Instalador): El worker suele estar en una subcarpeta /worker
+                // 1. RUTA DE PRODUCCIÓN (Instalador)
                 string productionPath = Path.Combine(appDirectory, "worker", WorkerExeName);
 
-                // 2. RUTAS DE DESARROLLO (Tu lógica original)
-                string solutionRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..", "..", "..", ".."));
-                string workerProjectBase = Path.Combine(solutionRoot, WorkerServiceName);
-                string debugPath = Path.Combine(workerProjectBase, "bin", "Debug", "net10.0", WorkerExeName);
-                string releasePath = Path.Combine(workerProjectBase, "bin", "Release", "net10.0", WorkerExeName);
+                // 2. RUTAS DE DESARROLLO (Búsqueda robusta y dinámica)
+                string solutionRoot = GetDevelopmentSolutionRoot(appDirectory);
+                string workerProjectBase = solutionRoot != null ? Path.Combine(solutionRoot, WorkerServiceName) : string.Empty;
 
-                if (File.Exists(productionPath))
+                var possiblePaths = new List<string>();
+
+                if (!string.IsNullOrEmpty(workerProjectBase))
                 {
-                    workerExePath = productionPath;
-                    _logger.LogInfo($"[WorkerServiceManager] Usando ruta de producción: '{workerExePath}'");
+                    // Priorizar desarrollo (última compilación en VS, incluyendo RID)
+                    possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Debug", "net10.0", "win-x64", WorkerExeName));
+                    possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Debug", "net10.0", WorkerExeName));
+                    possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Release", "net10.0", "win-x64", WorkerExeName));
+                    possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Release", "net10.0", WorkerExeName));
+                    
+                    // Versiones con -windows (legacy/fallback)
+                    possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Debug", "net10.0-windows", "win-x64", WorkerExeName));
+                    possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Debug", "net10.0-windows", WorkerExeName));
+                    possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Release", "net10.0-windows", "win-x64", WorkerExeName));
+                    possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Release", "net10.0-windows", WorkerExeName));
                 }
-                else if (File.Exists(debugPath))
+
+                possiblePaths.Add(productionPath);
+
+                workerExePath = possiblePaths.FirstOrDefault(p => File.Exists(p));
+
+                if (!string.IsNullOrEmpty(workerExePath))
                 {
-                    workerExePath = debugPath;
-                    _logger.LogInfo($"[WorkerServiceManager] Usando ruta Debug: '{workerExePath}'");
-                }
-                else if (File.Exists(releasePath))
-                {
-                    workerExePath = releasePath;
-                    _logger.LogInfo($"[WorkerServiceManager] Usando ruta Release: '{workerExePath}'");
+                    _logger.LogInfo($"[WorkerServiceManager] Ejecutable encontrado en: '{workerExePath}'");
                 }
                 else
                 {
-                    _logger.LogError($"[WorkerServiceManager] No se pudo encontrar el ejecutable en ninguna ruta.");
+                    _logger.LogError($"[WorkerServiceManager] No se pudo encontrar el ejecutable '{WorkerExeName}' en ninguna ruta conocida.");
                     return Task.FromResult(false);
                 }
 
@@ -162,6 +170,22 @@ namespace UI.Services
                 _logger.LogError($"[WorkerServiceManager] Error al detener: {ex.Message}", ex);
                 return false;
             }
+        }
+
+        private string GetDevelopmentSolutionRoot(string appDirectory)
+        {
+            var current = new DirectoryInfo(appDirectory);
+            while (current != null)
+            {
+                // Buscamos la carpeta que contiene el proyecto WorkerService o el archivo SLN
+                if (Directory.Exists(Path.Combine(current.FullName, WorkerServiceName)) ||
+                    File.Exists(Path.Combine(current.FullName, "AppsielPrintManager.slnx")))
+                {
+                    return current.FullName;
+                }
+                current = current.Parent;
+            }
+            return null;
         }
     }
 }

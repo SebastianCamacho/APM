@@ -45,6 +45,11 @@ namespace AppsielPrintManager.Infraestructure.Services
         public event AsyncEventHandler<WebSocketMessageReceivedEventArgs<PrintJobRequest>>? OnPrintJobReceived;
 
         /// <summary>
+        /// Evento que se dispara cuando se recibe una solicitud de actualización de plantilla desde un cliente.
+        /// </summary>
+        public event AsyncEventHandler<WebSocketMessageReceivedEventArgs<PrintTemplate>>? OnTemplateUpdateReceived;
+
+        /// <summary>
         /// Indica si el servidor WebSocket está actualmente escuchando conexiones.
         /// </summary>
         public bool IsRunning => _httpListener?.IsListening ?? false;
@@ -230,6 +235,28 @@ namespace AppsielPrintManager.Infraestructure.Services
         }
 
         /// <summary>
+        /// Envía el resultado de una actualización de plantilla a un cliente específico.
+        /// </summary>
+        public async Task SendTemplateUpdateResultAsync(string clientId, TemplateUpdateResult result)
+        {
+            if (_connectedClients.TryGetValue(clientId, out var webSocket))
+            {
+                if (webSocket.State == WebSocketState.Open)
+                {
+                    await SendMessageAsync(webSocket, JsonSerializer.Serialize(result));
+                }
+                else
+                {
+                    _logger.LogWarning($"El socket del cliente {clientId} no está abierto.");
+                }
+            }
+            else
+            {
+                _logger.LogWarning($"Cliente {clientId} no encontrado para enviar resultado de actualización.");
+            }
+        }
+
+        /// <summary>
         /// Envía datos de báscula a todos los clientes WebSocket conectados.
         /// </summary>
         public async Task SendScaleDataToAllClientsAsync(ScaleData scaleData)
@@ -357,18 +384,32 @@ namespace AppsielPrintManager.Infraestructure.Services
             {
                 while (webSocket.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
                 {
-                    var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                    using (var ms = new System.IO.MemoryStream())
+                    {
+                        WebSocketReceiveResult result;
+                        do
+                        {
+                            result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
 
-                    if (result.MessageType == WebSocketMessageType.Text && result.Count > 0)
-                    {
-                        var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                        _logger.LogInfo($"Mensaje de {clientId}: {message}");
-                        // Encolar mensaje CON el ID del cliente
-                        _messageQueue.Enqueue((clientId, message));
-                    }
-                    else if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken);
+                            if (result.MessageType == WebSocketMessageType.Close)
+                            {
+                                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken);
+                                return;
+                            }
+
+                            if (result.Count > 0)
+                            {
+                                ms.Write(buffer, 0, result.Count);
+                            }
+
+                        } while (!result.EndOfMessage && !cancellationToken.IsCancellationRequested);
+
+                        if (result.MessageType == WebSocketMessageType.Text && ms.Length > 0)
+                        {
+                            var message = Encoding.UTF8.GetString(ms.ToArray());
+                            // _logger.LogInfo($"Mensaje completo recibido de {clientId}. Longitud: {message.Length}"); // Log opcional para debug
+                            _messageQueue.Enqueue((clientId, message));
+                        }
                     }
                 }
             }
@@ -417,6 +458,16 @@ namespace AppsielPrintManager.Infraestructure.Services
                                         if (_clientScaleSubscriptions.TryRemove(clientId, out var scaleId))
                                         {
                                             _scaleService.StopListening(scaleId);
+                                        }
+                                    }
+                                    else if (string.Equals(action, "UpdateTemplate", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        var updateReq = JsonSerializer.Deserialize<UpdateTemplateRequest>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                                        if (updateReq?.Template != null)
+                                        {
+                                            _logger.LogInfo($"Solicitud de actualización de plantilla recibida de {clientId} para: {updateReq.Template.DocumentType}");
+                                            var eventArgs = new WebSocketMessageReceivedEventArgs<PrintTemplate>(clientId, updateReq.Template);
+                                            OnTemplateUpdateReceived?.Invoke(this, eventArgs).Forget();
                                         }
                                     }
                                 }

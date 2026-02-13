@@ -18,12 +18,12 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         {
             _logger = logger;
 
-#if WINDOWS
-            string appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-#else
-            string appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-#endif
+            string appDataDirectory = OperatingSystem.IsWindows()
+                ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
             _directoryPath = Path.Combine(appDataDirectory, "AppsielPrintManager", "Templates");
+            _logger.LogInfo($"[TemplateRepository] Ruta de plantillas (Windows={OperatingSystem.IsWindows()}): {_directoryPath}");
 
             if (!Directory.Exists(_directoryPath))
             {
@@ -110,6 +110,43 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                 _logger.LogInfo($"Plantilla '{templateId}' eliminada.");
             }
             return Task.CompletedTask;
+        }
+
+        public async Task EnsureDefaultTemplatesAsync()
+        {
+            //var requiredTypes = new[] { "ticket_venta", "comanda", "factura_electronica", "sticker_codigo_barras" };
+            var requiredTypes = new[] { "comanda", "factura_electronica" };
+
+            foreach (var type in requiredTypes)
+            {
+                try
+                {
+                    _logger.LogInfo($"[TemplateRepository] Verificando plantilla: '{type}'");
+                    var fileName = $"{type.ToLower()}.json";
+                    var filePath = Path.Combine(_directoryPath, fileName);
+
+                    if (!File.Exists(filePath))
+                    {
+                        _logger.LogInfo($"Validación inicial: Plantilla '{type}' no existe en '{filePath}'. Creándola...");
+                        var defaultTemplate = AppsielPrintManager.Core.Services.DefaultTemplateProvider.GetDefaultTemplate(type);
+                        if (defaultTemplate == null)
+                        {
+                            _logger.LogError($"[TemplateRepository] FATAL: GetDefaultTemplate devolvió null para '{type}'");
+                            continue;
+                        }
+                        await SaveTemplateAsync(defaultTemplate);
+                        _logger.LogInfo($"[TemplateRepository] Plantilla '{type}' creada exitosamente.");
+                    }
+                    else
+                    {
+                        _logger.LogInfo($"[TemplateRepository] Plantilla '{type}' ya existe.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"[TemplateRepository] Error verificando/creando plantilla '{type}': {ex.Message}", ex);
+                }
+            }
         }
     }
 }

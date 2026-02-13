@@ -38,6 +38,11 @@ namespace AppsielPrintManager.Core.Interfaces
         // Actualizado para incluir ClientId
         event AsyncEventHandler<WebSocketMessageReceivedEventArgs<PrintJobRequest>> OnPrintJobReceived;
 
+        /// <summary>
+        /// Evento que se dispara cuando se recibe una solicitud de actualización de plantilla.
+        /// </summary>
+        event AsyncEventHandler<WebSocketMessageReceivedEventArgs<PrintTemplate>> OnTemplateUpdateReceived;
+
         Task StartServerAsync(int port);
         Task StopServerAsync();
 
@@ -47,6 +52,11 @@ namespace AppsielPrintManager.Core.Interfaces
         Task SendPrintJobResultToClientAsync(string clientId, PrintJobResult result);
 
         Task SendScaleDataToAllClientsAsync(ScaleData scaleData);
+
+        /// <summary>
+        /// Envía el resultado de una actualización de plantilla a un cliente específico.
+        /// </summary>
+        Task SendTemplateUpdateResultAsync(string clientId, TemplateUpdateResult result);
 
         bool IsRunning { get; }
         int CurrentClientCount { get; }

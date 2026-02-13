@@ -6,6 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SkiaSharp;
+using ZXing;
+using ZXing.SkiaSharp;
+using ZXing.Common;
 
 namespace AppsielPrintManager.Infraestructure.Services
 {
@@ -20,6 +24,9 @@ namespace AppsielPrintManager.Infraestructure.Services
         private readonly Encoding _encoding;
         private const byte ESC = 0x1B;
         private const byte GS = 0x1D;
+
+        // Persistir el alto de la plantilla para asegurar uniformidad en ExtraMedia y elementos impares
+        private int _lastTemplateBarcodeHeight = 80;
 
         public EscPosGeneratorService(ILoggingService logger)
         {
@@ -42,6 +49,9 @@ namespace AppsielPrintManager.Infraestructure.Services
         public Task<byte[]> GenerateEscPosCommandsAsync(TicketContent ticketContent, PrinterSettings printerSettings)
         {
             _logger.LogInfo($"Generando comandos ESC/POS para impresora {printerSettings.PrinterId} (ancho: {printerSettings.PaperWidthMm}mm).");
+
+            // Iniciar con un alto por defecto razonable (80), se actualizará con el primer barcode del template
+            _lastTemplateBarcodeHeight = 80;
 
             var commands = new List<byte>();
 
@@ -129,17 +139,71 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
                 else // Static (Default)
                 {
+                    var barcodeBuffer = new List<RenderedElement>();
                     foreach (var element in section.Elements)
                     {
-                        commands.AddRange(ProcessRenderedElement(element, printerSettings));
+                        // Capturar el alto de la plantilla si es un barcode
+                        if (element.Type == "Barcode" && element.Height.HasValue)
+                        {
+                            _lastTemplateBarcodeHeight = element.Height.Value;
+                            _logger.LogInfo($"[EscPosGenerator] Captured Template Barcode Height: {_lastTemplateBarcodeHeight}");
+                        }
+
+                        if (element.Type == "Barcode")
+                        {
+                            barcodeBuffer.Add(element);
+                            int maxCols = element.Columns ?? 1;
+                            if (barcodeBuffer.Count >= maxCols)
+                            {
+                                commands.AddRange(HandleBarcodeRowImage(barcodeBuffer, printerSettings));
+                                barcodeBuffer.Clear();
+                            }
+                        }
+                        else
+                        {
+                            if (barcodeBuffer.Any())
+                            {
+                                commands.AddRange(HandleBarcodeRowImage(barcodeBuffer, printerSettings));
+                                barcodeBuffer.Clear();
+                            }
+                            commands.AddRange(ProcessRenderedElement(element, printerSettings));
+                        }
+                    }
+                    if (barcodeBuffer.Any())
+                    {
+                        commands.AddRange(HandleBarcodeRowImage(barcodeBuffer, printerSettings));
+                        barcodeBuffer.Clear();
                     }
                 }
             }
 
             // --- MEDIA ADICIONAL (Logo, etc) ---
+            var extraMediaBuffer = new List<RenderedElement>();
             foreach (var element in ticketContent.ExtraMedia)
             {
-                commands.AddRange(ProcessRenderedElement(element, printerSettings));
+                if (element.Type == "Barcode" && (element.Columns ?? 1) > 1)
+                {
+                    extraMediaBuffer.Add(element);
+                    if (extraMediaBuffer.Count >= element.Columns)
+                    {
+                        commands.AddRange(HandleBarcodeRowImage(extraMediaBuffer, printerSettings));
+                        extraMediaBuffer.Clear();
+                    }
+                }
+                else
+                {
+                    if (extraMediaBuffer.Any())
+                    {
+                        commands.AddRange(HandleBarcodeRowImage(extraMediaBuffer, printerSettings));
+                        extraMediaBuffer.Clear();
+                    }
+                    commands.AddRange(ProcessRenderedElement(element, printerSettings));
+                }
+            }
+            if (extraMediaBuffer.Any())
+            {
+                commands.AddRange(HandleBarcodeRowImage(extraMediaBuffer, printerSettings));
+                extraMediaBuffer.Clear();
             }
 
             commands.AddRange(FeedLines(5));
@@ -250,7 +314,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     elementCommands.Add(0x0A);
                     break;
                 case "Barcode":
-                    elementCommands.AddRange(HandleBarcode(element, printerSettings));
+                    elementCommands.AddRange(HandleBarcodeRowImage(new List<RenderedElement> { element }, printerSettings));
                     break;
                 case "QR":
                     elementCommands.AddRange(HandleQR(element, printerSettings));
@@ -329,13 +393,209 @@ namespace AppsielPrintManager.Infraestructure.Services
 
         private byte[] HandleBarcode(RenderedElement element, PrinterSettings printerSettings)
         {
+            if ((element.Columns ?? 1) > 1)
+            {
+                return HandleBarcodeRowImage(new List<RenderedElement> { element }, printerSettings);
+            }
+
             var cmds = new List<byte>();
-            cmds.AddRange(new byte[] { GS, 0x68, (byte)(element.Height ?? 50) });
+
+            // 1. Imprimir Nombre del Producto Arriba (Si existe)
+            if (!string.IsNullOrEmpty(element.ProductName))
+            {
+                cmds.AddRange(SetAlignment("Center"));
+                cmds.AddRange(SetTextFormat("FontA")); // Fuente legible estándar
+                cmds.AddRange(GetPosBytes(element.ProductName));
+                cmds.Add(0x0A); // Salto de línea
+            }
+
+            // 2. Imprimir Código de Barras
+            // Nota: El alineamiento ya debería estar seteado, pero aseguramos Center si no se especificó
+            cmds.AddRange(SetAlignment(element.Align ?? "Center"));
+
+            // Configurar Ancho del Módulo (GS w n)
+            if (element.BarWidth.HasValue)
+            {
+                // Rango típico 1-5 (User requested limit: max 5)
+                byte width = (byte)Math.Clamp(element.BarWidth.Value, 1, 5);
+                cmds.AddRange(new byte[] { GS, 0x77, width });
+            }
+
+            // Altura (User requested limit: max 500)
+            int height = Math.Clamp(element.Height ?? 100, 1, 500);
+            cmds.AddRange(new byte[] { GS, 0x68, (byte)(height > 255 ? 255 : height) });
+
+
+            // HRI (Human Readable Interpretation) - Números debajo de las barras
+            // 0x00 = Ninguno, 0x02 = Debajo
             cmds.AddRange(new byte[] { GS, 0x48, (byte)(element.Hri == true ? 0x02 : 0x00) });
+
             byte[] data = GetPosBytes(element.BarcodeValue ?? "");
+
+            // CODE128 (Tipo B genérico, simplificado)
+            // GS k m n d1...dn
+            // m=73 (CODE128)
+            // Calculamos longitud + 2 bytes de cabecera CODE128 (ej {B + data)
+            // Para simplificar, asumimos que el cliente envía datos limpios o usamos CODE128 auto (más complejo).
+            // Mantenemos la lógica original simple: GS k I (Code128) len {B data 
             cmds.AddRange(new byte[] { GS, 0x6B, 0x49, (byte)(data.Length + 2), 0x7B, 0x42 });
             cmds.AddRange(data);
-            cmds.Add(0x0A);
+            cmds.Add(0x0A); // Un salto de línea post-barcode suele ser necesario para evitar solapamiento
+
+            // 3. Imprimir ItemId y Precio Abajo (Si existen)
+            if (!string.IsNullOrEmpty(element.ItemId) || !string.IsNullOrEmpty(element.ProductPrice))
+            {
+                cmds.AddRange(SetAlignment("Center"));
+                cmds.AddRange(SetTextFormat("FontB")); // Fuente un poco más pequeña para info secundaria
+
+                var parts = new List<string>();
+                if (!string.IsNullOrEmpty(element.ItemId)) parts.Add(element.ItemId);
+                if (!string.IsNullOrEmpty(element.ProductPrice)) parts.Add(element.ProductPrice);
+
+                string footerText = string.Join(" | ", parts);
+                cmds.AddRange(GetPosBytes(footerText));
+                cmds.Add(0x0A);
+            }
+
+            return cmds.ToArray();
+        }
+
+        private byte[] HandleBarcodeRowImage(List<RenderedElement> row, PrinterSettings printerSettings)
+        {
+            if (row == null || !row.Any()) return Array.Empty<byte>();
+
+            // Configuración del canvas (8 puntos por mm aprox -> 80mm = 576 dots útiles)
+            int totalWidth = (printerSettings.PaperWidthMm >= 80 ? 576 : 384);
+            int cols = row.FirstOrDefault()?.Columns ?? row.Count;
+            if (cols < 1) cols = 1;
+            int stickerWidth = totalWidth / cols;
+
+            // El alto depende de la plantilla (prioridad al valor capturado del flujo principal) 
+            int barcodeHeight = _lastTemplateBarcodeHeight;
+            int totalHeight = 50 + barcodeHeight + 70;
+
+            _logger.LogInfo($"[EscPosGenerator] HandleBarcodeRowImage: Using height {barcodeHeight}, Columns: {row.Count}");
+
+            using var surface = SKSurface.Create(new SKImageInfo(totalWidth, totalHeight));
+            var canvas = surface.Canvas;
+            canvas.Clear(SKColors.White);
+
+            // Pintura para texto centrado
+            using var paintName = new SKPaint { Color = SKColors.Black, TextSize = 24, IsAntialias = true, TextAlign = SKTextAlign.Center, Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright) };
+            using var paintHri = new SKPaint { Color = SKColors.Black, TextSize = 20, IsAntialias = true, TextAlign = SKTextAlign.Center, Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright) };
+            using var paintPrice = new SKPaint { Color = SKColors.Black, TextSize = 24, IsAntialias = true, TextAlign = SKTextAlign.Center, Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright) };
+
+            var barcodeWriter = new ZXing.SkiaSharp.BarcodeWriter
+            {
+                Format = BarcodeFormat.CODE_128,
+            };
+
+            for (int i = 0; i < row.Count; i++)
+            {
+                var element = row[i];
+                int xCenter = (i * stickerWidth) + (stickerWidth / 2);
+
+                // Configuración dinámica por cada barcode para respetar anchos individuales si los hay
+                int elementBarWidth = element.BarWidth ?? 2;
+                int elementCalculatedWidth = (int)((stickerWidth - 30) * (Math.Clamp(elementBarWidth, 1, 6) / 5.0));
+                barcodeWriter.Options = new EncodingOptions
+                {
+                    Width = elementCalculatedWidth,
+                    Height = barcodeHeight,
+                    Margin = 0,
+                    PureBarcode = true
+                };
+
+                _logger.LogInfo($"[EscPosGenerator] Processing Barcode {i + 1}/{row.Count}: Value={element.BarcodeValue}, TemplateBarWidth={elementBarWidth}, CalculatedImageWidth={elementCalculatedWidth}");
+
+                // 1. Dibujar Nombre (Centrado)
+                if (!string.IsNullOrEmpty(element.ProductName))
+                {
+                    string name = element.ProductName;
+                    if (name.Length > 22) name = name.Substring(0, 20) + "..";
+                    canvas.DrawText(name, xCenter, 35, paintName);
+                }
+
+                // 2. Dibujar Barcode (Basado en xCenter - Forzado al alto de la plantilla)
+                if (!string.IsNullOrEmpty(element.BarcodeValue))
+                {
+                    try
+                    {
+                        using var barcodeBitmap = barcodeWriter.Write(element.BarcodeValue);
+                        int bcWidth = barcodeBitmap.Width;
+                        int bcX = xCenter - (bcWidth / 2);
+
+                        // Forzamos el alto estirando el bitmap si es necesario para asegurar que cumple con la plantilla
+                        var destRect = new SKRect(bcX, 55, bcX + bcWidth, 55 + barcodeHeight);
+                        canvas.DrawBitmap(barcodeBitmap, destRect);
+
+                        _logger.LogInfo($"[EscPosGenerator] Drew barcode {element.BarcodeValue}. Bitmap size: {bcWidth}x{barcodeBitmap.Height}, Forced height: {barcodeHeight}");
+
+                        // 3. Dibujar HRI (El valor justo debajo de las barras, más grande y separado)
+                        if (element.Hri == true)
+                        {
+                            canvas.DrawText(element.BarcodeValue, xCenter, 55 + barcodeHeight + 25, paintHri);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Error generando barcode para {element.BarcodeValue}: {ex.Message}");
+                    }
+                }
+
+                // 4. Dibujar Precio (Solo el precio, sin el ID redundante)
+                if (!string.IsNullOrEmpty(element.ProductPrice))
+                {
+                    canvas.DrawText(element.ProductPrice, xCenter, 55 + barcodeHeight + 55, paintPrice);
+                }
+            }
+
+            // Convertir SKBitmap a ESC/POS Bit Image (GS v 0)
+            using var image = surface.Snapshot();
+            using var bitmap = SKBitmap.FromImage(image);
+            return ConvertBitmapToEscPos(bitmap);
+        }
+
+        private byte[] ConvertBitmapToEscPos(SKBitmap bitmap)
+        {
+            var cmds = new List<byte>();
+            int width = bitmap.Width;
+            int height = bitmap.Height;
+
+            // Comando GS v 0 m xL xH yL yH
+            // m = 0 (Normal), 1 (Double width), 2 (Double height), 3 (Quadruple)
+            int bytesPerRow = (width + 7) / 8;
+            cmds.AddRange(new byte[] { GS, 0x76, 0x30, 0x00 });
+            cmds.Add((byte)(bytesPerRow % 256));
+            cmds.Add((byte)(bytesPerRow / 256));
+            cmds.Add((byte)(height % 256));
+            cmds.Add((byte)(height / 256));
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int xByte = 0; xByte < bytesPerRow; xByte++)
+                {
+                    byte b = 0;
+                    for (int bit = 0; bit < 8; bit++)
+                    {
+                        int x = (xByte * 8) + bit;
+                        if (x < width)
+                        {
+                            var color = bitmap.GetPixel(x, y);
+                            // Cálculo de luminancia (estándar ITU-R BT.601)
+                            double luminance = (color.Red * 0.299) + (color.Green * 0.587) + (color.Blue * 0.114);
+
+                            // Si es oscuro (luminancia < 180 para ser más "agresivo" con el negro en térmicas)
+                            if (luminance < 180)
+                            {
+                                b |= (byte)(0x80 >> bit);
+                            }
+                        }
+                    }
+                    cmds.Add(b);
+                }
+            }
+
             return cmds.ToArray();
         }
 
@@ -343,14 +603,38 @@ namespace AppsielPrintManager.Infraestructure.Services
         {
             var cmds = new List<byte>();
             byte[] data = GetPosBytes(element.QrValue ?? "");
+
+            // 1. Configurar Modelo QR: Usar Modelo 2 (Mejor compatibilidad y eficiencia)
+            // GS ( k pL pH cn fn n1 n2 --> cn=49 (31 hex), fn=65 (41 hex) para seleccionar modelo
+            // n1=50 (32 hex) = Modelo 2
             cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00 });
-            byte size = (byte)Math.Clamp(element.Size ?? 3, 1, 16);
+
+            // 2. Configurar Tamaño del Módulo (Size)
+            // Range recomendado: 1 a 16. Para URLs largas, mejor usar 3 o 4.
+            // Si el usuario puso algo > 6 en la plantilla, lo forzamos a 4 para prevenir overflow.
+            int requestedSize = element.Size ?? 3;
+            if (requestedSize > 8) requestedSize = 4; // Protección anti-overflow
+            byte size = (byte)Math.Clamp(requestedSize, 1, 16);
+
             cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, size });
-            cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x32 });
-            int len = data.Length;
-            cmds.AddRange(new byte[] { GS, 0x28, 0x6B, (byte)(len % 256), (byte)(len / 256), 0x31, 0x50, 0x30 });
+
+            // 3. Nivel de Corrección de Errores
+            // Cambiamos a Nivel 'L' (7%) en lugar de 'M' o 'H', para que el QR sea menos denso y quepa mejor.
+            // 48 (30 hex) = L, 49 (31 hex) = M, 50 (32 hex) = Q, 51 (33 hex) = H
+            cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x30 }); // Nivel L (0x30)
+
+            // 4. Almacenar datos del QR
+            // GS ( k pL pH cn fn m d1...dk
+            int len = data.Length + 3; // +3 por los parametros m, d1...dk
+            int pL = len % 256;
+            int pH = len / 256;
+
+            cmds.AddRange(new byte[] { GS, 0x28, 0x6B, (byte)pL, (byte)pH, 0x31, 0x50, 0x30 });
             cmds.AddRange(data);
+
+            // 5. Imprimir el símbolo QR
             cmds.AddRange(new byte[] { GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30 });
+
             cmds.Add(0x0A);
             return cmds.ToArray();
         }

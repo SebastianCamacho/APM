@@ -121,22 +121,48 @@ public class TrayIcon : IDisposable
         // Luego bajamos a 'worker'
         string productionPath = Path.Combine(installRoot, "worker", workerExeFullName);
 
-        // --- Lógica de Rutas de Desarrollo ---
-        // Desde appDirectory: E:\...\AppsielPrintManager\TrayApp\bin\Debug\net10.0-windows\
-        // Subir 6 niveles para llegar a la carpeta de la solución: E:\Escritorio\PROYECTOS APPSIEL\APM - Appsiel Print Manager\
-        string solutionRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..", "..", "..", "..")); // 6 ".."
-        string workerProjectBase = Path.Combine(solutionRoot, "AppsielPrintManager", "WorkerService"); // Ruta al proyecto WorkerService
-        string debugPath = Path.Combine(workerProjectBase, "bin", "Debug", "net10.0", workerExeFullName);
-        if (File.Exists(productionPath))
+        // --- Lógica de Rutas de Desarrollo (Búsqueda robusta y dinámica) ---
+        string solutionRoot = GetDevelopmentSolutionRoot(appDirectory);
+        string workerProjectBase = solutionRoot != null ? Path.Combine(solutionRoot, "WorkerService") : string.Empty;
+
+        var possiblePaths = new List<string>();
+
+        if (!string.IsNullOrEmpty(workerProjectBase))
         {
-            return productionPath;
-        }
-        else if (File.Exists(debugPath))
-        {
-            return debugPath;
+            // Priorizar desarrollo (última compilación en VS, incluyendo RID)
+            possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Debug", "net10.0", "win-x64", workerExeFullName));
+            possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Debug", "net10.0", workerExeFullName));
+            possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Release", "net10.0", "win-x64", workerExeFullName));
+            possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Release", "net10.0", workerExeFullName));
+
+            // Versiones con -windows
+            possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Debug", "net10.0-windows", "win-x64", workerExeFullName));
+            possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Debug", "net10.0-windows", workerExeFullName));
+            possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Release", "net10.0-windows", "win-x64", workerExeFullName));
+            possiblePaths.Add(Path.Combine(workerProjectBase, "bin", "Release", "net10.0-windows", workerExeFullName));
         }
 
-        return null; // Ejecutable no encontrado en ninguna de las rutas esperadas.
+        // Ruta de producción (siempre presente como opción)
+        possiblePaths.Add(productionPath);
+
+        string workerExePath = possiblePaths.FirstOrDefault(p => File.Exists(p));
+        return workerExePath;
+    }
+
+    private string GetDevelopmentSolutionRoot(string appDirectory)
+    {
+        var current = new DirectoryInfo(appDirectory);
+        while (current != null)
+        {
+            // Buscamos la carpeta que contiene el proyecto WorkerService o el archivo SLN
+            if (Directory.Exists(Path.Combine(current.FullName, "WorkerService")) ||
+                File.Exists(Path.Combine(current.FullName, "AppsielPrintManager.slnx")))
+            {
+                return current.FullName;
+            }
+            current = current.Parent;
+        }
+        return null;
     }
 
     /// <summary>
