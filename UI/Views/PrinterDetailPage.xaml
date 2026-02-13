@@ -112,6 +112,14 @@
                         </Border>
                     </VerticalStackLayout>
 
+                    <!-- URI IPP (Solo IPP) -->
+                    <VerticalStackLayout Spacing="5" IsVisible="{Binding IsIppConnection}">
+                        <Label Text="URI de Impresión (IPP/HTTP)" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                            <Entry Text="{Binding ManualUri}" Placeholder="Ej: ipp://192.168.1.50/ipp/print" VerticalOptions="Center" Margin="5,0"/>
+                        </Border>
+                    </VerticalStackLayout>
+
                     <!-- Ancho Papel (Solo Térmica o Matricial TCP) -->
                     <VerticalStackLayout Spacing="5" IsVisible="{Binding ShowThermalFields}">
                         <Label Text="Ancho Papel (mm)" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />

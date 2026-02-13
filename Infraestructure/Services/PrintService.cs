@@ -22,6 +22,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         private readonly DotMatrixRendererService _dotMatrixRenderer;
         private readonly EscPGeneratorService _escPGenerator;
         private readonly LocalRawPrinterClient _localRawPrinterClient;
+        private readonly IppPrinterClient _ippPrinterClient;
 
         public PrintService(ILoggingService logger,
                             ISettingsRepository settingsRepository,
@@ -31,7 +32,8 @@ namespace AppsielPrintManager.Infraestructure.Services
                             TcpIpPrinterClient tcpIpPrinterClient,
                             DotMatrixRendererService dotMatrixRenderer,
                             EscPGeneratorService escPGenerator,
-                            LocalRawPrinterClient localRawPrinterClient)
+                            LocalRawPrinterClient localRawPrinterClient,
+                            IppPrinterClient ippPrinterClient)
         {
             _logger = logger;
             _settingsRepository = settingsRepository;
@@ -42,6 +44,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             _dotMatrixRenderer = dotMatrixRenderer;
             _escPGenerator = escPGenerator;
             _localRawPrinterClient = localRawPrinterClient;
+            _ippPrinterClient = ippPrinterClient;
         }
 
         /// <summary>
@@ -137,9 +140,13 @@ namespace AppsielPrintManager.Infraestructure.Services
                     {
                         success = await _localRawPrinterClient.SendRawDataAsync(printerSettings.LocalPrinterName, escPCommands, $"APM_{request.JobId}");
                     }
+                    else if (printerSettings.ConnectionType == "IPP" && !string.IsNullOrEmpty(printerSettings.Uri))
+                    {
+                        success = await _ippPrinterClient.PrintAsync(printerSettings.Uri, escPCommands);
+                    }
                     else
                     {
-                        // Fallback a TCP si no es USB (ej. servidor IPP o adaptador de red)
+                        // Fallback a TCP si no es USB o IPP
                         success = await _tcpIpPrinterClient.PrintAsync(printerSettings.IpAddress ?? string.Empty, printerSettings.Port, escPCommands);
                     }
 
@@ -156,7 +163,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     // 4. Generar comandos ESC/POS
                     var escPosCommands = await _escPosGenerator.GenerateEscPosCommandsAsync(ticketContent, printerSettings);
 
-                    // 4. Enviar a la impresora principal
+                    // 4. Enviar a la impresora principal (Solo TCP para Térmicas según requerimiento)
                     bool primaryPrintSuccess = await _tcpIpPrinterClient.PrintAsync(printerSettings.IpAddress ?? string.Empty, printerSettings.Port, escPosCommands);
 
                     if (!primaryPrintSuccess)

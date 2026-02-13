@@ -30,6 +30,9 @@ namespace UI.ViewModels
         [ObservableProperty]
         private string ipSegment4;
 
+        [ObservableProperty]
+        private string manualUri;
+
         partial void OnIpSegment1Changed(string value) => SyncIpAddressToModel();
         partial void OnIpSegment2Changed(string value) => SyncIpAddressToModel();
         partial void OnIpSegment3Changed(string value) => SyncIpAddressToModel();
@@ -64,7 +67,7 @@ namespace UI.ViewModels
         }
 
         [ObservableProperty]
-        private List<string> connectionTypes = new() { "TCP", "USB" };
+        private List<string> connectionTypes = new() { "TCP", "USB", "IPP" };
 
         public string SelectedConnectionType
         {
@@ -77,6 +80,7 @@ namespace UI.ViewModels
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(IsTcpConnection));
                     OnPropertyChanged(nameof(IsUsbConnection));
+                    OnPropertyChanged(nameof(IsIppConnection));
                     OnPropertyChanged(nameof(ShowThermalFields));
                 }
             }
@@ -84,6 +88,7 @@ namespace UI.ViewModels
 
         public bool IsTcpConnection => SelectedConnectionType == "TCP";
         public bool IsUsbConnection => SelectedConnectionType == "USB";
+        public bool IsIppConnection => SelectedConnectionType == "IPP";
 
         // "Matricial no se muestre ancho de papel ni los check"
         // "Térmica permita todos los campos que ya están"
@@ -91,14 +96,25 @@ namespace UI.ViewModels
 
         private void UpdateConnectionTypes()
         {
+            var previousConnectionType = SelectedConnectionType;
+
             if (SelectedPrinterType == "Térmica")
             {
                 ConnectionTypes = new List<string> { "TCP" };
-                SelectedConnectionType = "TCP";
+                // Solo forzar TCP si la previa no era válida (Térmica solo soporta TCP)
+                if (previousConnectionType != "TCP")
+                {
+                    SelectedConnectionType = "TCP";
+                }
             }
             else
             {
-                ConnectionTypes = new List<string> { "TCP", "USB" };
+                ConnectionTypes = new List<string> { "TCP", "USB", "IPP" };
+                // Mantener la previa si existe en la nueva lista
+                if (!string.IsNullOrEmpty(previousConnectionType) && ConnectionTypes.Contains(previousConnectionType))
+                {
+                    SelectedConnectionType = previousConnectionType;
+                }
             }
         }
 
@@ -128,6 +144,7 @@ namespace UI.ViewModels
             IpSegment2 = "168";
             IpSegment3 = "1";
             IpSegment4 = "1";
+            manualUri = string.Empty;
         }
 
         partial void OnPrinterIdChanged(string oldValue, string newValue)
@@ -153,16 +170,21 @@ namespace UI.ViewModels
         {
             if (value != null)
             {
-                // Notificar a la UI que todas las propiedades proxy han cambiado
+                // 1. Asegurar que la lista de tipos de conexión sea correcta PRIMERO
+                // Esto evita que SelectedConnectionType se resetee al notificar otros cambios
+                UpdateConnectionTypes();
+
+                // 2. Sincronizar campos manuales
+                ManualUri = Printer.Uri;
+
+                // 3. Notificar a la UI
                 OnPropertyChanged(nameof(SelectedPrinterType));
                 OnPropertyChanged(nameof(SelectedConnectionType));
                 OnPropertyChanged(nameof(IsTcpConnection));
                 OnPropertyChanged(nameof(IsUsbConnection));
+                OnPropertyChanged(nameof(IsIppConnection));
                 OnPropertyChanged(nameof(ShowThermalFields));
                 OnPropertyChanged(nameof(SelectedPaperWidthMm));
-
-                // Asegurar que la lista de tipos de conexión sea correcta para el tipo de impresora actual
-                UpdateConnectionTypes();
             }
         }
 
@@ -260,10 +282,42 @@ namespace UI.ViewModels
                         return;
                     }
                 }
+                else if (SelectedConnectionType == "IPP")
+                {
+                    // Validar URI manual para IPP
+                    if (string.IsNullOrWhiteSpace(ManualUri))
+                    {
+                        await Shell.Current.DisplayAlertAsync("Error", "La URI para la conexión IPP no puede estar vacía.", "OK");
+                        IsBusy = false;
+                        return;
+                    }
+                    // Forzar que no tenga IP ni nombre local si es IPP para evitar confusiones
+                    Printer.IpAddress = null;
+                    Printer.LocalPrinterName = null;
+                }
 
                 // Asegurar que el tipo y conexión coincidan con la UI antes de guardar
                 Printer.PrinterType = SelectedPrinterType;
                 Printer.ConnectionType = SelectedConnectionType;
+
+                // 5. Generar URI de conexión universal
+                if (SelectedConnectionType == "TCP")
+                {
+                    Printer.Uri = $"tcp://{Printer.IpAddress}:{Printer.Port}";
+                }
+                else if (SelectedConnectionType == "USB")
+                {
+                    Printer.Uri = $"usb://{Printer.LocalPrinterName}";
+                }
+                else if (SelectedConnectionType == "IPP")
+                {
+                    Printer.Uri = ManualUri;
+                }
+                else
+                {
+                    // Para otros tipos como Bluetooth en el futuro
+                    Printer.Uri = ManualUri ?? $"{SelectedConnectionType.ToLower()}://{Printer.LocalPrinterName ?? Printer.IpAddress}";
+                }
 
                 // 4. Asignar y validar ancho de papel (solo si es Térmica o Matricial TCP)
                 if (ShowThermalFields)

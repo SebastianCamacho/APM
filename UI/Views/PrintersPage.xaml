@@ -92,6 +92,9 @@
                                                     <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="USB">
                                                         <Setter Property="IsVisible" Value="False" />
                                                     </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="IPP">
+                                                        <Setter Property="IsVisible" Value="False" />
+                                                    </DataTrigger>
                                                 </Label.Triggers>
                                             </Label>
                                             <Label Text="{Binding LocalPrinterName}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" IsVisible="False">
@@ -101,13 +104,20 @@
                                                     </DataTrigger>
                                                 </Label.Triggers>
                                             </Label>
+                                            <Label Text="{Binding Uri}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" IsVisible="False">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="IPP">
+                                                        <Setter Property="IsVisible" Value="True" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
                                         </HorizontalStackLayout>
 
                                         <!-- Ancho de Papel (Solo Térmica) -->
-                                        <Label Text="{Binding PaperWidthMm, StringFormat='Ancho: {0}mm'}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small">
+                                        <Label Text="{Binding PaperWidthMm, StringFormat='Ancho: {0}mm'}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" IsVisible="False">
                                             <Label.Triggers>
-                                                <DataTrigger TargetType="Label" Binding="{Binding PrinterType}" Value="Matricial">
-                                                    <Setter Property="IsVisible" Value="False" />
+                                                <DataTrigger TargetType="Label" Binding="{Binding PrinterType}" Value="Térmica">
+                                                    <Setter Property="IsVisible" Value="True" />
                                                 </DataTrigger>
                                             </Label.Triggers>
                                         </Label>

@@ -40,6 +40,7 @@ namespace UI
             builder.Services.AddSingleton<DotMatrixRendererService>();
             builder.Services.AddSingleton<EscPGeneratorService>();
             builder.Services.AddSingleton<LocalRawPrinterClient>();
+            builder.Services.AddSingleton<IppPrinterClient>();
 
             builder.Services.AddSingleton<IPrintService, PrintService>();
 

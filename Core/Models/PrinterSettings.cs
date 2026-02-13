@@ -56,6 +56,11 @@ namespace AppsielPrintManager.Core.Models
         public string? LocalPrinterName { get; set; }
 
         /// <summary>
+        /// URI de conexión universal (ej: tcp://192.168.1.100:9100 o usb://PrinterName).
+        /// </summary>
+        public string? Uri { get; set; }
+
+        /// <summary>
         /// Lista de identificadores de impresoras adicionales a las que se debe copiar el trabajo de impresión.
         /// Cada elemento en la lista es un 'PrinterId' de otra impresora configurada.
         /// </summary>
