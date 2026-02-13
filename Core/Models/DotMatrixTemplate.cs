@@ -88,5 +88,10 @@ namespace AppsielPrintManager.Core.Models
         /// Longitud máxima permitida en la segunda línea.
         /// </summary>
         public int? WrapMaxLength { get; set; }
+
+        /// <summary>
+        /// Indica si el texto debe envolverse automáticamente en múltiples líneas relativas (usado en tablas).
+        /// </summary>
+        public bool? EnableAutoWrap { get; set; }
     }
 }
