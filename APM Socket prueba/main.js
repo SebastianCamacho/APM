@@ -5,6 +5,16 @@ let socket;
 const statusSpan = document.getElementById('status');
 const messagesDiv = document.getElementById('messages');
 let activePayloadId = 'payloadTicket'; // Por defecto
+let activeQuantityInput = null; // Input de cantidad actualmente enfocado en la tabla
+
+// Base de datos de productos simulada
+const productsDb = {
+    "1001": { description: "Manzana Royal", price: 12000 },
+    "1002": { description: "Pera Importada", price: 14500 },
+    "1003": { description: "Banano Criollo", price: 3500 },
+    "1004": { description: "Papaya", price: 4000 },
+    "1005": { description: "Carne Res", price: 35000 }
+};
 
 function logMessage(message, type = 'info') {
     const p = document.createElement('p');
@@ -46,6 +56,13 @@ function connectWebSocket() {
                     const display = document.getElementById('scaleDataDisplay');
                     if (display) {
                         display.textContent = `Báscula: ${data.ScaleId}\nPeso: ${data.Weight} ${data.Unit}\nEstable: ${data.Stable}\nTime: ${data.Timestamp}`;
+                    }
+
+                    // Si hay un input de cantidad activo en la tabla de facturación, actualizarlo
+                    if (activeQuantityInput) {
+                        activeQuantityInput.value = data.Weight;
+                        // Recalcular total de la fila
+                        calculateRowTotal(activeQuantityInput.closest('tr'));
                     }
                 }
             } catch (e) {
@@ -257,6 +274,238 @@ const templates = {
     }
 };
 
+// --- Ejemplos de Actualización de Plantillas ---
+const updateTemplates = {
+    comanda1: {
+        Action: "UpdateTemplate",
+        Template: {
+            DocumentType: "comanda",
+            Name: "Comanda Minimalista (Actualización)",
+            Sections: [
+                {
+                    Name: "Encabezado",
+                    Type: "Static",
+                    Order: 1,
+                    Elements: [
+                        { Type: "Text", StaticValue: "=== PEDIDO COCINA ===", Format: "Size2 Bold", Align: "Center" },
+                        { Type: "Text", Label: "Mesa: ", Source: "order.Table", Format: "Size1", Align: "Left" },
+                        { Type: "Line" }
+                    ]
+                },
+                {
+                    Name: "Items",
+                    Type: "Table",
+                    DataSource: "order.Items",
+                    Order: 2,
+                    Elements: [
+                        { Type: "Text", Label: "Cant", Source: "Qty", WidthPercentage: 30, Align: "Left" },
+                        { Type: "Text", Label: "Producto", Source: "Name", WidthPercentage: 70, Align: "Left" }
+                    ]
+                },
+                {
+                    Name: "Footer",
+                    Type: "Static",
+                    Order: 3,
+                    Elements: [
+                        { Type: "Text", Label: "NOTAS: ", Source: "order.Notes", Format: "Bold", Align: "Left" }
+                    ]
+                }
+            ]
+        }
+    },
+    comanda2: {
+        Action: "UpdateTemplate",
+        Template: {
+            DocumentType: "comanda",
+            Name: "Comanda Detallada (Actualización)",
+            Sections: [
+                {
+                    Name: "Header",
+                    Type: "Static",
+                    Order: 1,
+                    Elements: [
+                        { Type: "Text", Label: "Restaurante: ", Source: "order.RestaurantName", Align: "Center" },
+                        { Type: "Text", Label: "Mesero: ", Source: "order.Waiter", Format: "Bold", Align: "Center" },
+                        { Type: "Line" }
+                    ]
+                },
+                {
+                    Name: "Body",
+                    Type: "Static",
+                    Order: 2,
+                    Elements: [
+                        { Type: "Text", Label: "ORDEN #", Source: "order.Number", Format: "Size2", Align: "Center" },
+                        { Type: "Text", Label: "Fecha: ", Source: "order.Date", Align: "Center" },
+                        { Type: "Line" }
+                    ]
+                },
+                {
+                    Name: "Items",
+                    Type: "Table",
+                    DataSource: "order.Items",
+                    Order: 3,
+                    Elements: [
+                        { Type: "Text", Label: "Item", Source: "Name", WidthPercentage: 80 },
+                        { Type: "Text", Label: "Cant", Source: "Qty", WidthPercentage: 20 }
+                    ]
+                },
+                {
+                    Name: "Footer",
+                    Type: "Static",
+                    Order: 4,
+                    Elements: [
+                        { Type: "Line" },
+                        { Type: "Text", Label: "Detalle: ", Source: "Detail", Format: "Italic", Align: "Left" }
+                    ]
+                }
+            ]
+        }
+    },
+    factura1: {
+        Action: "UpdateTemplate",
+        Template: {
+            DocumentType: "factura_electronica",
+            Name: "Factura Clásica (Actualización)",
+            Sections: [
+                {
+                    Name: "SellerInfo",
+                    Type: "Static",
+                    Order: 1,
+                    Elements: [
+                        { Type: "Text", Source: "Seller.Name", Format: "Size1 Bold", Align: "Center" },
+                        { Type: "Text", Label: "NIT: ", Source: "Seller.Nit", Align: "Center" },
+                        { Type: "Line" }
+                    ]
+                },
+                {
+                    Name: "BuyerInfo",
+                    Type: "Static",
+                    Order: 2,
+                    Elements: [
+                        { Type: "Text", Label: "CLIENTE: ", Source: "Buyer.Name", Align: "Left" },
+                        { Type: "Text", Label: "NIT/CC: ", Source: "Buyer.Nit", Align: "Left" },
+                        { Type: "Line" }
+                    ]
+                },
+                {
+                    Name: "Items",
+                    Type: "Table",
+                    DataSource: "Invoice.Items",
+                    Order: 3,
+                    Elements: [
+                        { Type: "Text", Label: "Desc", Source: "Description", WidthPercentage: 50 },
+                        { Type: "Text", Label: "Cant", Source: "Quantity", WidthPercentage: 20 },
+                        { Type: "Text", Label: "Total", Source: "Total", WidthPercentage: 30, Align: "Right" }
+                    ]
+                },
+                {
+                    Name: "Totals",
+                    Type: "Static",
+                    Order: 4,
+                    Elements: [
+                        { Type: "Line" },
+                        { Type: "Text", Label: "TOTAL A PAGAR: ", Source: "Invoice.Total", Format: "Size1 Bold", Align: "Right" }
+                    ]
+                }
+            ]
+        }
+    },
+    factura2: {
+        Action: "UpdateTemplate",
+        Template: {
+            DocumentType: "factura_electronica",
+            Name: "Factura Moderna (Actualización)",
+            Sections: [
+                {
+                    Name: "LogoArea",
+                    Type: "Static",
+                    Order: 1,
+                    Elements: [
+                        { Type: "Text", Source: "Seller.Name", Align: "Right", Format: "Bold" },
+                        { Type: "Text", StaticValue: "FACTURA ELECTRÓNICA DE VENTA", Align: "Left", Format: "Bold" },
+                        { Type: "Text", Label: "No. ", Source: "Invoice.Number", Align: "Left" }
+                    ]
+                },
+                {
+                    Name: "MainContent",
+                    Type: "Static",
+                    Order: 2,
+                    Elements: [
+                        { Type: "Line" },
+                        { Type: "Text", Label: "Fecha Emisión: ", Source: "Invoice.IssueDate", Align: "Left" }
+                    ]
+                },
+                {
+                    Name: "Items",
+                    Type: "Table",
+                    DataSource: "Invoice.Items",
+                    Order: 3,
+                    Elements: [
+                        { Type: "Text", Label: "Cod", Source: "Code", WidthPercentage: 25 },
+                        { Type: "Text", Label: "Desc", Source: "Description", WidthPercentage: 45 },
+                        { Type: "Text", Label: "Total", Source: "Total", WidthPercentage: 30, Align: "Right" }
+                    ]
+                },
+                {
+                    Name: "Financials",
+                    Type: "Static",
+                    Order: 4,
+                    Elements: [
+                        { Type: "Line" },
+                        { Type: "Text", Label: "Subtotal: ", Source: "Invoice.Subtotal", Align: "Right" },
+                        { Type: "Text", Label: "IVA: ", Source: "Invoice.Iva", Align: "Right" },
+                        { Type: "Text", Label: "TOTAL: ", Source: "Invoice.Total", Align: "Right", Format: "Size1 Bold" }
+                    ]
+                },
+                {
+                    Name: "Legal",
+                    Type: "Static",
+                    Order: 5,
+                    Elements: [
+                        { Type: "QrCode", Source: "QrString", Size: 4, Align: "Center" },
+                        { Type: "Text", Label: "CUFE: ", Source: "TechKey", Format: "FontB" }
+                    ]
+                }
+            ]
+        }
+    }
+};
+
+/**
+ * Envía una solicitud de actualización de plantilla al APM vía WebSocket.
+ * 
+ * En Android, el sistema operativo restringe que las aplicaciones en segundo plano muestren diálogos.
+ * Para solucionar esto, usamos un "Deep Link" (apm://update) justo después de enviar el mensaje.
+ * Esto obliga al navegador a abrir la aplicación APM y traerla al primer plano para que el 
+ * usuario pueda ver y aceptar la confirmación.
+ * 
+ * @param {string} templateKey - El identificador de la plantilla definida en updateTemplates.
+ */
+window.sendUpdateTemplate = function(templateKey) {
+    const templateUpdate = updateTemplates[templateKey];
+    if (templateUpdate) {
+        // 1. Enviamos el JSON de la plantilla a través del WebSocket
+        const payload = JSON.stringify(templateUpdate, null, 4);
+        sendTestMessage(payload);
+
+        // 2. Detección de plataforma para dispositivos Android
+        const isAndroid = /Android/i.test(navigator.userAgent);
+
+        if (isAndroid) {
+            // 3. Si es Android, disparamos el Deep Link para traer la app al frente.
+            // Usamos un pequeño delay para asegurar que el mensaje WebSocket se envíe primero.
+            setTimeout(() => {
+                console.log("Detectado Android. Disparando Deep Link 'apm://update' para traer la app al frente.");
+                window.location.href = "apm://update";
+            }, 150);
+        } else {
+            console.log("Detectado Desktop. No se requiere Deep Link.");
+        }
+    } else {
+        logMessage('Error: No se encontró la plantilla de actualización: ' + templateKey, 'error');
+    }
+};
+
 // Función global para cambiar de pestaña (llamada desde HTML)
 window.openTab = function(tabName) {
     // Actualizar botones
@@ -325,6 +574,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Activar la primera pestaña por defecto
     window.openTab('ticket'); // Abre la pestaña de Ticket por defecto
 
+    // --- Lógica de Simulación de Facturación ---
+    const addInvoiceRowBtn = document.getElementById('addInvoiceRowBtn');
+    if (addInvoiceRowBtn) {
+        addInvoiceRowBtn.addEventListener('click', addInvoiceRow);
+        // Agregar una fila inicial
+        addInvoiceRow();
+    }
+
 
     // --- Scale Test Logic ---
     const toggleListeningButton = document.getElementById('toggleListeningButton');
@@ -371,3 +628,69 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Funciones para la tabla de facturación
+function addInvoiceRow() {
+    const tbody = document.querySelector('#invoiceTable tbody');
+    if (!tbody) return;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td><input type="text" class="row-input code" placeholder="Cod (ej: 1001)"></td>
+        <td><input type="text" class="row-input desc" readonly></td>
+        <td><input type="number" class="row-input qty" placeholder="0.000"></td>
+        <td><input type="number" class="row-input price" readonly></td>
+        <td><input type="number" class="row-input total" readonly></td>
+        <td><button class="remove-row" style="color:red; cursor:pointer; border:none; background:none; font-weight:bold;">X</button></td>
+    `;
+
+    // Referencias a los inputs
+    const codeInput = tr.querySelector('.code');
+    const qtyInput = tr.querySelector('.qty');
+    const removeBtn = tr.querySelector('.remove-row');
+
+    // Evento al cambiar el código
+    codeInput.addEventListener('change', (e) => {
+        const code = e.target.value;
+        const product = productsDb[code];
+        if (product) {
+            tr.querySelector('.desc').value = product.description;
+            tr.querySelector('.price').value = product.price;
+            calculateRowTotal(tr);
+            // Opcional: saltar foco a cantidad
+            qtyInput.focus();
+        } else {
+            alert('Producto no encontrado. Pruebe con: 1001, 1002, 1003, 1004, 1005');
+            tr.querySelector('.desc').value = "";
+            tr.querySelector('.price').value = "";
+        }
+    });
+
+    // Eventos para la báscula en el campo cantidad
+    qtyInput.addEventListener('focus', () => {
+        activeQuantityInput = qtyInput;
+        qtyInput.style.backgroundColor = "#e6f7ff"; // Resaltar visualmente
+        // Enviar comando para escuchar báscula
+        const scaleId = document.getElementById('scaleIdInput') ? document.getElementById('scaleIdInput').value : 'bascula001';
+        sendTestMessage(JSON.stringify({ Action: "StartListening", ScaleId: scaleId }));
+    });
+
+    qtyInput.addEventListener('blur', () => {
+        activeQuantityInput = null;
+        qtyInput.style.backgroundColor = ""; // Quitar resalte
+        // Enviar comando para dejar de escuchar
+        sendTestMessage(JSON.stringify({ Action: "StopListening" }));
+    });
+
+    qtyInput.addEventListener('input', () => calculateRowTotal(tr));
+
+    removeBtn.addEventListener('click', () => tr.remove());
+
+    tbody.appendChild(tr);
+}
+
+function calculateRowTotal(row) {
+    const qty = parseFloat(row.querySelector('.qty').value) || 0;
+    const price = parseFloat(row.querySelector('.price').value) || 0;
+    row.querySelector('.total').value = (qty * price).toFixed(2);
+}

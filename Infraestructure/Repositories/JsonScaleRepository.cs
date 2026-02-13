@@ -18,7 +18,9 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         public JsonScaleRepository(ILoggingService logger)
         {
             _logger = logger;
-            string appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string appDataDirectory = OperatingSystem.IsWindows()
+                ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string appSpecificDirectory = Path.Combine(appDataDirectory, "AppsielPrintManager");
 
             if (!Directory.Exists(appSpecificDirectory))
@@ -27,7 +29,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             }
 
             _filePath = Path.Combine(appSpecificDirectory, ScalesFileName);
-            _logger.LogInfo($"Ruta del archivo de básculas: {_filePath}");
+            _logger.LogInfo($"[JsonScaleRepository] Ruta de persistencia de básculas (Windows={OperatingSystem.IsWindows()}): {_filePath}");
         }
 
         public async Task<List<Scale>> GetAllAsync()
@@ -99,8 +101,9 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             {
                 using var stream = File.Open(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using var reader = new StreamReader(stream);
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var json = await reader.ReadToEndAsync();
-                return JsonSerializer.Deserialize<List<Scale>>(json) ?? new List<Scale>();
+                return JsonSerializer.Deserialize<List<Scale>>(json, options) ?? new List<Scale>();
             }
             catch (Exception ex)
             {

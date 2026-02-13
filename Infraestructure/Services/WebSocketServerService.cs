@@ -45,6 +45,11 @@ namespace AppsielPrintManager.Infraestructure.Services
         public event AsyncEventHandler<WebSocketMessageReceivedEventArgs<PrintJobRequest>>? OnPrintJobReceived;
 
         /// <summary>
+        /// Evento que se dispara cuando se recibe una solicitud de actualización de plantilla desde un cliente.
+        /// </summary>
+        public event AsyncEventHandler<WebSocketMessageReceivedEventArgs<PrintTemplate>>? OnTemplateUpdateReceived;
+
+        /// <summary>
         /// Indica si el servidor WebSocket está actualmente escuchando conexiones.
         /// </summary>
         public bool IsRunning => _httpListener?.IsListening ?? false;
@@ -226,6 +231,28 @@ namespace AppsielPrintManager.Infraestructure.Services
             else
             {
                 _logger.LogWarning($"Cliente {clientId} no encontrado para enviar respuesta Unicast.");
+            }
+        }
+
+        /// <summary>
+        /// Envía el resultado de una actualización de plantilla a un cliente específico.
+        /// </summary>
+        public async Task SendTemplateUpdateResultAsync(string clientId, TemplateUpdateResult result)
+        {
+            if (_connectedClients.TryGetValue(clientId, out var webSocket))
+            {
+                if (webSocket.State == WebSocketState.Open)
+                {
+                    await SendMessageAsync(webSocket, JsonSerializer.Serialize(result));
+                }
+                else
+                {
+                    _logger.LogWarning($"El socket del cliente {clientId} no está abierto.");
+                }
+            }
+            else
+            {
+                _logger.LogWarning($"Cliente {clientId} no encontrado para enviar resultado de actualización.");
             }
         }
 
@@ -431,6 +458,16 @@ namespace AppsielPrintManager.Infraestructure.Services
                                         if (_clientScaleSubscriptions.TryRemove(clientId, out var scaleId))
                                         {
                                             _scaleService.StopListening(scaleId);
+                                        }
+                                    }
+                                    else if (string.Equals(action, "UpdateTemplate", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        var updateReq = JsonSerializer.Deserialize<UpdateTemplateRequest>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                                        if (updateReq?.Template != null)
+                                        {
+                                            _logger.LogInfo($"Solicitud de actualización de plantilla recibida de {clientId} para: {updateReq.Template.DocumentType}");
+                                            var eventArgs = new WebSocketMessageReceivedEventArgs<PrintTemplate>(clientId, updateReq.Template);
+                                            OnTemplateUpdateReceived?.Invoke(this, eventArgs).Forget();
                                         }
                                     }
                                 }

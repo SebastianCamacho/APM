@@ -1,5 +1,5 @@
 using AppsielPrintManager.Core.Interfaces;
-using AppsielPrintManager.Core.Models; // Required for LogMessage
+using AppsielPrintManager.Core.Models;
 
 namespace WorkerService
 {
@@ -7,7 +7,7 @@ namespace WorkerService
     {
         private readonly ILogger<Worker> _logger;
         private readonly IWebSocketService _webSocketService;
-        private readonly ITemplateRepository _templateRepository; // Inyectar Repositorio
+        private readonly ITemplateRepository _templateRepository;
         private const int WebSocketPort = 7000;
 
         public Worker(ILogger<Worker> logger, IWebSocketService webSocketService, ITemplateRepository templateRepository)
@@ -32,7 +32,42 @@ namespace WorkerService
                 var request = args.Message;
                 var clientId = args.ClientId;
                 _logger.LogInformation($"[WebSocket] PrintJobRequest recibido de {clientId} para JobId: {request.JobId} en WorkerService.");
-                // The PrintService is already processing this via WebSocketServerService's ProcessMessagesAsync.
+            };
+
+            _webSocketService.OnTemplateUpdateReceived += async (sender, args) =>
+            {
+                var template = args.Message;
+                var clientId = args.ClientId;
+                _logger.LogInformation($"[WebSocket] Solicitud de actualización de plantilla recibida de {clientId} para: {template.DocumentType}");
+
+                try
+                {
+                    // Guardar la plantilla directamente sin confirmación en Windows
+                    await _templateRepository.SaveTemplateAsync(template);
+                    _logger.LogInformation($"[WebSocket] Plantilla '{template.DocumentType}' actualizada exitosamente por solicitud remota.");
+
+                    // Enviar respuesta de éxito al cliente
+                    var result = new TemplateUpdateResult
+                    {
+                        DocumentType = template.DocumentType,
+                        Success = true,
+                        Message = $"Plantilla '{template.DocumentType}' actualizada exitosamente en Windows."
+                    };
+                    await _webSocketService.SendTemplateUpdateResultAsync(clientId, result);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error al procesar la actualización remota de plantilla: {ex.Message}", ex);
+
+                    // Enviar respuesta de error al cliente
+                    var result = new TemplateUpdateResult
+                    {
+                        DocumentType = template.DocumentType,
+                        Success = false,
+                        Message = $"Error en Windows: {ex.Message}"
+                    };
+                    await _webSocketService.SendTemplateUpdateResultAsync(clientId, result);
+                }
             };
         }
 
@@ -56,10 +91,8 @@ namespace WorkerService
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                // WorkerService's main task is to keep the WebSocket server running.
-                // We can add other background tasks here if needed.
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); // Log less frequently
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
 
             _logger.LogInformation("WorkerService detenido. Deteniendo el servidor WebSocket.");
@@ -70,4 +103,3 @@ namespace WorkerService
         }
     }
 }
-

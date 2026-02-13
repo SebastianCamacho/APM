@@ -24,6 +24,7 @@ namespace UI.Platforms.Android.Services
         private IWebSocketService? _webSocketService;
         private IPrintService? _printService;
         private CancellationTokenSource? _cts;
+        private PowerManager.WakeLock? _wakeLock;
 
         // Campos estáticos para compartir estado con AndroidPlatformService
         public static bool IsWebSocketRunning { get; private set; } = false;
@@ -66,6 +67,22 @@ namespace UI.Platforms.Android.Services
             // Start the service in the foreground
             StartForeground(SERVICE_NOTIFICATION_ID, notification);
 
+            // Adquirir WakeLock para evitar que la CPU se duerma
+            try
+            {
+                var powerManager = (PowerManager)GetSystemService(PowerService);
+                if (powerManager != null)
+                {
+                    _wakeLock = powerManager.NewWakeLock(WakeLockFlags.Partial, "AppsielPrintManager:WakeLock");
+                    _wakeLock.Acquire();
+                    _logger?.LogInfo("Foreground Service: WakeLock adquirido.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"Foreground Service: Error al adquirir WakeLock: {ex.Message}");
+            }
+
             // Iniciar WebSocket Server automáticamente
             Task.Run(async () =>
             {
@@ -77,6 +94,7 @@ namespace UI.Platforms.Android.Services
                         _webSocketService.OnClientConnected += WebSocketService_OnClientConnected;
                         _webSocketService.OnClientDisconnected += WebSocketService_OnClientDisconnected;
                         _webSocketService.OnPrintJobReceived += WebSocketService_OnPrintJobReceived;
+                        _webSocketService.OnTemplateUpdateReceived += WebSocketService_OnTemplateUpdateReceived;
 
                         // Iniciar servidor WebSocket
                         await _webSocketService.StartServerAsync(WEBSOCKET_PORT);
@@ -88,16 +106,25 @@ namespace UI.Platforms.Android.Services
                         _logger?.LogError("Foreground Service: IWebSocketService no pudo ser resuelto.");
                     }
                 }
-                catch (Exception ex)
+                catch (global::System.Exception ex)
                 {
                     _logger?.LogError($"Foreground Service: Error al iniciar WebSocket Server: {ex.Message}", ex);
                 }
             });
 
-            return StartCommandResult.Sticky;
+            return global::Android.App.StartCommandResult.Sticky;
         }
 
-        public override IBinder OnBind(Intent intent)
+        private global::Microsoft.Maui.Controls.Page? GetPage()
+        {
+            if (global::Microsoft.Maui.Controls.Application.Current?.Windows.Count > 0)
+            {
+                return global::Microsoft.Maui.Controls.Application.Current.Windows[0].Page;
+            }
+            return null;
+        }
+
+        public override global::Android.OS.IBinder OnBind(global::Android.Content.Intent intent)
         {
             _logger?.LogInfo("Foreground Service: OnBind called.");
             return null; // Not providing a bound service for now
@@ -116,6 +143,7 @@ namespace UI.Platforms.Android.Services
                     _webSocketService.OnClientConnected -= WebSocketService_OnClientConnected;
                     _webSocketService.OnClientDisconnected -= WebSocketService_OnClientDisconnected;
                     _webSocketService.OnPrintJobReceived -= WebSocketService_OnPrintJobReceived;
+                    _webSocketService.OnTemplateUpdateReceived -= WebSocketService_OnTemplateUpdateReceived;
 
                     _webSocketService.StopServerAsync().Wait();
                     IsWebSocketRunning = false;
@@ -132,6 +160,14 @@ namespace UI.Platforms.Android.Services
             _cts?.Dispose();
             _cts = null;
 
+            // Liberar WakeLock
+            if (_wakeLock != null && _wakeLock.IsHeld)
+            {
+                _wakeLock.Release();
+                _wakeLock = null;
+                _logger?.LogInfo("Foreground Service: WakeLock liberado.");
+            }
+
             StopForeground(true);
             base.OnDestroy();
         }
@@ -141,7 +177,8 @@ namespace UI.Platforms.Android.Services
             // Ensure Notification Channel exists for Android O and above
             if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
             {
-                var channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationImportance.Low);
+                var channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationImportance.Default); // Cambiado de Low a Default
+                channel.Description = "Mantiene el servicio de impresión activo en segundo plano";
                 var notificationManager = (NotificationManager)GetSystemService(NotificationService);
                 notificationManager.CreateNotificationChannel(channel);
             }
@@ -219,6 +256,89 @@ namespace UI.Platforms.Android.Services
             catch (Exception ex)
             {
                 _logger?.LogError($"[WebSocket] Error al procesar PrintJobRequest: {ex.Message}", ex);
+            }
+        }
+
+        private async Task WebSocketService_OnTemplateUpdateReceived(object? sender, AppsielPrintManager.Core.Interfaces.WebSocketMessageReceivedEventArgs<AppsielPrintManager.Core.Models.PrintTemplate> e)
+        {
+            var template = e.Message;
+            var clientId = e.ClientId;
+
+            // Intentar traer la aplicación al frente para mostrar el diálogo
+            try
+            {
+                var intent = new global::Android.Content.Intent(this, typeof(MainActivity));
+                intent.AddFlags(global::Android.Content.ActivityFlags.NewTask | global::Android.Content.ActivityFlags.SingleTop);
+                StartActivity(intent);
+            }
+            catch (Exception ex)
+            {
+                // Loguear pero continuar intentando mostrar el diálogo
+                System.Diagnostics.Debug.WriteLine($"Error al intentar lanzar MainActivity: {ex.Message}");
+            }
+
+            _logger?.LogInfo($"[WebSocket] Solicitud de actualización de plantilla recibida de {clientId} para: {template.DocumentType}");
+
+            try
+            {
+                // En Android, necesitamos usar el hilo principal para mostrar UI (DisplayAlert)
+                await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    var app = Microsoft.Maui.Controls.Application.Current;
+                    if (app?.MainPage != null)
+                    {
+                        bool confirmed = await app.MainPage.DisplayAlert(
+                            "Actualización de Plantilla",
+                            $"El cliente en {clientId} desea actualizar la plantilla de '{template.DocumentType}'. ¿Desea aplicar los cambios?",
+                            "Sí",
+                            "No");
+
+                        if (confirmed)
+                        {
+                            // Necesitamos resolver el repositorio de nuevo o asegurarnos de tenerlo
+                            var templateRepo = IPlatformApplication.Current?.Services.GetService<ITemplateRepository>();
+                            if (templateRepo != null)
+                            {
+                                await templateRepo.SaveTemplateAsync(template);
+                                _logger?.LogInfo($"[WebSocket] Plantilla '{template.DocumentType}' actualizada exitosamente en Android.");
+
+                                // Enviar respuesta de éxito al cliente
+                                if (_webSocketService != null)
+                                {
+                                    var result = new TemplateUpdateResult
+                                    {
+                                        DocumentType = template.DocumentType,
+                                        Success = true,
+                                        Message = $"Plantilla '{template.DocumentType}' actualizada exitosamente en Android."
+                                    };
+                                    await _webSocketService.SendTemplateUpdateResultAsync(clientId, result);
+                                }
+
+                                await app.MainPage.DisplayAlert("Éxito", $"Plantilla '{template.DocumentType}' actualizada.", "OK");
+                            }
+                        }
+                        else
+                        {
+                            _logger?.LogInfo($"[WebSocket] Actualización de plantilla '{template.DocumentType}' rechazada por el usuario.");
+
+                            // Enviar respuesta de rechazo al cliente
+                            if (_webSocketService != null)
+                            {
+                                var result = new TemplateUpdateResult
+                                {
+                                    DocumentType = template.DocumentType,
+                                    Success = false,
+                                    Message = "Actualización rechazada por el usuario en Android."
+                                };
+                                await _webSocketService.SendTemplateUpdateResultAsync(clientId, result);
+                            }
+                        }
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"Error al procesar actualización de plantilla en Android: {ex.Message}", ex);
             }
         }
     }

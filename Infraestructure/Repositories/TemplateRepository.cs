@@ -18,12 +18,12 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         {
             _logger = logger;
 
-#if WINDOWS
-            string appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-#else
-            string appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-#endif
+            string appDataDirectory = OperatingSystem.IsWindows()
+                ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
             _directoryPath = Path.Combine(appDataDirectory, "AppsielPrintManager", "Templates");
+            _logger.LogInfo($"[TemplateRepository] Ruta de plantillas (Windows={OperatingSystem.IsWindows()}): {_directoryPath}");
 
             if (!Directory.Exists(_directoryPath))
             {
@@ -114,7 +114,8 @@ namespace AppsielPrintManager.Infraestructure.Repositories
 
         public async Task EnsureDefaultTemplatesAsync()
         {
-            var requiredTypes = new[] { "ticket_venta", "comanda", "factura_electronica", "sticker_codigo_barras" };
+            //var requiredTypes = new[] { "ticket_venta", "comanda", "factura_electronica", "sticker_codigo_barras" };
+            var requiredTypes = new[] { "comanda", "factura_electronica" };
 
             foreach (var type in requiredTypes)
             {

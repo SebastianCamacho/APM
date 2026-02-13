@@ -19,6 +19,12 @@
         .tab-button.active { background-color: #333; color: white; }
         .tab-content { display: none; width: 100%; box-sizing: border-box; }
         .tab-content.active { display: block; }
+
+        /* Estilos para la tabla de facturación */
+        #invoiceTable { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        #invoiceTable th, #invoiceTable td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        #invoiceTable th { background-color: #f2f2f2; }
+        .row-input { width: 100%; padding: 5px; box-sizing: border-box; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -62,6 +68,39 @@
 
     <button id="sendPayloadButton" style="margin-top: 10px; padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; cursor: pointer;">Enviar JSON Seleccionado</button>
 
+    <hr style="margin: 30px 0;">
+
+    <h2>Actualización Remota de Plantillas</h2>
+    <p>Envía una nueva definición de plantilla al APM. Requiere confirmación en el dispositivo.</p>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button onclick="sendUpdateTemplate('comanda1')" style="padding: 10px; background-color: #6f42c1; color: white; border: none; cursor: pointer;">Comanda (Minimalista)</button>
+        <button onclick="sendUpdateTemplate('comanda2')" style="padding: 10px; background-color: #6f42c1; color: white; border: none; cursor: pointer;">Comanda (Detallada)</button>
+        <button onclick="sendUpdateTemplate('factura1')" style="padding: 10px; background-color: #e83e8c; color: white; border: none; cursor: pointer;">Factura (Clásica)</button>
+        <button onclick="sendUpdateTemplate('factura2')" style="padding: 10px; background-color: #e83e8c; color: white; border: none; cursor: pointer;">Factura (Moderno)</button>
+    </div>
+
+    <hr style="margin: 30px 0;">
+
+    <h2>Simulación de Facturación</h2>
+    <p>Ingrese códigos (Ej: 1001, 1002, 1003) y haga clic en Cantidad para leer de la báscula.</p>
+    
+    <button id="addInvoiceRowBtn" style="background-color: #28a745; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px;">+ Agregar Producto</button>
+    
+    <table id="invoiceTable">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Código</th>
+                <th style="width: 30%;">Descripción</th>
+                <th style="width: 15%;">Cantidad</th>
+                <th style="width: 20%;">Precio Unit.</th>
+                <th style="width: 20%;">Total</th>
+                <th style="width: 50px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Filas generadas dinámicamente -->
+        </tbody>
+    </table>
 
     
 

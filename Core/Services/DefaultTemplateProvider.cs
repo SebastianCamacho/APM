@@ -22,7 +22,7 @@ namespace AppsielPrintManager.Core.Services
             {
                 TemplateId = null,
                 DocumentType = "sticker_codigo_barras",
-                Name = "Plantilla Etiquetas Código de Barras",
+                Name = "Plantilla Etiquetas Código de Barras Predeterminada",
                 Sections = new List<TemplateSection>
                 {
                     new TemplateSection
@@ -180,7 +180,7 @@ namespace AppsielPrintManager.Core.Services
             return new PrintTemplate
             {
                 DocumentType = type,
-                Name = "Plantilla Predetermianda Ticket de Venta",
+                Name = "Plantilla Ticket de Venta Predeterminada",
                 Sections = new List<TemplateSection>
                 {
                     new TemplateSection
@@ -259,7 +259,7 @@ namespace AppsielPrintManager.Core.Services
             return new PrintTemplate
             {
                 TemplateId = "comanda-default",
-                Name = "Plantilla Predeterminada de Comanda",
+                Name = "Plantilla de Comanda Predeterminada",
                 DocumentType = "comanda",
                 Sections = new List<TemplateSection>
                 {
@@ -300,7 +300,7 @@ namespace AppsielPrintManager.Core.Services
                             },
                             new TemplateElement
                             {
-                                Label = "Cant",
+                                Label = "Descripción",
                                 Source = "Name",
                                 WidthPercentage = 75,
                                 HeaderFormat = "FontB Size2",

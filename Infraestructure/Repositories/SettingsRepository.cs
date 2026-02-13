@@ -28,9 +28,10 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         {
             _logger = logger;
 
-            // Usar siempre LocalApplicationData para consistencia entre UI y WorkerService
-            // y evitar problemas de dependencias de compilación con #if WINDOWS
-            string appDataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            // Usar siempre CommonApplicationData en Windows para consistencia entre UI (Usuario) y WorkerService (System)
+            string appDataDirectory = OperatingSystem.IsWindows() 
+                ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) 
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
             // Crear una subcarpeta específica para nuestra aplicación
             string appSpecificDirectory = Path.Combine(appDataDirectory, "AppsielPrintManager");
@@ -42,8 +43,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             }
 
             _filePath = Path.Combine(appSpecificDirectory, SettingsFileName);
-            _filePath = Path.Combine(appSpecificDirectory, SettingsFileName);
-            _logger.LogInfo($"Ruta del archivo de configuraciones de impresora: {_filePath}");
+            _logger.LogInfo($"[SettingsRepository] Ruta de persistencia de impresoras (Windows={OperatingSystem.IsWindows()}): {_filePath}");
         }
 
         /// <summary>
@@ -143,8 +143,9 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                     using (var stream = File.Open(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     using (var reader = new StreamReader(stream))
                     {
+                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                         var json = await reader.ReadToEndAsync();
-                        return JsonSerializer.Deserialize<List<PrinterSettings>>(json) ?? new List<PrinterSettings>();
+                        return JsonSerializer.Deserialize<List<PrinterSettings>>(json, options) ?? new List<PrinterSettings>();
                     }
                 }
                 catch (IOException ioEx)
