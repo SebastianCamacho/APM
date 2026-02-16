@@ -20,16 +20,26 @@ namespace UI.Services
         {
             _logger = logger;
 
-            // Intentar reengancharse si el proceso ya existe
-            var existingProcesses = Process.GetProcessesByName(TrayAppProcessName);
-            if (existingProcesses.Any())
+            try
             {
-                _trayAppProcess = existingProcesses.First();
-                _logger.LogInfo($"[TrayAppService] TrayApp '{TrayAppProcessName}' ya en ejecución con PID: {_trayAppProcess.Id}");
+                int currentSessionId = Process.GetCurrentProcess().SessionId;
+                // Intentar reengancharse si el proceso ya existe en la misma sesión
+                var existingProcesses = Process.GetProcessesByName(TrayAppProcessName)
+                                               .Where(p => p.SessionId == currentSessionId);
+
+                if (existingProcesses.Any())
+                {
+                    _trayAppProcess = existingProcesses.First();
+                    _logger.LogInfo($"[TrayAppService] TrayApp '{TrayAppProcessName}' ya en ejecución en la sesión {currentSessionId} con PID: {_trayAppProcess.Id}");
+                }
+                else
+                {
+                    _logger.LogInfo($"[TrayAppService] TrayApp '{TrayAppProcessName}' no encontrado en la sesión actual ({currentSessionId}).");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogInfo($"[TrayAppService] TrayApp '{TrayAppProcessName}' no encontrado en procesos existentes.");
+                _logger.LogError($"[TrayAppService] Error al buscar procesos existentes: {ex.Message}");
             }
         }
 
@@ -39,8 +49,25 @@ namespace UI.Services
         {
             if (IsTrayAppRunning)
             {
-                _logger.LogInfo($"[TrayAppService] TrayApp '{TrayAppProcessName}' ya está en ejecución.");
-                return Task.FromResult(true);
+                // Si está corriendo, verificamos si responde
+                try
+                {
+                    if (_trayAppProcess.Responding)
+                    {
+                        _logger.LogInfo($"[TrayAppService] TrayApp '{TrayAppProcessName}' ya está en ejecución y respondiendo.");
+                        return Task.FromResult(true);
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"[TrayAppService] TrayApp detectado (PID: {_trayAppProcess.Id}) pero no responde. Intentando reiniciar...");
+                        _trayAppProcess.Kill();
+                        _trayAppProcess.WaitForExit(2000);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"[TrayAppService] Error al verificar salud de TrayApp existente: {ex.Message}");
+                }
             }
 
             try
@@ -49,24 +76,24 @@ namespace UI.Services
                 string trayAppExePath = string.Empty;
 
                 // --- Lógica de Rutas de Producción ---
-                
+
 
                 //TrayApp.exe está en una subcarpeta 'tray' o 'trayapp' dentro del directorio de la UI.exe
                 string productionPath = Path.Combine(appDirectory, "trayapp", TrayAppExeName);
-                
-                
+
+
 
 
                 // --- Lógica de Rutas de Desarrollo ---
                 // Si no lo encuentra en la ruta de producción, intentaremos buscarlo en rutas de desarrollo
                 string solutionRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..", "..", "..", ".."));
                 string trayAppProjectBase = Path.Combine(solutionRoot, "TrayApp"); // Ruta corregida al proyecto TrayApp
-                string debugPath = Path.Combine(trayAppProjectBase, "bin", "Debug", "net10.0-windows", TrayAppExeName); 
+                string debugPath = Path.Combine(trayAppProjectBase, "bin", "Debug", "net10.0-windows", TrayAppExeName);
                 string releasePath = Path.Combine(trayAppProjectBase, "bin", "Release", "net10.0-windows", TrayAppExeName);
 
 
-                
-                 if (File.Exists(productionPath))
+
+                if (File.Exists(productionPath))
                 {
                     trayAppExePath = productionPath;
                     _logger.LogInfo($"[TrayAppService] Usando ruta de producción (subdirectorio 'tray'): '{trayAppExePath}'");
