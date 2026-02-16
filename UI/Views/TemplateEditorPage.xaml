@@ -54,7 +54,7 @@
                     <Label Text="Editor de Plantilla" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource White}" />
                     <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="#22FFFFFF" HeightRequest="38">
                         <!-- SAFE MODE: FontSize 12 -->
-                        <Entry Text="{Binding Template.Name}" Placeholder="Nombre de la Plantilla" TextColor="{DynamicResource White}" FontSize="12" BackgroundColor="Transparent" VerticalOptions="Center" />
+                        <Entry Text="{Binding TemplateName}" Placeholder="Nombre de la Plantilla" TextColor="{DynamicResource White}" FontSize="12" BackgroundColor="Transparent" VerticalOptions="Center" />
                     </Border>
                 </VerticalStackLayout>
                 <Button Grid.Column="1" Text="+ Sección" Command="{Binding AddSectionCommand}" VerticalOptions="Center" Style="{StaticResource ButtonOutline}" TextColor="{DynamicResource White}" BorderColor="{DynamicResource White}" HeightRequest="38" Padding="15,0" />

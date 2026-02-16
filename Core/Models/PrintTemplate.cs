@@ -46,6 +46,7 @@ namespace AppsielPrintManager.Core.Models
         public int? BarWidth { get; set; } // Ancho del módulo de código de barras (1-5)
         public int? Height { get; set; } // Altura del código de barras o imagen (1-255)
         public int? Size { get; set; } // Tamaño para QR (1-16) u otros elementos
+        public int? Order { get; set; } // Posición del elemento dentro de la sección
         public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
     }
 }

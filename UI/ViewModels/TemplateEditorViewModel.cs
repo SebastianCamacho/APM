@@ -108,7 +108,9 @@ namespace UI.ViewModels
             int index = Sections.IndexOf(section);
             if (index > 0)
             {
-                Sections.Move(index, index - 1);
+                var item = Sections[index];
+                Sections.RemoveAt(index);
+                Sections.Insert(index - 1, item);
                 UpdateOrders();
             }
         }
@@ -119,7 +121,9 @@ namespace UI.ViewModels
             int index = Sections.IndexOf(section);
             if (index < Sections.Count - 1)
             {
-                Sections.Move(index, index + 1);
+                var item = Sections[index];
+                Sections.RemoveAt(index);
+                Sections.Insert(index + 1, item);
                 UpdateOrders();
             }
         }
@@ -140,8 +144,9 @@ namespace UI.ViewModels
             IsBusy = true;
             try
             {
+                // TemplateName is bound to the Entry in UI
                 Template.Name = TemplateName;
-                UpdateOrders(); // Asegurar órdenes correlativos
+                UpdateOrders();
                 Template.Sections = Sections.Select(s => s.ToModel()).ToList();
 
                 await _templateRepository.SaveTemplateAsync(Template);

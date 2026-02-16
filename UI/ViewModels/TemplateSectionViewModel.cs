@@ -14,12 +14,73 @@ namespace UI.ViewModels
         [ObservableProperty]
         private string name;
 
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsTableSection))]
-        [NotifyPropertyChangedFor(nameof(IsDataSourceVisible))]
-        private string type;
+        private string _type = "Static";
+        public string Type
+        {
+            get => _type;
+            set
+            {
+                if (string.IsNullOrEmpty(value) || value == _type) return;
+                if (SetProperty(ref _type, value))
+                {
+                    OnPropertyChanged(nameof(IsTableSection));
+                    OnPropertyChanged(nameof(IsDataSourceVisible));
+                    UpdateElementsTableStatus();
+                }
+            }
+        }
 
-        partial void OnTypeChanged(string value) => UpdateElementsTableStatus();
+        private string _dataSource = string.Empty;
+        public string DataSource
+        {
+            get => _dataSource;
+            set
+            {
+                if (value == null || value == _dataSource) return; // Glitch check
+                if (SetProperty(ref _dataSource, value))
+                {
+                    OnPropertyChanged(nameof(DisplayDataSourceSuggestions));
+                }
+            }
+        }
+
+        private string? _align;
+        public string? Align
+        {
+            get => _align;
+            set
+            {
+                if (string.IsNullOrEmpty(value) || value == _align) return;
+                SetProperty(ref _align, value);
+            }
+        }
+
+        [ObservableProperty]
+        private int? order;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DataSourceSuggestions))]
+        [NotifyPropertyChangedFor(nameof(DisplayDataSourceSuggestions))]
+        private string? documentType;
+
+        [ObservableProperty]
+        private ObservableCollection<TemplateElementViewModel> elements;
+
+        private int? _selectedSizeIdx;
+        public int? SelectedSizeIdx
+        {
+            get => _selectedSizeIdx;
+            set
+            {
+                if ((value == null || value < 0) && _selectedSizeIdx != null) return;
+                SetProperty(ref _selectedSizeIdx, value);
+            }
+        }
+
+        [ObservableProperty]
+        private bool isBold;
+
+
 
         partial void OnDocumentTypeChanged(string? value)
         {
@@ -41,32 +102,6 @@ namespace UI.ViewModels
                 }
             }
         }
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(DisplayDataSourceSuggestions))]
-        private string dataSource;
-
-        [ObservableProperty]
-        private string? align;
-
-        [ObservableProperty]
-        private int? order;
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(DataSourceSuggestions))]
-        [NotifyPropertyChangedFor(nameof(DisplayDataSourceSuggestions))]
-        private string? documentType;
-
-        [ObservableProperty]
-        private ObservableCollection<TemplateElementViewModel> elements;
-
-        [ObservableProperty]
-        private int? selectedSizeIdx;
-
-        [ObservableProperty]
-        private bool isBold;
-
-
 
         public bool IsTableSection => Type == "Table";
         public bool IsDataSourceVisible => Type == "Table" || Type == "Repeated";
@@ -127,42 +162,55 @@ namespace UI.ViewModels
                 return;
             }
 
-            IsBold = format.Contains("Bold", StringComparison.OrdinalIgnoreCase);
+            var parts = format.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            IsBold = parts.Contains("Bold", StringComparer.OrdinalIgnoreCase);
 
-            if (format.Contains("Size1")) SelectedSizeIdx = 1;
-            else if (format.Contains("Size2")) SelectedSizeIdx = 2;
-            else if (format.Contains("Size3")) SelectedSizeIdx = 3;
-            else if (format.Contains("Size4")) SelectedSizeIdx = 4;
-            else if (format.Contains("Size5")) SelectedSizeIdx = 5;
-            else if (format.Contains("Size6")) SelectedSizeIdx = 6;
-            else SelectedSizeIdx = 0;
+            SetSizeIndex(parts, out int? sizeIdx);
+            SelectedSizeIdx = sizeIdx;
+        }
+
+        private void SetSizeIndex(string[] parts, out int? sizeIdx)
+        {
+            bool isFontA = parts.Contains("FontA", StringComparer.OrdinalIgnoreCase);
+            bool isFontB = parts.Contains("FontB", StringComparer.OrdinalIgnoreCase);
+            bool isSize1 = parts.Contains("Size1", StringComparer.OrdinalIgnoreCase);
+            bool isSize2 = parts.Contains("Size2", StringComparer.OrdinalIgnoreCase);
+            bool isSize3 = parts.Contains("Size3", StringComparer.OrdinalIgnoreCase);
+
+            if (isSize1 && isFontB) sizeIdx = 1;
+            else if (isSize1 && (isFontA || !isFontB)) sizeIdx = 2;
+            else if (isSize2 && isFontB) sizeIdx = 3;
+            else if (isSize2 && (isFontA || !isFontB)) sizeIdx = 4;
+            else if (isSize3 && isFontB) sizeIdx = 5;
+            else if (isSize3 && (isFontA || !isFontB)) sizeIdx = 6;
+            else sizeIdx = 0; // Ninguno
         }
 
         private string? UpdateFormat()
         {
-            if (SelectedSizeIdx == null || SelectedSizeIdx == 0)
+            var formats = new List<string>();
+
+            // Sizes mapping consistent with elements:
+            // 1: FontB Size1
+            // 2: FontA Size1
+            // 3: FontB Size2
+            // 4: FontA Size2
+            // 5: FontB Size3
+            // 6: FontA Size3
+
+            switch (SelectedSizeIdx)
             {
-                return IsBold ? "Bold" : null;
+                case 1: formats.Add("FontB Size1"); break;
+                case 2: formats.Add("FontA Size1"); break;
+                case 3: formats.Add("FontB Size2"); break;
+                case 4: formats.Add("FontA Size2"); break;
+                case 5: formats.Add("FontB Size3"); break;
+                case 6: formats.Add("FontA Size3"); break;
             }
 
-            var parts = new List<string>();
+            if (IsBold) formats.Add("Bold");
 
-            // Mapeo inverso de los 6 tamaños
-            string sizePart = SelectedSizeIdx switch
-            {
-                1 => "FontA Size1",
-                2 => "FontA Size2",
-                3 => "FontA Size3",
-                4 => "FontB Size1",
-                5 => "FontB Size2",
-                6 => "FontB Size3",
-                _ => null
-            };
-
-            if (sizePart != null) parts.Add(sizePart);
-            if (IsBold) parts.Add("Bold");
-
-            return parts.Count > 0 ? string.Join(" ", parts) : null;
+            return formats.Count > 0 ? string.Join(" ", formats) : null;
         }
 
         [RelayCommand]
@@ -172,6 +220,7 @@ namespace UI.ViewModels
             {
                 IsTableSection = IsTableSection
             });
+            UpdateElementOrders();
         }
 
         [RelayCommand]
@@ -180,7 +229,10 @@ namespace UI.ViewModels
             var index = Elements.IndexOf(element);
             if (index > 0)
             {
-                Elements.Move(index, index - 1);
+                var item = Elements[index];
+                Elements.RemoveAt(index);
+                Elements.Insert(index - 1, item);
+                UpdateElementOrders();
             }
         }
 
@@ -190,7 +242,10 @@ namespace UI.ViewModels
             var index = Elements.IndexOf(element);
             if (index < Elements.Count - 1)
             {
-                Elements.Move(index, index + 1);
+                var item = Elements[index];
+                Elements.RemoveAt(index);
+                Elements.Insert(index + 1, item);
+                UpdateElementOrders();
             }
         }
 
@@ -198,7 +253,18 @@ namespace UI.ViewModels
         private void RemoveElement(TemplateElementViewModel element)
         {
             if (element != null)
+            {
                 Elements.Remove(element);
+                UpdateElementOrders();
+            }
+        }
+
+        private void UpdateElementOrders()
+        {
+            for (int i = 0; i < Elements.Count; i++)
+            {
+                Elements[i].Order = i + 1;
+            }
         }
 
         public TemplateSection ToModel()
