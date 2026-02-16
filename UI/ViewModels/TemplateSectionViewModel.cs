@@ -59,12 +59,25 @@ namespace UI.ViewModels
         private int? order;
 
         [ObservableProperty]
+        private bool isExpanded;
+
+        partial void OnIsExpandedChanged(bool value)
+        {
+            if (value && !_isLoaded)
+            {
+                LoadElements();
+            }
+        }
+
+        private bool _isLoaded;
+
+        [ObservableProperty]
+        private ObservableCollection<TemplateElementViewModel> elements = new();
+
+        [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DataSourceSuggestions))]
         [NotifyPropertyChangedFor(nameof(DisplayDataSourceSuggestions))]
         private string? documentType;
-
-        [ObservableProperty]
-        private ObservableCollection<TemplateElementViewModel> elements;
 
         private int? _selectedSizeIdx;
         public int? SelectedSizeIdx
@@ -133,7 +146,7 @@ namespace UI.ViewModels
             }
         }
 
-        public TemplateSectionViewModel(TemplateSection model, string? documentType)
+        public TemplateSectionViewModel(TemplateSection model, string? documentType, bool startExpanded = false)
         {
             _model = model;
             DocumentType = documentType;
@@ -142,16 +155,43 @@ namespace UI.ViewModels
             DataSource = model.DataSource ?? string.Empty;
             Align = model.Align ?? "Ninguno";
             Order = model.Order ?? 0;
+            IsExpanded = startExpanded;
 
-            Elements = new ObservableCollection<TemplateElementViewModel>(
-                model.Elements.Select(e => new TemplateElementViewModel(e, DocumentType)
-                {
-                    IsTableSection = IsTableSection,
-                    IsRepeatedSection = Type == "Repeated"
-                })
-            );
+            // Si es una sección nueva (sin elementos) o pedimos expandir, cargamos ya.
+            if (startExpanded || _model.Elements == null || _model.Elements.Count == 0)
+            {
+                LoadElements();
+            }
 
             ParseFormat(model.Format);
+        }
+
+        private void LoadElements()
+        {
+            if (_isLoaded || _model.Elements == null) return;
+
+            var newElements = _model.Elements.Select(e => new TemplateElementViewModel(e, DocumentType)
+            {
+                IsTableSection = IsTableSection,
+                IsRepeatedSection = Type == "Repeated"
+            }).ToList();
+
+            foreach (var element in newElements)
+            {
+                Elements.Add(element);
+            }
+
+            _isLoaded = true;
+        }
+
+        [RelayCommand]
+        private void ToggleExpanded()
+        {
+            IsExpanded = !IsExpanded;
+            if (IsExpanded && !_isLoaded)
+            {
+                LoadElements();
+            }
         }
 
         private void ParseFormat(string format)
@@ -216,6 +256,9 @@ namespace UI.ViewModels
         [RelayCommand]
         private void AddElement()
         {
+            if (!_isLoaded) LoadElements();
+            IsExpanded = true;
+
             Elements.Add(new TemplateElementViewModel(new TemplateElement { Type = "Text", Align = "Left" }, DocumentType)
             {
                 IsTableSection = IsTableSection
@@ -275,7 +318,11 @@ namespace UI.ViewModels
             _model.Align = (Align == "Ninguno") ? null : Align;
             _model.Order = Order;
             _model.Format = UpdateFormat();
-            _model.Elements = Elements.Select(e => e.ToModel()).ToList();
+
+            if (_isLoaded)
+            {
+                _model.Elements = Elements.Select(e => e.ToModel()).ToList();
+            }
 
             return _model;
         }
