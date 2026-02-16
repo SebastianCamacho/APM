@@ -65,7 +65,7 @@ namespace UI.ViewModels
 
                 var mappedSections = await Task.Run(() =>
                     value.Sections.OrderBy(s => s.Order ?? 0)
-                                 .Select((s, index) => new TemplateSectionViewModel(s, value.DocumentType, index == 0))
+                                 .Select((s, index) => new TemplateSectionViewModel(s, value.DocumentType, false))
                                  .ToList()
                 );
 
