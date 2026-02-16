@@ -49,6 +49,7 @@ namespace AppsielPrintManager.Core.Services
                                 BarWidth = 2,
                                 Height = 200,
                                 Size = null,
+                                Order = 1,
                                 Properties = new Dictionary<string, string>
                                 {
                                     { "Hri", "true" }
@@ -78,14 +79,14 @@ namespace AppsielPrintManager.Core.Services
                         Order = 1,
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Text", Source = "Seller.Name", Format = "Bold Size2" },
-                            new TemplateElement { Type = "Text", Source = "Seller.Nit", Label = "NIT: " },
-                            new TemplateElement { Type = "Text", Source = "Seller.TaxRegime" },
-                            new TemplateElement { Type = "Text", Source = "Seller.Address" },
-                            new TemplateElement { Type = "Text", Source = "Seller.City" },
-                            new TemplateElement { Type = "Text", Source = "Seller.Phone", Label = "Tel: " },
-                             new TemplateElement { Type = "Text", Source = "Seller.ResolutionText", Format = "FontB" },
-                            new TemplateElement { Type = "Line" }
+                            new TemplateElement { Type = "Text", Source = "Seller.Name", Format = "Bold Size2", Order = 1 },
+                            new TemplateElement { Type = "Text", Source = "Seller.Nit", Label = "NIT: ", Order = 2 },
+                            new TemplateElement { Type = "Text", Source = "Seller.TaxRegime", Order = 3 },
+                            new TemplateElement { Type = "Text", Source = "Seller.Address", Order = 4 },
+                            new TemplateElement { Type = "Text", Source = "Seller.City", Order = 5 },
+                            new TemplateElement { Type = "Text", Source = "Seller.Phone", Label = "Tel: ", Order = 6 },
+                             new TemplateElement { Type = "Text", Source = "Seller.ResolutionText", Format = "FontB", Order = 7 },
+                            new TemplateElement { Type = "Line", Order = 8 }
                         }
                     },
 
@@ -98,11 +99,11 @@ namespace AppsielPrintManager.Core.Services
                         Order = 2,
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Text", Label = "Cliente: ", Source = "Buyer.Name", Format = "Bold" },
-                            new TemplateElement { Type = "Text", Label = "NIT/CC: ", Source = "Buyer.Nit" },
-                            new TemplateElement { Type = "Text", Label = "Dir: ", Source = "Buyer.Address" },
-                             new TemplateElement { Type = "Text", Label = "Email: ", Source = "Buyer.Email" },
-                            new TemplateElement { Type = "Line" }
+                            new TemplateElement { Type = "Text", Label = "Cliente: ", Source = "Buyer.Name", Format = "Bold", Order = 1 },
+                            new TemplateElement { Type = "Text", Label = "NIT/CC: ", Source = "Buyer.Nit", Order = 2 },
+                            new TemplateElement { Type = "Text", Label = "Dir: ", Source = "Buyer.Address", Order = 3 },
+                             new TemplateElement { Type = "Text", Label = "Email: ", Source = "Buyer.Email", Order = 4 },
+                            new TemplateElement { Type = "Line", Order = 5 }
                         }
                     },
                     // Invoice Details
@@ -114,13 +115,13 @@ namespace AppsielPrintManager.Core.Services
                         Order = 3,
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Text", Source = "Invoice.Number", Label = "FACTURA DE VENTA N°: ", Format = "Bold" },
-                            new TemplateElement { Type = "Text", Source = "Invoice.IssueDate", Label = "Fecha Emisión: " },
-                            new TemplateElement { Type = "Text", Source = "Invoice.DueDate", Label = "Fecha Vencimiento: " },
-                            new TemplateElement { Type = "Text", Source = "Invoice.PaymentMethod", Label = "Forma Pago: " },
-                            new TemplateElement { Type = "Text", Source = "Invoice.PaymentMeans", Label = "Medio Pago: " },
-                            new TemplateElement { Type = "Text", Source = "Invoice.Currency", Label = "Moneda: " },
-                            new TemplateElement { Type = "Line" }
+                            new TemplateElement { Type = "Text", Source = "Invoice.Number", Label = "FACTURA DE VENTA N°: ", Format = "Bold", Order = 1 },
+                            new TemplateElement { Type = "Text", Source = "Invoice.IssueDate", Label = "Fecha Emisión: ", Order = 2 },
+                            new TemplateElement { Type = "Text", Source = "Invoice.DueDate", Label = "Fecha Vencimiento: ", Order = 3 },
+                            new TemplateElement { Type = "Text", Source = "Invoice.PaymentMethod", Label = "Forma Pago: ", Order = 4 },
+                            new TemplateElement { Type = "Text", Source = "Invoice.PaymentMeans", Label = "Medio Pago: ", Order = 5 },
+                            new TemplateElement { Type = "Text", Source = "Invoice.Currency", Label = "Moneda: ", Order = 6 },
+                            new TemplateElement { Type = "Line", Order = 7 }
                         }
                     },
                     // Items Table
@@ -132,11 +133,11 @@ namespace AppsielPrintManager.Core.Services
                         Order = 4,
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Label = "Cant", Source = "Quantity", WidthPercentage = 10 },
-                            new TemplateElement { Label = "Desc", Source = "Description", WidthPercentage = 40 },
-                            new TemplateElement { Label = "Precio", Source = "UnitPrice", WidthPercentage = 19, Align = "Right" },
-                            new TemplateElement { Label = "IVA", Source = "IvaRate", WidthPercentage = 10, Align = "Right" },
-                            new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 21, Align = "Right" }
+                            new TemplateElement { Label = "Cant", Source = "Quantity", WidthPercentage = 10, Order = 1 },
+                            new TemplateElement { Label = "Desc", Source = "Description", WidthPercentage = 40, Order = 2 },
+                            new TemplateElement { Label = "Precio", Source = "UnitPrice", WidthPercentage = 19, Align = "Right", Order = 3 },
+                            new TemplateElement { Label = "IVA", Source = "IvaRate", WidthPercentage = 10, Align = "Right", Order = 4 },
+                            new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 21, Align = "Right", Order = 5 }
                         }
                     },
                     // Totals
@@ -148,12 +149,12 @@ namespace AppsielPrintManager.Core.Services
                         Align = "Right",
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Line" },
-                            new TemplateElement { Type = "Text", Source = "Invoice.Subtotal", Label = "Subtotal: " },
-                            new TemplateElement { Type = "Text", Source = "Invoice.Discount", Label = "Descuento: " },
-                            new TemplateElement { Type = "Text", Source = "Invoice.Iva", Label = "Total IVA: " },
-                            new TemplateElement { Type = "Text", Source = "Invoice.Total", Label = "TOTAL A PAGAR: ", Format = "Bold Size2" },
-                            new TemplateElement { Type = "Line" }
+                            new TemplateElement { Type = "Line", Order = 1 },
+                            new TemplateElement { Type = "Text", Source = "Invoice.Subtotal", Label = "Subtotal: ", Order = 2 },
+                            new TemplateElement { Type = "Text", Source = "Invoice.Discount", Label = "Descuento: ", Order = 3 },
+                            new TemplateElement { Type = "Text", Source = "Invoice.Iva", Label = "Total IVA: ", Order = 4 },
+                            new TemplateElement { Type = "Text", Source = "Invoice.Total", Label = "TOTAL A PAGAR: ", Format = "Bold Size2", Order = 5 },
+                            new TemplateElement { Type = "Line", Order = 6 }
                         }
                     },
 
@@ -166,9 +167,9 @@ namespace AppsielPrintManager.Core.Services
                         Align = "Center",
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Text", Label = "CUFE: ", Source = "TechKey", Format = "FontB" },
-                            new TemplateElement { Type = "QR", Source = "QrString", Properties = new Dictionary<string, string> { { "Size", "8" } } },
-                            new TemplateElement { Type = "Text", StaticValue = "Factura generada por Software APPSIEL POS" }
+                            new TemplateElement { Type = "Text", Label = "CUFE: ", Source = "TechKey", Format = "FontB", Order = 1 },
+                            new TemplateElement { Type = "QR", Source = "QrString", Order = 2, Properties = new Dictionary<string, string> { { "Size", "8" } } },
+                            new TemplateElement { Type = "Text", StaticValue = "Factura generada por Software APPSIEL POS", Order = 3 }
                         }
                     }
                 }
@@ -191,11 +192,11 @@ namespace AppsielPrintManager.Core.Services
                         Order = 1,
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Text", StaticValue = "APPSIEL CLOUD POS", Format = "Bold Size2" },
-                            new TemplateElement { Type = "Text", Source = "company.Name", Format = "Bold" },
-                            new TemplateElement { Type = "Text", Source = "company.Address" },
-                            new TemplateElement { Type = "Text", Source = "company.Phone", Label = "Tel: " },
-                            new TemplateElement { Type = "Line" }
+                            new TemplateElement { Type = "Text", StaticValue = "APPSIEL CLOUD POS", Format = "Bold Size2", Order = 1 },
+                            new TemplateElement { Type = "Text", Source = "company.Name", Format = "Bold", Order = 2 },
+                            new TemplateElement { Type = "Text", Source = "company.Address", Order = 3 },
+                            new TemplateElement { Type = "Text", Source = "company.Phone", Label = "Tel: ", Order = 4 },
+                            new TemplateElement { Type = "Line", Order = 5 }
                         }
                     },
                     new TemplateSection
@@ -205,9 +206,9 @@ namespace AppsielPrintManager.Core.Services
                         Order = 2,
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Text", Source = "sale.Number", Label = "Ticket #: ", Format = "Bold" },
-                            new TemplateElement { Type = "Text", Source = "sale.Date", Label = "Fecha: " },
-                            new TemplateElement { Type = "Line" }
+                            new TemplateElement { Type = "Text", Source = "sale.Number", Label = "Ticket #: ", Format = "Bold", Order = 1 },
+                            new TemplateElement { Type = "Text", Source = "sale.Date", Label = "Fecha: ", Order = 2 },
+                            new TemplateElement { Type = "Line", Order = 3 }
                         }
                     },
                     new TemplateSection
@@ -218,9 +219,9 @@ namespace AppsielPrintManager.Core.Services
                         Order = 3,
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Label = "Cant", Source = "Qty", WidthPercentage = 13 },
-                            new TemplateElement { Label = "Producto", Source = "Name", WidthPercentage = 55 },
-                            new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 17, Align = "Right" },
+                            new TemplateElement { Label = "Cant", Source = "Qty", WidthPercentage = 13, Order = 1 },
+                            new TemplateElement { Label = "Producto", Source = "Name", WidthPercentage = 55, Order = 2 },
+                            new TemplateElement { Label = "Total", Source = "Total", WidthPercentage = 17, Align = "Right", Order = 3 },
                         }
                     },
                     new TemplateSection
@@ -231,11 +232,11 @@ namespace AppsielPrintManager.Core.Services
                         Align = "Right",
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Line" },
-                            new TemplateElement { Type = "Text", Source = "sale.Subtotal", Label = "Subtotal: " },
-                            new TemplateElement { Type = "Text", Source = "sale.IVA", Label = "IVA: " },
-                            new TemplateElement { Type = "Text", Source = "sale.Total", Label = "TOTAL: ", Format = "Bold FontA Size2" },
-                            new TemplateElement { Type = "Line" }
+                            new TemplateElement { Type = "Line", Order = 1 },
+                            new TemplateElement { Type = "Text", Source = "sale.Subtotal", Label = "Subtotal: ", Order = 2 },
+                            new TemplateElement { Type = "Text", Source = "sale.IVA", Label = "IVA: ", Order = 3 },
+                            new TemplateElement { Type = "Text", Source = "sale.Total", Label = "TOTAL: ", Format = "Bold FontA Size2", Order = 4 },
+                            new TemplateElement { Type = "Line", Order = 5 }
                         }
                     },
                     new TemplateSection
@@ -246,8 +247,8 @@ namespace AppsielPrintManager.Core.Services
                         Order = 5,
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Text", StaticValue = "¡GRACIAS POR SU COMPRA!", Format = "Bold" },
-                            new TemplateElement { Type = "QR", Source = "sale.InvoiceUrl", Properties = new Dictionary<string, string> { { "Size", "4" } } }
+                            new TemplateElement { Type = "Text", StaticValue = "¡GRACIAS POR SU COMPRA!", Format = "Bold", Order = 1 },
+                            new TemplateElement { Type = "QR", Source = "sale.InvoiceUrl", Order = 2, Properties = new Dictionary<string, string> { { "Size", "4" } } }
                         }
                     }
                 }
@@ -271,13 +272,13 @@ namespace AppsielPrintManager.Core.Services
                         Align = "Center",
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Text", Source = "order.COPY", Label = "COPY:", Format = "Bold", Align = "Left" },
-                            new TemplateElement { Type = "Text", Source = "order.RestaurantName", Format = "Bold,Large" },
-                            new TemplateElement { Type = "Text", Label = "COMANDA N°: ", Source = "order.Number", Format = "Bold" },
-                            new TemplateElement { Type = "Text", Label = "Mesa: ", Source = "order.Table" },
-                            new TemplateElement { Type = "Text", Label = "Mesero: ", Source = "order.Waiter" },
-                            new TemplateElement { Type = "Text", Label = "Fecha: ", Source = "order.Date" },
-                            new TemplateElement { Type = "Line" }
+                            new TemplateElement { Type = "Text", Source = "order.COPY", Label = "COPY:", Format = "Bold", Align = "Left", Order = 1 },
+                            new TemplateElement { Type = "Text", Source = "order.RestaurantName", Format = "Bold,Large", Order = 2 },
+                            new TemplateElement { Type = "Text", Label = "COMANDA N°: ", Source = "order.Number", Format = "Bold", Order = 3 },
+                            new TemplateElement { Type = "Text", Label = "Mesa: ", Source = "order.Table", Order = 4 },
+                            new TemplateElement { Type = "Text", Label = "Mesero: ", Source = "order.Waiter", Order = 5 },
+                            new TemplateElement { Type = "Text", Label = "Fecha: ", Source = "order.Date", Order = 6 },
+                            new TemplateElement { Type = "Line", Order = 7 }
                         }
                     },
                     new TemplateSection
@@ -296,7 +297,8 @@ namespace AppsielPrintManager.Core.Services
                                 WidthPercentage = 25,
                                 HeaderFormat = "FontB Size2",
                                 Format = "FontA Size3 ",
-                                Align = "Left"
+                                Align = "Left",
+                                Order = 1
                             },
                             new TemplateElement
                             {
@@ -305,7 +307,8 @@ namespace AppsielPrintManager.Core.Services
                                 WidthPercentage = 75,
                                 HeaderFormat = "FontB Size2",
                                 Format = "FontA Size3 ",
-                                Align = "Left"
+                                Align = "Left",
+                                Order = 2
                             }
                         }
                     },
@@ -317,10 +320,10 @@ namespace AppsielPrintManager.Core.Services
                         Align = "Center",
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Line" },
-                            new TemplateElement { Type = "Text", Label = "Notas: ", Source = "Detail",Format = "FontB Size2 " },
-                            new TemplateElement { Type = "Text", Source = "order.GeneratedDate" },
-                            new TemplateElement { Type = "Text", StaticValue = "Impreso por APM ", Format = "" }
+                            new TemplateElement { Type = "Line", Order = 1 },
+                            new TemplateElement { Type = "Text", Label = "Notas: ", Source = "Detail",Format = "FontB Size2 ", Order = 2 },
+                            new TemplateElement { Type = "Text", Source = "order.GeneratedDate", Order = 3 },
+                            new TemplateElement { Type = "Text", StaticValue = "Impreso por APM ", Format = "", Order = 4 }
                         }
                     }
                 }
