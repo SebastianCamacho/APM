@@ -17,6 +17,13 @@ var builder = Host.CreateDefaultBuilder(args) // Changed to CreateDefaultBuilder
         services.AddSingleton<ITicketRenderer, TicketRendererService>();
         services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>();
         services.AddSingleton<TcpIpPrinterClient>();
+
+        // Servicios para Impresoras Matriciales (LX-300)
+        services.AddSingleton<DotMatrixRendererService>();
+        services.AddSingleton<EscPGeneratorService>();
+        services.AddSingleton<LocalRawPrinterClient>();
+        services.AddSingleton<IppPrinterClient>();
+
         services.AddSingleton<IPrintService, PrintService>();
 
         // Scale Services

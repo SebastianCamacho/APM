@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Maui.Controls;
 using CommunityToolkit.Mvvm.Input;
 using AppsielPrintManager.Core.Interfaces;
 using AppsielPrintManager.Core.Models;
@@ -64,7 +65,7 @@ namespace UI.ViewModels
 
                 var mappedSections = await Task.Run(() =>
                     value.Sections.OrderBy(s => s.Order ?? 0)
-                                 .Select(s => new TemplateSectionViewModel(s, value.DocumentType))
+                                 .Select((s, index) => new TemplateSectionViewModel(s, value.DocumentType, false))
                                  .ToList()
                 );
 
@@ -107,7 +108,9 @@ namespace UI.ViewModels
             int index = Sections.IndexOf(section);
             if (index > 0)
             {
-                Sections.Move(index, index - 1);
+                var item = Sections[index];
+                Sections.RemoveAt(index);
+                Sections.Insert(index - 1, item);
                 UpdateOrders();
             }
         }
@@ -118,7 +121,9 @@ namespace UI.ViewModels
             int index = Sections.IndexOf(section);
             if (index < Sections.Count - 1)
             {
-                Sections.Move(index, index + 1);
+                var item = Sections[index];
+                Sections.RemoveAt(index);
+                Sections.Insert(index + 1, item);
                 UpdateOrders();
             }
         }
@@ -139,8 +144,9 @@ namespace UI.ViewModels
             IsBusy = true;
             try
             {
+                // TemplateName is bound to the Entry in UI
                 Template.Name = TemplateName;
-                UpdateOrders(); // Asegurar órdenes correlativos
+                UpdateOrders();
                 Template.Sections = Sections.Select(s => s.ToModel()).ToList();
 
                 await _templateRepository.SaveTemplateAsync(Template);

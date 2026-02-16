@@ -77,6 +77,11 @@ namespace AppsielPrintManager.Infraestructure.Services
         {
             var renderedSection = new RenderedSection { Name = section.Name, Type = section.Type ?? "Static" };
 
+            var orderedElements = section.Elements
+                .OrderBy(e => e.Order ?? 999)
+                .ThenBy(e => section.Elements.IndexOf(e))
+                .ToList();
+
             switch (section.Type?.ToLower())
             {
                 case "table":
@@ -84,7 +89,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     if (listData != null)
                     {
                         // Encabezados de tabla: Heredan de la sección si no hay HeaderFormat
-                        var headers = section.Elements.Select(e => new RenderedElement
+                        var headers = orderedElements.Select(e => new RenderedElement
                         {
                             Type = "Text",
                             TextValue = e.Label ?? string.Empty,
@@ -98,7 +103,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                         // Filas de datos: Heredan de e.Format o section.Format
                         foreach (var item in listData)
                         {
-                            var row = section.Elements.Select(e => new RenderedElement
+                            var row = orderedElements.Select(e => new RenderedElement
                             {
                                 Type = "Text",
                                 TextValue = GetValueFromPath(item, e.Source ?? string.Empty)?.ToString() ?? string.Empty,
@@ -117,7 +122,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     {
                         foreach (var item in repeatedData)
                         {
-                            foreach (var element in section.Elements)
+                            foreach (var element in orderedElements)
                             {
                                 // Soporte para "." como origen (item actual en la lista)
                                 var val = !string.IsNullOrEmpty(element.Source) && element.Source != "."
@@ -160,7 +165,7 @@ namespace AppsielPrintManager.Infraestructure.Services
 
                 case "static":
                 default:
-                    foreach (var element in section.Elements)
+                    foreach (var element in orderedElements)
                     {
                         var val = !string.IsNullOrEmpty(element.Source)
                             ? GetValueFromPath(data, element.Source!)?.ToString()

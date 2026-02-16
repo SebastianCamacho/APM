@@ -9,9 +9,20 @@ public partial class App : System.Windows.Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        base.OnStartup(e);
-        ShutdownMode = ShutdownMode.OnExplicitShutdown;
-        _tray = new TrayIcon();
+        try
+        {
+            base.OnStartup(e);
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            _tray = new TrayIcon();
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Error fatal al iniciar TrayApp: {ex.Message}\n\nLa aplicación se cerrará.",
+                            "Error de Appsiel Print Manager",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+            Shutdown(-1);
+        }
     }
 
     protected override void OnExit(ExitEventArgs e)

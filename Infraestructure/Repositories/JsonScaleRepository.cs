@@ -114,15 +114,39 @@ namespace AppsielPrintManager.Infraestructure.Repositories
 
         private async Task SaveAllScalesAsync(List<Scale> scales)
         {
-            try
+            const int maxRetries = 5;
+            const int delayMs = 300;
+
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            var json = JsonSerializer.Serialize(scales, options);
+
+            for (int i = 0; i < maxRetries; i++)
             {
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                var json = JsonSerializer.Serialize(scales, options);
-                await File.WriteAllTextAsync(_filePath, json);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error guardando básculas: {ex.Message}", ex);
+                try
+                {
+                    using (var stream = new FileStream(_filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    using (var writer = new StreamWriter(stream))
+                    {
+                        await writer.WriteAsync(json);
+                        await writer.FlushAsync();
+                    }
+                    return;
+                }
+                catch (IOException ioEx)
+                {
+                    if (i == maxRetries - 1)
+                    {
+                        _logger.LogError($"Fallo crítico al guardar básculas tras {maxRetries} intentos: {ioEx.Message}", ioEx);
+                        throw;
+                    }
+                    _logger.LogWarning($"Archivo de básculas bloqueado, reintentando ({i + 1}/{maxRetries})...");
+                    await Task.Delay(delayMs);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error inesperado al guardar básculas: {ex.Message}", ex);
+                    throw;
+                }
             }
         }
 

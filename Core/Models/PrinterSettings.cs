@@ -11,9 +11,14 @@ namespace AppsielPrintManager.Core.Models
         public string PrinterId { get; set; }
 
         /// <summary>
+        /// Tipo de impresora (Térmica, Matricial).
+        /// </summary>
+        public string PrinterType { get; set; } = "Térmica";
+
+        /// <summary>
         /// Dirección IP fija de la impresora en la red local.
         /// </summary>
-        public string IpAddress { get; set; }
+        public string? IpAddress { get; set; }
 
         /// <summary>
         /// Puerto TCP/IP de la impresora (normalmente 9100).
@@ -39,6 +44,21 @@ namespace AppsielPrintManager.Core.Models
         /// Indica si la impresora debe abrir el cajón monedero sin imprimir.
         /// </summary>
         public bool OpenCashDrawerWithoutPrint { get; set; }
+
+        /// <summary>
+        /// Indica el tipo de conexión de la impresora (TCP, Bluetooth, USB, IPP).
+        /// </summary>
+        public string ConnectionType { get; set; } = "TCP";
+
+        /// <summary>
+        /// Nombre de la impresora en el sistema operativo (necesario para USB/Local).
+        /// </summary>
+        public string? LocalPrinterName { get; set; }
+
+        /// <summary>
+        /// URI de conexión universal (ej: tcp://192.168.1.100:9100 o usb://PrinterName).
+        /// </summary>
+        public string? Uri { get; set; }
 
         /// <summary>
         /// Lista de identificadores de impresoras adicionales a las que se debe copiar el trabajo de impresión.

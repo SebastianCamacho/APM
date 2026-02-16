@@ -25,38 +25,84 @@
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="viewmodels:ScaleViewModelItem">
-                        <Border StrokeShape="RoundRectangle 10" StrokeThickness="1"
-                                Stroke="{StaticResource Gray300}"
-                                BackgroundColor="{AppThemeBinding Light=White, Dark=DarkGray}"
-                                Margin="0,5">
-                            <Grid ColumnDefinitions="Auto, *, Auto" Padding="15" ColumnSpacing="10">
-                                <!-- Status Indicator -->
-                                <BoxView Grid.Column="0" 
-                                         Color="{Binding StatusColor}" 
-                                         HeightRequest="15" WidthRequest="15" 
-                                         CornerRadius="7"
-                                         VerticalOptions="Center" />
+                        <SwipeView Margin="0,5">
+                            <SwipeView.RightItems>
+                                <SwipeItems Mode="Reveal">
+                                    <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=EditScaleCommand}"
+                                                   CommandParameter="{Binding .}">
+                                        <Grid BackgroundColor="LightBlue">
+                                            <Label Text="Editar"
+                                                   TextColor="White"
+                                                   FontAttributes="Bold"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                    </SwipeItemView>
+                                    <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=DeleteScaleCommand}"
+                                                   CommandParameter="{Binding .}">
+                                        <Grid BackgroundColor="Red">
+                                            <Label Text="Eliminar"
+                                                   TextColor="White"
+                                                   FontAttributes="Bold"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                    </SwipeItemView>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Border StrokeShape="RoundRectangle 10" StrokeThickness="1"
+                                    Stroke="{StaticResource Gray300}"
+                                    BackgroundColor="{AppThemeBinding Light=White, Dark=DarkGray}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=EditScaleCommand}"
+                                                          CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="Auto, *, Auto" Padding="15">
+                                    <!-- Status Icon on the left -->
+                                    <Grid Grid.Column="0" Margin="0,0,15,0" VerticalOptions="Center" WidthRequest="45">
+                                        <Image Source="icono_balanza.png" HeightRequest="40" WidthRequest="40" VerticalOptions="Center" HorizontalOptions="Center" />
+                                        <BoxView Color="{Binding StatusColor}" 
+                                                 HeightRequest="12" WidthRequest="12" 
+                                                 CornerRadius="6"
+                                                 HorizontalOptions="End" VerticalOptions="End"
+                                                 TranslationX="4" TranslationY="4" />
+                                    </Grid>
 
-                                <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                    <Label Text="{Binding Scale.Name}" FontAttributes="Bold" FontSize="Medium" />
-                                    <Label Text="{Binding Scale.Id, StringFormat='ID: {0}'}" TextColor="Gray" FontSize="Small" />
-                                    <Label Text="{Binding Scale.PortName, StringFormat='Puerto: {0}'}" TextColor="Gray" />
-                                    <Label Text="{Binding Status}" TextColor="{Binding StatusColor}" FontSize="Small" />
-                                    <Label Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullConverter}}" TextColor="Red" FontSize="10" LineBreakMode="WordWrap" />
-                                </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                        <HorizontalStackLayout Spacing="5">
+                                            <Label Text="{Binding Scale.Name}" FontAttributes="Bold" FontSize="Medium" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                            <Border StrokeShape="RoundRectangle 4" BackgroundColor="{DynamicResource Primary}" Padding="5,0" VerticalOptions="Center">
+                                                <Label Text="Báscula" FontSize="10" TextColor="White" FontAttributes="Bold" />
+                                            </Border>
+                                            <Border StrokeShape="RoundRectangle 4" Stroke="{StaticResource Gray400}" Padding="5,0" VerticalOptions="Center">
+                                                <Label Text="{Binding Scale.PortName}" FontSize="10" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+                                            </Border>
+                                        </HorizontalStackLayout>
+                                        
+                                        <!-- ID y Especificaciones Técnicas -->
+                                        <HorizontalStackLayout Spacing="5">
+                                            <Label Text="ID: " TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" FontAttributes="Bold" />
+                                            <Label Text="{Binding Scale.Id}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
+                                            <Label Text="|" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
+                                            <Label Text="{Binding Scale.BaudRate}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
+                                            <Label Text="bps," TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
+                                            <Label Text="{Binding Scale.DataBits}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
+                                            <Label Text="bits" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
+                                        </HorizontalStackLayout>
 
-                                <HorizontalStackLayout Grid.Column="2" Spacing="10">
-                                    <Button Text="Editar" 
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=EditScaleCommand}"
-                                            CommandParameter="{Binding .}"
-                                            Style="{StaticResource TextButton}" />
-                                    <Button Text="Eliminar" 
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=DeleteScaleCommand}"
-                                            CommandParameter="{Binding .}"
-                                            BackgroundColor="Red" TextColor="White" HeightRequest="35" CornerRadius="5" />
-                                </HorizontalStackLayout>
-                            </Grid>
-                        </Border>
+                                        <Label Text="{Binding Status}" TextColor="{Binding StatusColor}" FontSize="Small" />
+                                        <Label Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullConverter}}" TextColor="Red" FontSize="10" LineBreakMode="WordWrap" />
+                                    </VerticalStackLayout>
+
+                                    <ImageButton Grid.Column="2" Source="icono_eliminar_balanza.png"
+                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=DeleteScaleCommand}"
+                                                 CommandParameter="{Binding .}"
+                                                 HeightRequest="30" WidthRequest="30"
+                                                 VerticalOptions="Center" HorizontalOptions="End"
+                                                 BackgroundColor="Transparent" />
+                                </Grid>
+                            </Border>
+                        </SwipeView>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

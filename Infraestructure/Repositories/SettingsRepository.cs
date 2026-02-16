@@ -29,8 +29,8 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             _logger = logger;
 
             // Usar siempre CommonApplicationData en Windows para consistencia entre UI (Usuario) y WorkerService (System)
-            string appDataDirectory = OperatingSystem.IsWindows() 
-                ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) 
+            string appDataDirectory = OperatingSystem.IsWindows()
+                ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
                 : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
             // Crear una subcarpeta específica para nuestra aplicación
@@ -168,21 +168,46 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         }
 
         /// <summary>
-        /// Escribe todas las configuraciones de impresora a un archivo JSON.
+        /// Escribe todas las configuraciones de impresora a un archivo JSON con reintentos para evitar bloqueos.
         /// </summary>
         /// <param name="settings">La lista de configuraciones de impresora a escribir.</param>
         /// <returns>Tarea que representa la operación asíncrona.</returns>
         private async Task WriteAllSettingsAsync(List<PrinterSettings> settings)
         {
-            try
+            const int maxRetries = 5;
+            const int delayMs = 300;
+
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            var json = JsonSerializer.Serialize(settings, options);
+
+            for (int i = 0; i < maxRetries; i++)
             {
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                var json = JsonSerializer.Serialize(settings, options);
-                await File.WriteAllTextAsync(_filePath, json);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error al guardar configuraciones de impresora en {_filePath}: {ex.Message}", ex);
+                try
+                {
+                    // Usar FileStream explícito para manejar el bloqueo de forma controlada
+                    using (var stream = new FileStream(_filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    using (var writer = new StreamWriter(stream))
+                    {
+                        await writer.WriteAsync(json);
+                        await writer.FlushAsync();
+                    }
+                    return; // Éxito
+                }
+                catch (IOException ioEx)
+                {
+                    if (i == maxRetries - 1)
+                    {
+                        _logger.LogError($"Fallo crítico al escribir configuraciones tras {maxRetries} intentos: {ioEx.Message}", ioEx);
+                        throw; // Dejar que la UI se entere del error
+                    }
+                    _logger.LogWarning($"Archivo de configuración bloqueado, reintentando ({i + 1}/{maxRetries})...");
+                    await Task.Delay(delayMs);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error inesperado al guardar configuraciones de impresora en {_filePath}: {ex.Message}", ex);
+                    throw;
+                }
             }
         }
     }

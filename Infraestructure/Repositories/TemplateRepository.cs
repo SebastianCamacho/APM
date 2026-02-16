@@ -148,5 +148,45 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                 }
             }
         }
+
+        public async Task<DotMatrixTemplate?> GetDotMatrixTemplateByTypeAsync(string documentType)
+        {
+            var fileName = $"dm_{documentType.ToLower()}.json";
+            var filePath = Path.Combine(_directoryPath, fileName);
+
+            if (!File.Exists(filePath))
+            {
+                _logger.LogWarning($"Plantilla matricial para '{documentType}' no encontrada en {filePath}.");
+                return null;
+            }
+
+            try
+            {
+                var json = await File.ReadAllTextAsync(filePath);
+                return JsonSerializer.Deserialize<DotMatrixTemplate>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error al leer la plantilla matricial '{documentType}': {ex.Message}", ex);
+                return null;
+            }
+        }
+
+        public async Task SaveDotMatrixTemplateAsync(DotMatrixTemplate template)
+        {
+            var fileName = $"dm_{(template.DocumentType ?? "unknown").ToLower()}.json";
+            var filePath = Path.Combine(_directoryPath, fileName);
+
+            try
+            {
+                var json = JsonSerializer.Serialize(template, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(filePath, json);
+                _logger.LogInfo($"Plantilla matricial '{template.DocumentType}' guardada exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error al guardar la plantilla matricial '{template.DocumentType}': {ex.Message}", ex);
+            }
+        }
     }
 }

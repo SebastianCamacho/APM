@@ -11,26 +11,36 @@ namespace UI.ViewModels
     {
         private readonly TemplateElement _model;
 
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsTableSection))]
-        [NotifyPropertyChangedFor(nameof(IsLine))]
-        [NotifyPropertyChangedFor(nameof(IsNotLine))]
-        [NotifyPropertyChangedFor(nameof(IsText))]
-        [NotifyPropertyChangedFor(nameof(ShowStaticToggle))]
-        [NotifyPropertyChangedFor(nameof(ShowLabelEntry))]
-        [NotifyPropertyChangedFor(nameof(ShowGenericSourcePicker))]
-        [NotifyPropertyChangedFor(nameof(ShowStaticValueInput))]
-        [NotifyPropertyChangedFor(nameof(ShowTableProperties))]
-        [NotifyPropertyChangedFor(nameof(IsBarcode))]
-        [NotifyPropertyChangedFor(nameof(IsQR))]
-        [NotifyPropertyChangedFor(nameof(IsImage))]
-        [NotifyPropertyChangedFor(nameof(ShowBarcodeProperties))]
-        [NotifyPropertyChangedFor(nameof(ShowBarWidth))]
-        [NotifyPropertyChangedFor(nameof(ShowQRProperties))]
-        [NotifyPropertyChangedFor(nameof(ShowTextFormatting))]
-        [NotifyPropertyChangedFor(nameof(ShowImageProperties))]
-        [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
-        private string type;
+        private string _type = "Text";
+        public string Type
+        {
+            get => _type;
+            set
+            {
+                if (string.IsNullOrEmpty(value) || value == _type) return;
+                if (SetProperty(ref _type, value))
+                {
+                    OnPropertyChanged(nameof(IsTableSection));
+                    OnPropertyChanged(nameof(IsLine));
+                    OnPropertyChanged(nameof(IsNotLine));
+                    OnPropertyChanged(nameof(IsText));
+                    OnPropertyChanged(nameof(ShowStaticToggle));
+                    OnPropertyChanged(nameof(ShowLabelEntry));
+                    OnPropertyChanged(nameof(ShowGenericSourcePicker));
+                    OnPropertyChanged(nameof(ShowStaticValueInput));
+                    OnPropertyChanged(nameof(ShowTableProperties));
+                    OnPropertyChanged(nameof(IsBarcode));
+                    OnPropertyChanged(nameof(IsQR));
+                    OnPropertyChanged(nameof(IsImage));
+                    OnPropertyChanged(nameof(ShowBarcodeProperties));
+                    OnPropertyChanged(nameof(ShowBarWidth));
+                    OnPropertyChanged(nameof(ShowQRProperties));
+                    OnPropertyChanged(nameof(ShowTextFormatting));
+                    OnPropertyChanged(nameof(ShowImageProperties));
+                    OnPropertyChanged(nameof(ShowLabelAndSource));
+                }
+            }
+        }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ShowLabelAndSource))]
@@ -41,13 +51,14 @@ namespace UI.ViewModels
 
         partial void OnIsStaticChanged(bool value)
         {
+            // Only clear if not in a binding pulse (though hard to detect, but static/null check helps)
             if (value)
             {
-                Source = string.Empty;
+                if (!string.IsNullOrEmpty(Source)) Source = string.Empty;
             }
             else
             {
-                StaticValue = string.Empty;
+                if (!string.IsNullOrEmpty(StaticValue)) StaticValue = string.Empty;
             }
         }
 
@@ -67,34 +78,71 @@ namespace UI.ViewModels
         public List<int> ColumnOptions { get; } = new() { 1, 2 };
 
         public bool ShowBarcodeProperties => IsBarcode;
-        public bool ShowBarWidth => IsBarcode && Columns <= 1;
+        public bool ShowBarWidth => IsBarcode;
         public bool ShowQRProperties => IsQR;
         public bool ShowSourceSelector => IsBarcode || IsQR;
         public bool ShowTextFormatting => IsText;
         public bool ShowImageProperties => IsImage;
 
-        // Mantener por compatibilidad o transición en XAML, pero ahora responde a cambios en IsStatic también
         public bool ShowLabelAndSource => ShowLabelEntry || ShowGenericSourcePicker;
 
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowBarWidth))]
-        private int columns = 1;
+        private int _columns = 1;
+        public int Columns
+        {
+            get => _columns;
+            set
+            {
+                if (value <= 0 || value == _columns) return;
+                if (SetProperty(ref _columns, value))
+                {
+                    OnPropertyChanged(nameof(ShowBarWidth));
+                }
+            }
+        }
 
         [ObservableProperty]
-        private string label;
+        private string label = string.Empty;
+
+        private string _source = string.Empty;
+        public string Source
+        {
+            get => _source;
+            set
+            {
+                // Accept empty only if specifically set, but ignore null glitches from Picker
+                if (value == null || value == _source) return;
+                if (SetProperty(ref _source, value))
+                {
+                    OnPropertyChanged(nameof(DisplaySuggestions));
+                }
+            }
+        }
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(DisplaySuggestions))]
-        private string source;
+        private string staticValue = string.Empty;
 
-        [ObservableProperty]
-        private string staticValue;
+        private string? _align;
+        public string? Align
+        {
+            get => _align;
+            set
+            {
+                if (string.IsNullOrEmpty(value) || value == _align) return;
+                SetProperty(ref _align, value);
+            }
+        }
 
-        [ObservableProperty]
-        private string? align;
-
-        [ObservableProperty]
-        private int? selectedSizeIdx; // null means not specified
+        private int? _selectedSizeIdx;
+        public int? SelectedSizeIdx
+        {
+            get => _selectedSizeIdx;
+            set
+            {
+                // Glitch check: Picker might send null or -1 during re-binding/recycling
+                if ((value == null || value < 0) && _selectedSizeIdx != null) return;
+                SetProperty(ref _selectedSizeIdx, value);
+            }
+        }
 
         [ObservableProperty]
         private bool isBold;
@@ -109,8 +157,16 @@ namespace UI.ViewModels
         [ObservableProperty]
         private int? widthPercentage;
 
-        [ObservableProperty]
-        private int? selectedHeaderSizeIdx;
+        private int? _selectedHeaderSizeIdx;
+        public int? SelectedHeaderSizeIdx
+        {
+            get => _selectedHeaderSizeIdx;
+            set
+            {
+                if ((value == null || value < 0) && _selectedHeaderSizeIdx != null) return;
+                SetProperty(ref _selectedHeaderSizeIdx, value);
+            }
+        }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(GlobalSuggestions))]
@@ -130,6 +186,9 @@ namespace UI.ViewModels
 
         [ObservableProperty]
         private bool isHeaderBold;
+
+        [ObservableProperty]
+        private int? order;
 
         public List<string> Alignments { get; } = new() { "Ninguno", "Left", "Center", "Right" };
         public List<string> Sizes { get; } = new() { "Ninguno", "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
@@ -180,6 +239,7 @@ namespace UI.ViewModels
             BarWidth = model.BarWidth;
             Height = model.Height;
             Size = model.Size;
+            Order = model.Order;
 
             ParseFormat(model.Format ?? string.Empty);
             ParseHeaderFormat(model.HeaderFormat ?? string.Empty);
@@ -246,6 +306,7 @@ namespace UI.ViewModels
             _model.BarWidth = BarWidth;
             _model.Height = Height;
             _model.Size = Size;
+            _model.Order = Order;
             _model.Format = GenerateFormat();
             _model.HeaderFormat = GenerateHeaderFormat();
 

@@ -237,15 +237,13 @@ const templates = {
             "TechKey": "de30fc14561023a134...", // CUFE real suele ser muy largo
             "QrString": "https://www.appsiel.com.co/",
             "LegalNotes": [
-                "Esta factura se asimila en todos sus efectos a una letra de cambio (Art. 774 C.Co)",
-                "Régimen Común - Iva Responsable"
             ]
         }
     },
-    sticker: { // Nuevo tipo de documento
+    sticker: {
         "JobId": "STICKER-001",
         "StationId": "ALMACEN",
-        "PrinterId": "printHambuger", // Usar una impresora configurada
+        "PrinterId": "printHambuger",
         "DocumentType": "sticker_codigo_barras",
         "Document": {
             "stickers": [
@@ -270,6 +268,46 @@ const templates = {
                     "Value": "654321" 
                 }
             ]
+        }
+    },
+    egreso: {
+        "JobId": "UNI-001",
+        "StationId": "TESORERIA",
+        "PrinterId": "LX300_LOCAL",
+        "DocumentType": "comprobante_egreso",
+        "Document": {
+            "cheque": {
+                "Number": "002216",
+                "DateInfo": {
+                    "Day": "15",
+                    "Month": "02",
+                    "Year": "2026"
+                },
+                "PayTo": "JUAN SEBASTIAN CAMACHO MUÑOZ",
+                "AmountText": "UN MILLON DE PESOS M/CTE",
+                "Amount": "1.000.000,00",
+                "City": "VALLEDUPAR"
+            },
+            "egreso": {
+                "Number": "CE-456",
+                "DateInfo": {
+                    "Day": "13",
+                    "Month": "02",
+                    "Year": "2025"
+                },
+                "BankCode": "007",
+                "ReceiverName": "JUAN SEBASTIAN CAMACHO MUÑOZ",
+                "ReceiverId": "1.003.376.130",
+                "Concept": ["PAGO DE SERVICIO DE DESARROLLO DE SOFTWARE", "APM ENERO - FEBRERO 2026", "ADICIONAL LINEA 3", "ADICIONAL LINEA 4"],
+                "Description": "F\nF",
+                "Items": [
+                    { "Account": "250501", "CO": "001", "ThirdParty": "1121825689", "Reference": "-", "Debit": "$939,360,532.00", "Credit": "$0.00" },
+                    { "Account": "11100506", "CO": "001", "ThirdParty": "1121825689", "Reference": "-", "Debit": "$0.00", "Credit": "$939,360,532.00" }
+                ],
+                "TotalDebit": "$939,360,532.00",
+                "TotalCredit": "$939,360,532.00",
+                "CreatedBy": "S. CAMACHO"
+            }
         }
     }
 };
@@ -533,7 +571,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('payloadTicket').value = JSON.stringify(templates.ticket, null, 4);
     document.getElementById('payloadComanda').value = JSON.stringify(templates.comanda, null, 4);
     document.getElementById('payloadFactura').value = JSON.stringify(templates.factura, null, 4);
-    document.getElementById('payloadSticker').value = JSON.stringify(templates.sticker, null, 4); // Nuevo
+    document.getElementById('payloadSticker').value = JSON.stringify(templates.sticker, null, 4);
+    document.getElementById('payloadEgreso').value = JSON.stringify(templates.egreso, null, 4);
 
     // Attach event listeners for tab buttons
     const tabButtons = document.querySelectorAll('.tab-button');
