@@ -22,6 +22,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         {
             var logMessage = new LogMessage { Level = LogLevel.Info, Message = message, Timestamp = DateTime.Now };
             Console.WriteLine(logMessage.FullMessage);
+            System.Diagnostics.Debug.WriteLine(logMessage.FullMessage);
             OnLogMessage?.Invoke(this, logMessage);
         }
 
@@ -33,6 +34,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         {
             var logMessage = new LogMessage { Level = LogLevel.Warning, Message = message, Timestamp = DateTime.Now };
             Console.WriteLine(logMessage.FullMessage);
+            System.Diagnostics.Debug.WriteLine(logMessage.FullMessage);
             OnLogMessage?.Invoke(this, logMessage);
         }
 
@@ -50,6 +52,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             }
             var logMessage = new LogMessage { Level = LogLevel.Error, Message = fullMessage, Timestamp = DateTime.Now };
             Console.Error.WriteLine(logMessage.FullMessage);
+            System.Diagnostics.Debug.WriteLine(logMessage.FullMessage);
             OnLogMessage?.Invoke(this, logMessage);
         }
     }

@@ -30,6 +30,7 @@ namespace UI
 #endif
 
             builder.Services.AddSingleton<ILoggingService, Logger>();
+            builder.Services.AddSingleton<ILoggerProvider>(sp => new AppsielLoggerProvider(sp.GetRequiredService<ILoggingService>()));
             builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
             builder.Services.AddSingleton<ITemplateRepository, TemplateRepository>();
             builder.Services.AddSingleton<ITicketRenderer, TicketRendererService>();

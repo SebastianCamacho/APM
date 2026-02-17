@@ -11,6 +11,8 @@ var builder = Host.CreateDefaultBuilder(args) // Changed to CreateDefaultBuilder
     {
         // Registro de servicios de Core e Infraestructure
         services.AddSingleton<ILoggingService, Logger>();
+        services.AddSingleton<ILoggerProvider>(sp => new AppsielLoggerProvider(sp.GetRequiredService<ILoggingService>()));
+
         services.AddSingleton<IWebSocketService, WebSocketServerService>();
         services.AddSingleton<ISettingsRepository, SettingsRepository>();
         services.AddSingleton<ITemplateRepository, TemplateRepository>(); // Agregado para resolver dependencia en TicketRendererService
