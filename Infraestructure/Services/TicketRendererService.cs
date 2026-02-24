@@ -75,7 +75,12 @@ namespace AppsielPrintManager.Infraestructure.Services
 
         private async Task<RenderedSection?> ProcessSection(TemplateSection section, object data)
         {
-            var renderedSection = new RenderedSection { Name = section.Name, Type = section.Type ?? "Static" };
+            var renderedSection = new RenderedSection
+            {
+                Name = section.Name,
+                Type = section.Type ?? "Static",
+                LineSpacing = section.LineSpacing
+            };
 
             var orderedElements = section.Elements
                 .OrderBy(e => e.Order ?? 999)

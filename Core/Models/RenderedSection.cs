@@ -9,6 +9,7 @@ namespace AppsielPrintManager.Core.Models
     {
         public string? Name { get; set; }
         public string? Type { get; set; } // "Static", "Table"
+        public int? LineSpacing { get; set; } // Interlineado personalizado
 
         // Para secciones estáticas (lista simple de elementos)
         public List<RenderedElement> Elements { get; set; } = new List<RenderedElement>();

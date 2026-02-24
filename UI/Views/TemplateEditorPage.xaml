@@ -125,6 +125,12 @@
                                             <!-- SAFE MODE: WidthRequest 120 -->
                                             <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" WidthRequest="120" BackgroundColor="Transparent" />
                                         </Border>
+
+                                        <Label Text="Interlin:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
+                                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="32">
+                                            <Picker ItemsSource="{Binding LineSpacingOptions}" SelectedItem="{Binding LineSpacing}" WidthRequest="60" BackgroundColor="Transparent" />
+                                        </Border>
+
                                         <HorizontalStackLayout VerticalOptions="Center" Spacing="0">
                                             <!-- SAFE MODE: Scale 0.9 -->
                                             <CheckBox IsChecked="{Binding IsBold}" Scale="0.9" />

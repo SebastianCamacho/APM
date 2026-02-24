@@ -93,6 +93,9 @@ namespace UI.ViewModels
         [ObservableProperty]
         private bool isBold;
 
+        [ObservableProperty]
+        private int lineSpacing = 4; // Valor por defecto (Normal)
+
 
 
         partial void OnDocumentTypeChanged(string? value)
@@ -122,6 +125,7 @@ namespace UI.ViewModels
         public List<string> SectionTypes { get; } = new() { "Static", "Table", "Repeated" };
         public List<string> Alignments { get; } = new() { "Ninguno", "Left", "Center", "Right" };
         public List<string> Sizes { get; } = new() { "Ninguno", "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
+        public List<int> LineSpacingOptions { get; } = Enumerable.Range(1, 10).ToList();
         public List<string> DataSourceSuggestions => AppsielPrintManager.Core.Services.TemplateCatalogService.GetDataSourceSuggestions(DocumentType);
 
         public List<string> DisplayDataSourceSuggestions
@@ -164,6 +168,7 @@ namespace UI.ViewModels
             }
 
             ParseFormat(model.Format);
+            LineSpacing = model.LineSpacing ?? 4;
         }
 
         private void LoadElements()
@@ -317,6 +322,7 @@ namespace UI.ViewModels
             _model.DataSource = string.IsNullOrEmpty(DataSource) ? null : DataSource;
             _model.Align = (Align == "Ninguno") ? null : Align;
             _model.Order = Order;
+            _model.LineSpacing = LineSpacing;
             _model.Format = UpdateFormat();
 
             if (_isLoaded)
