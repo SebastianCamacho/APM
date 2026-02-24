@@ -75,6 +75,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             catch (Exception ex)
             {
                 _logger.LogError($"Error al guardar la plantilla '{template.DocumentType}': {ex.Message}", ex);
+                throw; // Propagar el error para que la UI pueda manejarlo
             }
         }
 
@@ -186,6 +187,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             catch (Exception ex)
             {
                 _logger.LogError($"Error al guardar la plantilla matricial '{template.DocumentType}': {ex.Message}", ex);
+                throw; // Propagar el error para que la UI pueda manejarlo
             }
         }
     }

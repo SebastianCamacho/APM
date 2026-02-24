@@ -315,6 +315,12 @@ namespace UI.ViewModels
 
         private string GenerateFormat()
         {
+            // Forzar formato estándar para líneas para evitar herencia de sección y desbordes
+            if (Type == "Line")
+            {
+                return "FontA Size1";
+            }
+
             var formats = new List<string>();
 
             // Sizes mapping:
