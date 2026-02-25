@@ -111,7 +111,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                             var row = orderedElements.Select(e => new RenderedElement
                             {
                                 Type = "Text",
-                                TextValue = GetValueFromPath(item, e.Source ?? string.Empty)?.ToString() ?? string.Empty,
+                                TextValue = GetValueFromPath(item, e.Source ?? string.Empty)?.ToString()?.TrimStart() ?? string.Empty,
                                 Align = e.Align ?? section.Align ?? "Left",
                                 Format = e.Format ?? section.Format,
                                 WidthPercentage = e.WidthPercentage
@@ -131,8 +131,8 @@ namespace AppsielPrintManager.Infraestructure.Services
                             {
                                 // Soporte para "." como origen (item actual en la lista)
                                 var val = !string.IsNullOrEmpty(element.Source) && element.Source != "."
-                                    ? GetValueFromPath(item, element.Source!)?.ToString()
-                                    : (element.Source == "." ? item?.ToString() : element.StaticValue);
+                                    ? GetValueFromPath(item, element.Source!)?.ToString()?.TrimStart()
+                                    : (element.Source == "." ? item?.ToString()?.TrimStart() : element.StaticValue?.TrimStart());
 
                                 string rawType = element.Type ?? "Text";
                                 string normalizedType = _knownTypes.TryGetValue(rawType, out var known) ? known : rawType;
@@ -173,8 +173,8 @@ namespace AppsielPrintManager.Infraestructure.Services
                     foreach (var element in orderedElements)
                     {
                         var val = !string.IsNullOrEmpty(element.Source)
-                            ? GetValueFromPath(data, element.Source!)?.ToString()
-                            : element.StaticValue;
+                            ? GetValueFromPath(data, element.Source!)?.ToString()?.TrimStart()
+                            : element.StaticValue?.TrimStart();
 
                         var textValue = $"{(element.Label ?? string.Empty)}{val}";
 
@@ -226,17 +226,17 @@ namespace AppsielPrintManager.Infraestructure.Services
         private void PopulateBarcodeProperties(TemplateElement element, RenderedElement rendered, object? item)
         {
             rendered.BarcodeValue = !string.IsNullOrEmpty(element.Source) && element.Source != "."
-                ? GetValueFromPath(item, element.Source)?.ToString()
-                : (element.Source == "." ? item?.ToString() : element.StaticValue);
+                ? GetValueFromPath(item, element.Source)?.ToString()?.TrimStart()
+                : (element.Source == "." ? item?.ToString()?.TrimStart() : element.StaticValue?.TrimStart());
 
             // 1. Mapeo de campos de texto (Nombre, ID, Precio)
             string nameField = (element.Properties != null && element.Properties.ContainsKey("NameSource")) ? element.Properties["NameSource"] : "Name";
             string idField = (element.Properties != null && element.Properties.ContainsKey("ItemIdSource")) ? element.Properties["ItemIdSource"] : "ItemId";
             string priceField = (element.Properties != null && element.Properties.ContainsKey("PriceSource")) ? element.Properties["PriceSource"] : "Price";
 
-            rendered.ProductName = GetValueFromPath(item, nameField)?.ToString();
-            rendered.ItemId = GetValueFromPath(item, idField)?.ToString();
-            rendered.ProductPrice = GetValueFromPath(item, priceField)?.ToString();
+            rendered.ProductName = GetValueFromPath(item, nameField)?.ToString()?.TrimStart();
+            rendered.ItemId = GetValueFromPath(item, idField)?.ToString()?.TrimStart();
+            rendered.ProductPrice = GetValueFromPath(item, priceField)?.ToString()?.TrimStart();
 
             // 2. PRIORIDAD DE PROPIEDADES (Template Root > Template Properties > Data)
             var props = element.Properties != null ? new Dictionary<string, string>(element.Properties, StringComparer.OrdinalIgnoreCase) : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
