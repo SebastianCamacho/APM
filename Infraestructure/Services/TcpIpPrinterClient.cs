@@ -76,5 +76,67 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
             }
         }
+        /// <summary>
+        /// Consulta el estado físico de la impresora (si está en línea y si tiene papel).
+        /// </summary>
+        public async Task<(bool IsOnline, string StatusMessage)> GetPrinterStatusAsync(string ipAddress, int port)
+        {
+            using (var client = new TcpClient())
+            {
+                using var cts = new CancellationTokenSource(3000);
+                try
+                {
+                    // 1. Verificar si está encendida/en red
+                    var connectTask = client.ConnectAsync(ipAddress, port, cts.Token);
+                    await connectTask;
+
+                    if (!client.Connected) return (false, "No se pudo establecer conexión con la impresora.");
+
+                    using (var stream = client.GetStream())
+                    {
+                        stream.ReadTimeout = 1500;
+                        stream.WriteTimeout = 1500;
+
+                        // 2. Pedir estado Off-line: DLE EOT 2 (0x10 0x04 0x02)
+                        byte[] statusCmd2 = new byte[] { 0x10, 0x04, 0x02 };
+                        await stream.WriteAsync(statusCmd2, 0, statusCmd2.Length, cts.Token);
+
+                        byte[] buffer = new byte[1];
+                        int read2 = await stream.ReadAsync(buffer, 0, 1, cts.Token);
+                        if (read2 > 0 && (buffer[0] & 0x04) != 0)
+                        {
+                            return (false, "La tapa de la impresora está abierta.");
+                        }
+
+                        // 3. Pedir estado del papel: DLE EOT 4 (0x10 0x04 0x04)
+                        byte[] statusCmd4 = new byte[] { 0x10, 0x04, 0x04 };
+                        await stream.WriteAsync(statusCmd4, 0, statusCmd4.Length, cts.Token);
+
+                        int read4 = await stream.ReadAsync(buffer, 0, 1, cts.Token);
+                        if (read4 > 0 && (buffer[0] & 0x60) != 0)
+                        {
+                            return (false, "La impresora no tiene papel.");
+                        }
+                    }
+
+                    return (true, "OK");
+                }
+                catch (OperationCanceledException)
+                {
+                    return (false, "Impresora fuera de línea o apagada (Timeout de conexión)");
+                }
+                catch (SocketException sex) when (sex.SocketErrorCode == SocketError.ConnectionRefused)
+                {
+                    // Algunas impresoras cierran el puerto TCP totalmente cuando la tapa está abierta o no hay papel
+                    _logger.LogWarning($"La impresora en {ipAddress}:{port} rechazó la conexión. Esto suele indicar Tapa Abierta, Falta de Papel o Error Crítico.");
+                    return (false, "La impresora rechazó la conexión. Verifica si la tapa está abierta o si no tiene papel.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"No se pudo obtener el estado de la impresora {ipAddress}: {ex.Message}");
+                    return (false, $"Error de comunicación: {ex.Message}");
+                }
+            }
+        }
     }
 }

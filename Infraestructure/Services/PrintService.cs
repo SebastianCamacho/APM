@@ -160,6 +160,15 @@ namespace AppsielPrintManager.Infraestructure.Services
                     // 3. Renderizar el TicketContent (pasando el request original para media y el documento tipado)
                     var ticketContent = await _ticketRenderer.RenderTicketAsync(request, documentData);
 
+                    // 3.5 Verificar estado de la impresora antes de enviar
+                    var status = await _tcpIpPrinterClient.GetPrinterStatusAsync(printerSettings.IpAddress ?? string.Empty, printerSettings.Port);
+                    if (!status.IsOnline)
+                    {
+                        result.ErrorMessage = $"Impresora '{request.PrinterId}' no está lista: {status.StatusMessage}";
+                        _logger.LogError(result.ErrorMessage);
+                        return result;
+                    }
+
                     // 4. Generar comandos ESC/POS
                     var escPosCommands = await _escPosGenerator.GenerateEscPosCommandsAsync(ticketContent, printerSettings);
 
