@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:UI.ViewModels"
-             xmlns:models="clr-namespace:AppsielPrintManager.Core.Interfaces"
+             xmlns:models="clr-namespace:AppsielPrintManager.Core.Interfaces;assembly=Core"
              x:Class="UI.Views.LogsPage"
              Title="Registros del Sistema"
              BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1E1E2E}">
