@@ -176,7 +176,7 @@ namespace UI.ViewModels
         {
             if (Shell.Current == null) return;
 
-            bool confirm = await Shell.Current.DisplayAlert(
+            bool confirm = await Shell.Current.DisplayAlertAsync(
                 "¡Advertencia!",
                 "Estás a punto de eliminar todos los registros del archivo permanentemente. Esta acción no se puede deshacer.\n\n¿Deseas continuar?",
                 "Sí, limpiar todo",

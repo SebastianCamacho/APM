@@ -246,6 +246,10 @@ namespace UI.ViewModels
                     return;
                 }
 
+                // Asegurar que el tipo y conexión coincidan con la UI antes de evaluar sus propiedades
+                Printer.PrinterType = SelectedPrinterType;
+                Printer.ConnectionType = SelectedConnectionType;
+
                 // 2. Validar y combinar segmentos IP (solo si es TCP)
                 if (SelectedConnectionType == "TCP")
                 {
@@ -295,10 +299,6 @@ namespace UI.ViewModels
                     Printer.IpAddress = null;
                     Printer.LocalPrinterName = null;
                 }
-
-                // Asegurar que el tipo y conexión coincidan con la UI antes de guardar
-                Printer.PrinterType = SelectedPrinterType;
-                Printer.ConnectionType = SelectedConnectionType;
 
                 // 5. Generar URI de conexión universal
                 if (SelectedConnectionType == "TCP")

@@ -40,20 +40,7 @@ namespace UI.ViewModels
             IsBusy = true;
             try
             {
-                // Request Notification Permission for Android 13+
-                if (OperatingSystem.IsAndroidVersionAtLeast(33))
-                {
-                    var status = await Permissions.CheckStatusAsync<Permissions.PostNotifications>();
-                    if (status != PermissionStatus.Granted)
-                    {
-                        status = await Permissions.RequestAsync<Permissions.PostNotifications>();
-                        if (status != PermissionStatus.Granted)
-                        {
-                            _logger.LogWarning("Notification permission denied. Foreground Service notification might not show.", "HomeViewModel");
-                            // We can choose to return here, or proceed (service will run but notification suppressed)
-                        }
-                    }
-                }
+
 
                 if (!_platformService.IsBackgroundServiceRunning)
                 {

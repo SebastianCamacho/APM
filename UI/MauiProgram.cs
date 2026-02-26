@@ -74,6 +74,7 @@ namespace UI
             builder.Services.AddSingleton<LogsViewModel>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<TemplateEditorViewModel>();
+            builder.Services.AddTransient<AboutViewModel>();
 
             builder.Services.AddTransient<LoginView>();
             builder.Services.AddSingleton<AppShell>();
@@ -84,6 +85,7 @@ namespace UI
             builder.Services.AddSingleton<LogsPage>();
             builder.Services.AddTransient<SettingsPage>();
             builder.Services.AddTransient<TemplateEditorPage>();
+            builder.Services.AddTransient<AboutPage>();
 
             builder.Services.AddSingleton<InverseBoolConverter>();
             builder.Services.AddSingleton<NumericToStringConverter>();

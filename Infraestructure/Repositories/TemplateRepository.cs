@@ -158,7 +158,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
 
             if (!File.Exists(filePath))
             {
-                _logger.LogWarning($"Plantilla matricial para '{documentType}' no encontrada en {filePath}.", "TemplateRepository");
+                _logger.LogDebug($"Plantilla matricial para '{documentType}' no encontrada en {filePath}. (Es opcional)", "TemplateRepository");
                 return null;
             }
 

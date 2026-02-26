@@ -19,6 +19,8 @@ namespace UI.ViewModels
         [ObservableProperty]
         public bool isBusy;
 
+        public bool HasNoPrinters => Printers == null || Printers.Count == 0;
+
         public PrintersViewModel(IPrintService printService, ILoggingService logger)
         {
             _printService = printService;
@@ -39,6 +41,7 @@ namespace UI.ViewModels
                 {
                     Printers.Add(printer);
                 }
+                OnPropertyChanged(nameof(HasNoPrinters));
                 _logger.LogInfo($"Configuraciones de impresoras cargadas. Total: {Printers.Count}", "PrintersViewModel");
             }
             catch (System.Exception ex)
@@ -87,6 +90,7 @@ namespace UI.ViewModels
                 {
                     await _printService.DeletePrinterSettingsAsync(printer.PrinterId);
                     Printers.Remove(printer);
+                    OnPropertyChanged(nameof(HasNoPrinters));
                     _logger.LogInfo($"Impresora '{printer.PrinterId}' eliminada exitosamente.", "PrintersViewModel");
                     await Shell.Current.DisplayAlert("Éxito", $"La impresora '{printer.PrinterId}' ha sido eliminada.", "OK"); // Mensaje de éxito añadido
                 }
