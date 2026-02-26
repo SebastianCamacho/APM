@@ -74,20 +74,20 @@ namespace UI.Platforms.Windows.Services
 
         public async Task StartBackgroundServiceAsync()
         {
-            _logger.LogInfo("[WindowsPlatformService] Requesting Worker Service start...");
+            _logger.LogInfo("Requesting Worker Service start...", "WindowsPlatformService");
             await _workerServiceManager.StartWorkerServiceAsync();
         }
 
         public async Task StopBackgroundServiceAsync()
         {
-            _logger.LogInfo("[WindowsPlatformService] Requesting Worker Service stop...");
+            _logger.LogInfo("Requesting Worker Service stop...", "WindowsPlatformService");
             await _workerServiceManager.StopWorkerServiceAsync();
         }
 
         public void ShowNotification(string title, string message)
         {
             // Windows Notification logic could go here if needed, or via TrayIcon
-            _logger.LogInfo($"[WindowsPlatformService] Notification: {title} - {message}");
+            _logger.LogInfo($"Notification: {title} - {message}", "WindowsPlatformService");
         }
     }
 }

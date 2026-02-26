@@ -49,7 +49,7 @@ namespace AppsielPrintManager.Infraestructure.Services
 
         public async Task InitializeAsync()
         {
-            _logger.LogInfo("Inicializando servicio de básculas seriales...");
+            _logger.LogInfo("Inicializando servicio de básculas seriales...", "SerialScaleService");
 
             // Cargar inicial
             await RefreshCacheAsync();
@@ -62,7 +62,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         public async Task ReloadScalesAsync()
         {
             // Forzar recarga de caché y reinicio de conexiones si es necesario
-            _logger.LogInfo("Recargando configuración de básculas...");
+            _logger.LogInfo("Recargando configuración de básculas...", "SerialScaleService");
             await RefreshCacheAsync();
             // La tarea de monitoreo detectará los cambios en la siguiente iteración
         }
@@ -74,11 +74,11 @@ namespace AppsielPrintManager.Infraestructure.Services
                 await _cacheLock.WaitAsync();
                 var scales = await _scaleRepository.GetAllAsync();
                 _cachedScales = scales.Where(s => s.IsActive).ToList();
-                _logger.LogInfo($"Caché de básculas actualizado. {_cachedScales.Count} activas.");
+                _logger.LogInfo($"Caché de básculas actualizado. {_cachedScales.Count} activas.", "SerialScaleService");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error actualizando caché de básculas: {ex.Message}");
+                _logger.LogError($"Error actualizando caché de básculas: {ex.Message}", null, "SerialScaleService");
             }
             finally
             {
@@ -98,7 +98,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 catch (OperationCanceledException) { break; }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error en ciclo de refresco de caché: {ex.Message}");
+                    _logger.LogError($"Error en ciclo de refresco de caché: {ex.Message}", null, "SerialScaleService");
                 }
             }
         }
@@ -125,13 +125,13 @@ namespace AppsielPrintManager.Infraestructure.Services
         public void StartListening(string scaleId)
         {
             _listenersCount.AddOrUpdate(scaleId, 1, (key, count) => count + 1);
-            _logger.LogInfo($"Iniciando escucha para báscula {scaleId}. Listeners: {_listenersCount[scaleId]}");
+            _logger.LogInfo($"Iniciando escucha para báscula {scaleId}. Listeners: {_listenersCount[scaleId]}", "SerialScaleService");
         }
 
         public void StopListening(string scaleId)
         {
             _listenersCount.AddOrUpdate(scaleId, 0, (key, count) => Math.Max(0, count - 1));
-            _logger.LogInfo($"Deteniendo escucha para báscula {scaleId}. Listeners: {_listenersCount[scaleId]}");
+            _logger.LogInfo($"Deteniendo escucha para báscula {scaleId}. Listeners: {_listenersCount[scaleId]}", "SerialScaleService");
         }
 
         private bool TryOpenPort(Scale scale, string? portNameOverride = null)
@@ -165,7 +165,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     _activePorts[scale.Id] = port;
                     _scaleStatuses[scale.Id] = ScaleStatus.Connected;
                     _lastErrors.TryRemove(scale.Id, out _);
-                    _logger.LogInfo($"Puerto {targetPortName} abierto correctamente para báscula {scale.Id}");
+                    _logger.LogInfo($"Puerto {targetPortName} abierto correctamente para báscula {scale.Id}", "SerialScaleService");
                     return true;
                 }
             }
@@ -175,9 +175,9 @@ namespace AppsielPrintManager.Infraestructure.Services
                 _lastErrors[scale.Id] = ex.Message;
 
                 if (portNameOverride == null || portNameOverride == scale.PortName)
-                    _logger.LogError($"Error al abrir puerto {targetPortName} para báscula {scale.Id}: {ex.Message}");
+                    _logger.LogError($"Error al abrir puerto {targetPortName} para báscula {scale.Id}: {ex.Message}", null, "SerialScaleService");
                 else
-                    _logger.LogInfo($"Intento fallido en {targetPortName} para báscula {scale.Id}: {ex.Message}");
+                    _logger.LogInfo($"Intento fallido en {targetPortName} para báscula {scale.Id}: {ex.Message}", "SerialScaleService");
             }
             return false;
         }
@@ -233,7 +233,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 if (string.IsNullOrWhiteSpace(line)) return;
 
                 // 6. LOG: Ver exactamente qué manda la báscula (ej: "ST,GS,+  15.00kg")
-                _logger.LogInfo($"Data recibida ({scaleId}): {line}");
+                _logger.LogInfo($"Data recibida ({scaleId}): {line}", "SerialScaleService");
 
                 // 7. REGEX: Usar "Buscador de patrones" para extraer solo el NÚMERO.
                 // Patrón: (\d+[\.,]?\d*) significa "Números, tal vez punto o coma, más números".
@@ -269,25 +269,24 @@ namespace AppsielPrintManager.Infraestructure.Services
             // --- BLOQUE DE SEGURIDAD CONTRA DRIVERS MALOS ---
             catch (System.IO.IOException ex)
             {
-                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
+                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}", null, "SerialScaleService");
             } // Cable desconectado físicamente
             catch (UnauthorizedAccessException ex)
             {
-                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
+                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}", null, "SerialScaleService");
             } // El puerto fue robado o bloqueado
             catch (InvalidOperationException ex)
             {
-                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
+                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}", null, "SerialScaleService");
             } // El puerto se cerró mientras leíamos
             catch (TimeoutException ex)
             {
-                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
+                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}", null, "SerialScaleService");
             } // La lectura tardó mucho (normal)
             catch (Exception ex)
             {
                 // Solo loguear errores de lógica inesperados (NullReference, etc), 
-                // pero no errores de hardware para no spamear logs ni crashear.
-                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
+                _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}", ex, "SerialScaleService");
             }
         }
 
@@ -338,7 +337,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                                     {
                                         if (TryOpenPort(scale, candPort))
                                         {
-                                            _logger.LogInfo($"Auto-Detect: Báscula {scale.Id} encontrada en {candPort}");
+                                            _logger.LogInfo($"Auto-Detect: Báscula {scale.Id} encontrada en {candPort}", "SerialScaleService");
 
                                             // PERSISTENCIA AUTOMÁTICA: Guardar el nuevo puerto en configuración
                                             if (!string.Equals(scale.PortName, candPort, StringComparison.OrdinalIgnoreCase))
@@ -347,14 +346,14 @@ namespace AppsielPrintManager.Infraestructure.Services
                                                 {
                                                     scale.PortName = candPort;
                                                     await _scaleRepository.UpdateAsync(scale);
-                                                    _logger.LogInfo($"Configuración actualizada: Báscula {scale.Id} movida a {candPort}");
+                                                    _logger.LogInfo($"Configuración actualizada: Báscula {scale.Id} movida a {candPort}", "SerialScaleService");
 
                                                     // Actualizar caché también
                                                     await RefreshCacheAsync();
                                                 }
                                                 catch (Exception saveEx)
                                                 {
-                                                    _logger.LogError($"Error guardando nuevo puerto {candPort}: {saveEx.Message}");
+                                                    _logger.LogError($"Error guardando nuevo puerto {candPort}: {saveEx.Message}", null, "SerialScaleService");
                                                 }
                                             }
                                             break;
@@ -368,7 +367,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                                 if (port == null || !port.IsOpen)
                                 {
                                     // El puerto se cerró por alguna razón (o driver crash)
-                                    _logger.LogWarning($"Puerto {port?.PortName ?? "null"} detectado cerrado.");
+                                    _logger.LogWarning($"Puerto {port?.PortName ?? "null"} detectado cerrado.", "SerialScaleService");
 
                                     _listenersCount.TryRemove(scale.Id, out _);
                                     _activePorts.TryRemove(scale.Id, out _);
@@ -403,7 +402,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                                     }
                                     catch (Exception ex)
                                     {
-                                        _logger.LogWarning($"Puerto {port.PortName} detectado muerto ({ex.Message}). Limpiando...");
+                                        _logger.LogWarning($"Puerto {port.PortName} detectado muerto ({ex.Message}). Limpiando...", "SerialScaleService");
 
                                         // 1. PRIMERO: Cortar escuchas para que el software deje de pedir datos
                                         _listenersCount.TryRemove(scale.Id, out _);
@@ -422,14 +421,14 @@ namespace AppsielPrintManager.Infraestructure.Services
                         }
                         catch (Exception innerEx)
                         {
-                            _logger.LogError($"Error procesando báscula {scale.Id}: {innerEx.Message}");
+                            _logger.LogError($"Error procesando báscula {scale.Id}: {innerEx.Message}", null, "SerialScaleService");
                         }
                     }
                 }
                 catch (OperationCanceledException) { break; }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error global Monitor: {ex.Message}");
+                    _logger.LogError($"Error global Monitor: {ex.Message}", null, "SerialScaleService");
                 }
 
                 try { await Task.Delay(2000, token); } catch { break; }
@@ -481,7 +480,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"{ex.Message}");
+                    _logger.LogError($"{ex.Message}", ex, "SerialScaleService");
                     // Ignorar errores al cerrar (puerto ya muerto o driver colgado)
                 }
                 finally

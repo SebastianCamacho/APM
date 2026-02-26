@@ -118,26 +118,15 @@ namespace UI.Services
                         FileName = workerExePath,
                         WorkingDirectory = Path.GetDirectoryName(workerExePath), // Asegura que el worker encuentre su hostpolicy.dll y dependencias
                         UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = false,
                         CreateNoWindow = true
                     }
                 };
 
-                _workerProcess.OutputDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data)) _logger.LogInfo($"[WorkerService OUT] {e.Data}");
-                };
-                _workerProcess.ErrorDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data)) _logger.LogError($"[WorkerService ERR] {e.Data}");
-                };
-
                 _workerProcess.Start();
-                _workerProcess.BeginOutputReadLine();
-                _workerProcess.BeginErrorReadLine();
 
-                _logger.LogInfo($"[WorkerServiceManager] WorkerService iniciado con PID: {_workerProcess.Id}");
+                _logger.LogInfo($"WorkerService iniciado con PID: {_workerProcess.Id}", "WindowsWorkerServiceManager");
                 return Task.FromResult(true);
             }
             catch (Exception ex)

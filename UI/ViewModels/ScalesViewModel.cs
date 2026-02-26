@@ -52,7 +52,7 @@ namespace UI.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error cargando básculas: {ex.Message}", ex);
+                _logger.LogError($"Error cargando básculas: {ex.Message}", ex, "ScalesViewModel");
             }
             finally
             {
@@ -127,7 +127,7 @@ namespace UI.ViewModels
                     }
                     catch (Exception reloadEx)
                     {
-                        _logger.LogWarning($"No se pudo notificar recarga al WorkerService: {reloadEx.Message}");
+                        _logger.LogWarning($"No se pudo notificar recarga al WorkerService: {reloadEx.Message}", "ScalesViewModel");
                     }
                 }
                 catch (Exception ex)
@@ -166,7 +166,7 @@ namespace UI.ViewModels
                 catch (Exception)
                 {
                     // Si falla la conexión, asumir desconectado para todas (o mantener último estado)
-                    // _logger.LogWarning($"No se pudo conectar al servicio de estado: {ex.Message}");
+                    // _logger.LogWarning($"No se pudo conectar al servicio de estado: {ex.Message}", "ScalesViewModel");
                 }
 
                 await Task.Delay(1000, token);

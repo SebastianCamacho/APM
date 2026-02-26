@@ -55,7 +55,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         /// <returns>Un PrintJobResult indicando el éxito o fracaso de la operación.</returns>
         public async Task<PrintJobResult> ProcessPrintJobAsync(PrintJobRequest request)
         {
-            _logger.LogInfo($"Iniciando procesamiento de trabajo de impresión para JobId: {request.JobId}");
+            _logger.LogInfo($"Iniciando procesamiento de trabajo de impresión para JobId: {request.JobId}", "PrintService");
             var result = new PrintJobResult { JobId = request.JobId, Status = "ERROR" };
 
             try
@@ -65,7 +65,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 if (printerSettings == null)
                 {
                     result.ErrorMessage = $"Impresora con ID '{request.PrinterId}' no encontrada o no configurada.";
-                    _logger.LogError(result.ErrorMessage);
+                    _logger.LogError(result.ErrorMessage, null, "PrintService");
                     return result;
                 }
 
@@ -93,27 +93,27 @@ namespace AppsielPrintManager.Infraestructure.Services
                             break;
                         default:
                             result.ErrorMessage = $"DocumentType '{request.DocumentType}' no soportado para deserialización.";
-                            _logger.LogError(result.ErrorMessage);
+                            _logger.LogError(result.ErrorMessage, null, "PrintService");
                             return result;
                     }
 
                     if (documentData == null)
                     {
                         result.ErrorMessage = $"Error al deserializar el documento para DocumentType '{request.DocumentType}'.";
-                        _logger.LogError(result.ErrorMessage);
+                        _logger.LogError(result.ErrorMessage, null, "PrintService");
                         return result;
                     }
                 }
                 catch (JsonException jex)
                 {
                     result.ErrorMessage = $"Error de formato JSON al deserializar el documento para DocumentType '{request.DocumentType}': {jex.Message}";
-                    _logger.LogError(result.ErrorMessage, jex);
+                    _logger.LogError(result.ErrorMessage, jex, "PrintService");
                     return result;
                 }
                 catch (System.Exception ex)
                 {
                     result.ErrorMessage = $"Error inesperado al deserializar el documento para DocumentType '{request.DocumentType}': {ex.Message}";
-                    _logger.LogError(result.ErrorMessage, ex);
+                    _logger.LogError(result.ErrorMessage, ex, "PrintService");
                     return result;
                 }
 
@@ -125,11 +125,11 @@ namespace AppsielPrintManager.Infraestructure.Services
 
                 if (dotMatrixTemplate != null)
                 {
-                    _logger.LogInfo($"Usando flujo MATRICIAL para JobId: {request.JobId}");
+                    _logger.LogInfo($"Usando flujo MATRICIAL para JobId: {request.JobId}", "PrintService");
 
                     // A. Renderizar a grilla de texto
                     var gridContent = await _dotMatrixRenderer.RenderToStringAsync(request, documentData, dotMatrixTemplate);
-                    _logger.LogInfo($"Grilla Matricial Renderizada:\n{gridContent}");
+                    _logger.LogInfo($"Grilla Matricial Renderizada:\n{gridContent}", "PrintService");
 
                     // B. Generar comandos ESC/P
                     var escPCommands = await _escPGenerator.GenerateEscPCommandsAsync(gridContent, printerSettings);
@@ -155,7 +155,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
                 else
                 {
-                    _logger.LogInfo($"Usando flujo TÉRMICO para JobId: {request.JobId}");
+                    _logger.LogInfo($"Usando flujo TÉRMICO para JobId: {request.JobId}", "PrintService");
 
                     // 3. Renderizar el TicketContent (pasando el request original para media y el documento tipado)
                     var ticketContent = await _ticketRenderer.RenderTicketAsync(request, documentData);
@@ -165,7 +165,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     if (!status.IsOnline)
                     {
                         result.ErrorMessage = $"Impresora '{request.PrinterId}' no está lista: {status.StatusMessage}";
-                        _logger.LogError(result.ErrorMessage);
+                        _logger.LogError(result.ErrorMessage, null, "PrintService");
                         return result;
                     }
 
@@ -178,7 +178,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     if (!primaryPrintSuccess)
                     {
                         result.ErrorMessage = $"Fallo al imprimir en la impresora principal '{request.PrinterId}' ({printerSettings.IpAddress}:{printerSettings.Port}).";
-                        _logger.LogError(result.ErrorMessage);
+                        _logger.LogError(result.ErrorMessage, null, "PrintService");
                         return result;
                     }
 
@@ -190,17 +190,17 @@ namespace AppsielPrintManager.Infraestructure.Services
                             var copyPrinterSettings = await _settingsRepository.GetPrinterSettingsAsync(copyPrinterId);
                             if (copyPrinterSettings == null)
                             {
-                                _logger.LogWarning($"Impresora de copia con ID '{copyPrinterId}' no encontrada. Se omite la copia.");
+                                _logger.LogWarning($"Impresora de copia con ID '{copyPrinterId}' no encontrada. Se omite la copia.", "PrintService");
                                 continue;
                             }
 
-                            _logger.LogInfo($"Enviando copia a impresora '{copyPrinterId}' ({copyPrinterSettings.IpAddress}:{copyPrinterSettings.Port}).");
+                            _logger.LogInfo($"Enviando copia a impresora '{copyPrinterId}' ({copyPrinterSettings.IpAddress}:{copyPrinterSettings.Port}).", "PrintService");
                             var copyEscPosCommands = await _escPosGenerator.GenerateEscPosCommandsAsync(ticketContent, copyPrinterSettings); // Regenerar por si la configuración de copia es diferente
                             bool copyPrintSuccess = await _tcpIpPrinterClient.PrintAsync(copyPrinterSettings.IpAddress ?? string.Empty, copyPrinterSettings.Port, copyEscPosCommands);
 
                             if (!copyPrintSuccess)
                             {
-                                _logger.LogError($"Fallo al imprimir en impresora de copia '{copyPrinterId}'. Continúa el proceso principal.");
+                                _logger.LogError($"Fallo al imprimir en impresora de copia '{copyPrinterId}'. Continúa el proceso principal.", null, "PrintService");
                                 // No se detiene el proceso principal si falla una copia, solo se registra.
                             }
                         }
@@ -209,12 +209,12 @@ namespace AppsielPrintManager.Infraestructure.Services
                     result.Status = "DONE";
                 }
 
-                _logger.LogInfo($"Trabajo de impresión '{request.JobId}' completado exitosamente.");
+                _logger.LogInfo($"Trabajo de impresión '{request.JobId}' completado exitosamente.", "PrintService");
             }
             catch (System.Exception ex)
             {
                 result.ErrorMessage = $"Excepción inesperada durante el procesamiento del trabajo de impresión '{request.JobId}': {ex.Message}";
-                _logger.LogError(result.ErrorMessage, ex);
+                _logger.LogError(result.ErrorMessage, ex, "PrintService");
             }
 
             return result;
@@ -228,7 +228,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         public async Task ConfigurePrinterAsync(PrinterSettings settings)
         {
             await _settingsRepository.SavePrinterSettingsAsync(settings);
-            _logger.LogInfo($"Configuración de impresora para '{settings.PrinterId}' guardada/actualizada.");
+            _logger.LogInfo($"Configuración de impresora para '{settings.PrinterId}' guardada/actualizada.", "PrintService");
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         public async Task DeletePrinterSettingsAsync(string printerId)
         {
             await _settingsRepository.DeletePrinterSettingsAsync(printerId);
-            _logger.LogInfo($"Configuración de impresora para '{printerId}' eliminada.");
+            _logger.LogInfo($"Configuración de impresora para '{printerId}' eliminada.", "PrintService");
         }
     }
 }

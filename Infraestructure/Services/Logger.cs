@@ -38,51 +38,88 @@ namespace AppsielPrintManager.Infraestructure.Services
 
         public event EventHandler<LogMessage> OnLogMessage;
 
-        public void LogInfo(string message) => Log(LogLevel.Info, message);
-        public void LogWarning(string message) => Log(LogLevel.Warning, message);
-        public void LogError(string message, Exception exception = null)
+        public void LogDebug(string message, string? service = null, object? metadata = null) => Log(LogLevel.Debug, message, service, metadata);
+        public void LogInfo(string message, string? service = null, object? metadata = null) => Log(LogLevel.Info, message, service, metadata);
+        public void LogWarning(string message, string? service = null, object? metadata = null) => Log(LogLevel.Warning, message, service, metadata);
+        public void LogError(string message, Exception? exception = null, string? service = null, object? metadata = null)
         {
-            string full = message;
-            if (exception != null) full += $" | Exception: {exception.GetType().Name}: {exception.Message}";
-            Log(LogLevel.Error, full);
+            Log(LogLevel.Error, message, service, metadata, exception);
         }
 
-        private void Log(LogLevel level, string message)
+        private void Log(LogLevel level, string message, string? service, object? metadata, Exception? exception = null)
         {
-            var log = new LogMessage { Level = level, Message = message, Timestamp = DateTime.Now };
+            // Auto-Detección de Servicio si no se provee
+            if (string.IsNullOrEmpty(service))
+            {
+                // Si el mensaje empieza como "HomeViewModel: algo", extraemos HomeViewModel
+                if (message.Contains(": "))
+                {
+                    int idx = message.IndexOf(": ");
+                    string potentialService = message.Substring(0, idx).Trim();
+                    // Solo si parece un nombre de clase/servicio (sin espacios internos)
+                    if (!potentialService.Contains(" "))
+                    {
+                        service = potentialService;
+                        message = message.Substring(idx + 2).Trim();
+                    }
+                }
+            }
 
-            // 1. Consola/Debug
+            var log = new LogMessage
+            {
+                Level = level,
+                Message = message,
+                Timestamp = DateTime.Now,
+                Service = service ?? "System"
+            };
+
+            // Metadatos estructurados
+            var metaDict = new Dictionary<string, object?>();
+            if (metadata != null)
+            {
+                if (metadata is IDictionary<string, object?> dict) metaDict = new Dictionary<string, object?>(dict);
+                else metaDict["data"] = metadata;
+            }
+            if (exception != null)
+            {
+                metaDict["exception"] = new { exception.GetType().Name, exception.Message, exception.StackTrace };
+            }
+
+            if (metaDict.Count > 0)
+            {
+                try { log.StructuredData = System.Text.Json.JsonSerializer.Serialize(metaDict); } catch { }
+            }
+
+            // Fire & Forget de escritura
             Console.WriteLine(log.FullMessage);
             System.Diagnostics.Debug.WriteLine(log.FullMessage);
-
-            // 2. Evento para UI abierta
             OnLogMessage?.Invoke(this, log);
-
-            // 3. Persistencia Asíncrona (Fire & Forget pero seguro)
-            _ = WriteToFileAsync(log.FullMessage);
+            _ = WriteToFileAsync(log);
         }
 
-        private async Task WriteToFileAsync(string line)
+        private async Task WriteToFileAsync(LogMessage log)
         {
             if (string.IsNullOrEmpty(_logFilePath)) return;
 
             await _fileLock.WaitAsync();
             try
             {
-                // Rotación si es muy grande
                 var fileInfo = new FileInfo(_logFilePath);
                 if (fileInfo.Exists && fileInfo.Length > MaxLogSize)
                 {
                     try { File.Move(_logFilePath, _logFilePath + ".old", true); } catch { }
                 }
 
-                // Intento de escritura con reintentos para colisiones entre procesos (Worker vs UI)
                 for (int i = 0; i < 3; i++)
                 {
                     try
                     {
                         using var stream = new FileStream(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
                         using var writer = new StreamWriter(stream);
+
+                        string line = log.FullMessage;
+                        if (!string.IsNullOrEmpty(log.StructuredData)) line += $" | DATA: {log.StructuredData}";
+
                         await writer.WriteLineAsync(line);
                         break;
                     }
@@ -97,10 +134,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             {
                 System.Diagnostics.Debug.WriteLine($"Logger Error: No se pudo escribir en disco. {ex.Message}");
             }
-            finally
-            {
-                _fileLock.Release();
-            }
+            finally { _fileLock.Release(); }
         }
 
         public IReadOnlyList<LogMessage> GetLogs()
@@ -134,23 +168,38 @@ namespace AppsielPrintManager.Infraestructure.Services
         {
             try
             {
-                // Formato: [HH:mm:ss] [LEVEL] Message
-                if (line.StartsWith("[") && line.Contains("] ["))
+                // Formato: [2026-02-25 18:24:01.123] [LEVEL] [SERVICE] Message | DATA: {...}
+                if (line.StartsWith("["))
                 {
-                    int timeEnd = line.IndexOf("]");
-                    string timeStr = line.Substring(1, timeEnd - 1);
+                    int firstClose = line.IndexOf("]");
+                    string dateStr = line.Substring(1, firstClose - 1);
 
-                    int levelStart = line.IndexOf("[", timeEnd + 1);
-                    int levelEnd = line.IndexOf("]", levelStart + 1);
-                    string levelStr = line.Substring(levelStart + 1, levelEnd - levelStart - 1);
+                    int levelOpen = line.IndexOf("[", firstClose + 1);
+                    int levelClose = line.IndexOf("]", levelOpen + 1);
+                    string levelStr = line.Substring(levelOpen + 1, levelClose - levelOpen - 1).Trim();
 
-                    string content = line.Substring(levelEnd + 1).Trim();
+                    int serviceOpen = line.IndexOf("[", levelClose + 1);
+                    int serviceClose = line.IndexOf("]", serviceOpen + 1);
+                    string serviceStr = line.Substring(serviceOpen + 1, serviceClose - serviceOpen - 1).Trim();
+
+                    string remaining = line.Substring(serviceClose + 1).Trim();
+                    string messageStr = remaining;
+                    string? dataStr = null;
+
+                    if (remaining.Contains(" | DATA: "))
+                    {
+                        int dataIdx = remaining.IndexOf(" | DATA: ");
+                        messageStr = remaining.Substring(0, dataIdx).Trim();
+                        dataStr = remaining.Substring(dataIdx + 9).Trim();
+                    }
 
                     return new LogMessage
                     {
-                        Timestamp = DateTime.ParseExact(timeStr, "HH:mm:ss", null),
+                        Timestamp = DateTime.Parse(dateStr),
                         Level = Enum.Parse<LogLevel>(levelStr, true),
-                        Message = content
+                        Service = serviceStr,
+                        Message = messageStr,
+                        StructuredData = dataStr
                     };
                 }
             }

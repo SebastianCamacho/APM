@@ -8,20 +8,24 @@ namespace AppsielPrintManager.Core.Interfaces
     /// </summary>
     public enum LogLevel
     {
+        Debug,
         Info,
         Warning,
         Error
     }
 
     /// <summary>
-    /// Representa un mensaje de log con su nivel, contenido y timestamp.
+    /// Representa un mensaje de log con su nivel, contenido y metadatos técnicos.
     /// </summary>
     public class LogMessage
     {
         public LogLevel Level { get; set; }
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
         public DateTime Timestamp { get; set; }
-        public string FullMessage => $"[{Timestamp:HH:mm:ss}] [{Level.ToString().ToUpper()}] {Message}";
+        public string Service { get; set; } = "System";
+        public string? StructuredData { get; set; }
+
+        public string FullMessage => $"[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level.ToString().ToUpper().PadRight(5)}] [{Service.PadRight(15)}] {Message}";
     }
 
     /// <summary>
@@ -35,24 +39,29 @@ namespace AppsielPrintManager.Core.Interfaces
         event EventHandler<LogMessage> OnLogMessage;
 
         /// <summary>
+        /// Registra un mensaje de depuración.
+        /// </summary>
+        void LogDebug(string message, string? service = null, object? metadata = null);
+
+        /// <summary>
         /// Registra un mensaje de información.
         /// </summary>
-        void LogInfo(string message);
+        void LogInfo(string message, string? service = null, object? metadata = null);
 
         /// <summary>
         /// Registra un mensaje de advertencia.
         /// </summary>
-        void LogWarning(string message);
+        void LogWarning(string message, string? service = null, object? metadata = null);
 
         /// <summary>
         /// Registra un mensaje de error con una excepción asociada.
         /// </summary>
-        void LogError(string message, Exception exception = null);
+        void LogError(string message, Exception? exception = null, string? service = null, object? metadata = null);
 
         /// <summary>
         /// Obtiene los logs almacenados en disco.
         /// </summary>
-        System.Collections.Generic.IReadOnlyList<LogMessage> GetLogs();
+        IReadOnlyList<LogMessage> GetLogs();
 
         /// <summary>
         /// Borra el archivo de logs.

@@ -223,7 +223,7 @@ namespace UI.ViewModels
             }
             catch (System.Exception ex)
             {
-                _logger.LogError($"Error al cargar la impresora '{id}': {ex.Message}", ex);
+                _logger.LogError($"Error al cargar la impresora '{id}': {ex.Message}", ex, "PrinterDetailViewModel");
                 await Shell.Current.DisplayAlertAsync("Error", "No se pudo cargar la configuración de la impresora.", "OK");
             }
             finally
@@ -332,12 +332,12 @@ namespace UI.ViewModels
                 }
 
                 await _printService.ConfigurePrinterAsync(Printer);
-                _logger.LogInfo($"Impresora '{Printer.PrinterId}' guardada exitosamente.");
+                _logger.LogInfo($"Impresora '{Printer.PrinterId}' guardada exitosamente.", "PrinterDetailViewModel");
                 await Shell.Current.GoToAsync(".."); // Volver a la página anterior
             }
             catch (System.Exception ex)
             {
-                _logger.LogError($"Error al guardar impresora '{Printer?.PrinterId}': {ex.Message}", ex);
+                _logger.LogError($"Error al guardar impresora '{Printer?.PrinterId}': {ex.Message}", ex, "PrinterDetailViewModel");
                 await Shell.Current.DisplayAlertAsync("Error", $"No se pudo guardar la impresora: {ex.Message}", "OK");
             }
             finally

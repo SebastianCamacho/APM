@@ -3,74 +3,155 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:UI.ViewModels"
              xmlns:converters="clr-namespace:UI.Converters"
+             xmlns:models="clr-namespace:AppsielPrintManager.Core.Interfaces"
              x:Class="UI.Views.LogsPage"
              Title="Registros del Sistema"
-             BackgroundColor="#F5F5F7">
+             BackgroundColor="#0B0E14">
 
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:LogLevelToColorConverter x:Key="LogLevelToColorConverter" />
+            <converters:ObjectToBoolConverter x:Key="ObjectToBoolConverter" />
+            
+            <Style x:Key="LabelHeader" TargetType="Label">
+                <Setter Property="TextColor" Value="#4A5568" />
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="CharacterSpacing" Value="1" />
+            </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto, *">
-        <!-- Header Técnico -->
-        <BoxView Grid.Row="0" Color="#2C3E50" HeightRequest="50" />
-        <Label Grid.Row="0" 
-               Text="CENTRO DE ACTIVIDAD APM" 
-               TextColor="White" 
-               FontSize="12" 
-               FontAttributes="Bold" 
-               VerticalOptions="Center" 
-               HorizontalOptions="Start" 
-               Margin="20,0" />
+    <Grid ColumnDefinitions="*, 350">
+        <!-- Panel Principal: Lista de Logs -->
+        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, *">
+            <!-- Header Técnico -->
+            <BoxView Grid.Row="0" Color="#121721" HeightRequest="50" />
+            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="20,0">
+                <Label Grid.Column="0"
+                       Text="CENTRO DE ACTIVIDAD APM" 
+                       TextColor="#63B3ED" 
+                       FontSize="12" 
+                       FontAttributes="Bold" 
+                       VerticalOptions="Center" 
+                       HorizontalOptions="Start" />
+                       
+                <Button Grid.Column="1"
+                        Text="↻ Refrescar"
+                        Command="{Binding RefreshLogsCommand}"
+                        BackgroundColor="#2B6CB0"
+                        TextColor="White"
+                        FontSize="10"
+                        FontAttributes="Bold"
+                        CornerRadius="4"
+                        HeightRequest="24"
+                        Padding="10,0"
+                        VerticalOptions="Center" />
+            </Grid>
 
-        <!-- Colección de Logs -->
-        <CollectionView Grid.Row="1"
-                        ItemsSource="{Binding Logs}"
-                        EmptyView="Esperando actividad..."
-                        Margin="10">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Grid ColumnDefinitions="60, 60, *" ColumnSpacing="10" Padding="0,5">
-                        <!-- Timestamp -->
-                        <Label Grid.Column="0" 
-                               Text="{Binding Timestamp, StringFormat='{0:HH:mm:ss}'}" 
-                               FontSize="10" 
-                               TextColor="#7F8C8D" />
-                        
-                        <!-- Level Badge -->
-                        <Frame Grid.Column="1" 
-                               Padding="5,1" 
-                               HasShadow="False" 
-                               CornerRadius="3"
-                               HeightRequest="18"
-                               HorizontalOptions="Start"
-                               BackgroundColor="{Binding Level, Converter={StaticResource LogLevelToColorConverter}}">
-                            <Label Text="{Binding Level}" 
-                                   TextColor="White" 
-                                   FontSize="8" 
-                                   FontAttributes="Bold" 
-                                   HorizontalOptions="Center" 
-                                   VerticalOptions="Center" />
+            <!-- Sub-Header Columnas -->
+            <Grid Grid.Row="1" ColumnDefinitions="140, 80, 150, *" Padding="20,10" BackgroundColor="#1A202C">
+                <Label Grid.Column="0" Text="TIMESTAMP" Style="{StaticResource LabelHeader}" />
+                <Label Grid.Column="1" Text="NIVEL" Style="{StaticResource LabelHeader}" />
+                <Label Grid.Column="2" Text="SERVICIO" Style="{StaticResource LabelHeader}" />
+                <Label Grid.Column="3" Text="MENSAJE" Style="{StaticResource LabelHeader}" />
+            </Grid>
+
+            <!-- Colección -->
+            <CollectionView Grid.Row="2"
+                            ItemsSource="{Binding Logs}"
+                            SelectedItem="{Binding SelectedLog}"
+                            SelectionMode="Single"
+                            EmptyView="No hay actividad registrada"
+                            Margin="0">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="140, 80, 150, *" Padding="20,8" BackgroundColor="Transparent">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup Name="CommonStates">
+                                    <VisualState Name="Normal" />
+                                    <VisualState Name="Selected">
+                                        <VisualState.Setters>
+                                            <Setter Property="BackgroundColor" Value="#2D3748" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+
+                            <Label Grid.Column="0" 
+                                   Text="{Binding Timestamp, StringFormat='{0:yyyy-MM-dd HH:mm:ss}'}" 
+                                   FontSize="11" 
+                                   TextColor="#718096" />
+                            
+                            <Frame Grid.Column="1" 
+                                   Padding="4,1" 
+                                   HasShadow="False" 
+                                   CornerRadius="4"
+                                   HeightRequest="20"
+                                   WidthRequest="60"
+                                   HorizontalOptions="Start"
+                                   BackgroundColor="{Binding Level, Converter={StaticResource LogLevelToColorConverter}}">
+                                <Label Text="{Binding Level}" 
+                                       TextColor="White" 
+                                       FontSize="9" 
+                                       FontAttributes="Bold" 
+                                       HorizontalOptions="Center" />
+                            </Frame>
+
+                            <Label Grid.Column="2" 
+                                   Text="{Binding Service}" 
+                                   FontSize="11" 
+                                   TextColor="#A0AEC0" 
+                                   FontAttributes="Bold" />
+
+                            <Label Grid.Column="3" 
+                                   Text="{Binding Message}" 
+                                   FontSize="11" 
+                                   TextColor="#E2E8F0" 
+                                   LineBreakMode="TailTruncation" />
+
+                            <BoxView Grid.Row="0" Grid.ColumnSpan="4" HeightRequest="1" Color="#2D3748" VerticalOptions="End" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+
+        <!-- Panel Lateral: Detalles Técnicos -->
+        <Grid Grid.Column="1" RowDefinitions="Auto, *" BackgroundColor="#171923" Padding="20"
+              IsVisible="{Binding SelectedLog, Converter={StaticResource ObjectToBoolConverter}, ConverterParameter='NOTNULL'}">
+            
+            <Label Grid.Row="0" Text="DETALLES DEL REGISTRO" TextColor="#CBD5E0" FontAttributes="Bold" Margin="0,0,0,20" />
+            
+            <ScrollView Grid.Row="1">
+                <VerticalStackLayout Spacing="15">
+                    <VerticalStackLayout>
+                        <Label Text="MENSAJE COMPLETO" Style="{StaticResource LabelHeader}" Margin="0,0,0,5" />
+                        <Label Text="{Binding SelectedLog.Message}" TextColor="#E2E8F0" FontSize="12" LineBreakMode="WordWrap" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout IsVisible="{Binding SelectedLog.StructuredData, Converter={StaticResource ObjectToBoolConverter}, ConverterParameter='NOTNULL'}">
+                        <Label Text="DATOS ESTRUCTURADOS (JSON)" Style="{StaticResource LabelHeader}" Margin="0,0,0,5" />
+                        <Frame BackgroundColor="#1A202C" BorderColor="#2D3748" Padding="10">
+                            <Label Text="{Binding SelectedLog.StructuredData}" 
+                                   FontFamily="Monospace" 
+                                   FontSize="10" 
+                                   TextColor="#F6AD55" />
                         </Frame>
+                    </VerticalStackLayout>
 
-                        <!-- Mensaje -->
-                        <Label Grid.Column="2" 
-                               Text="{Binding Message}" 
-                               FontSize="11" 
-                               TextColor="#2C3E50" 
-                               LineBreakMode="CharacterWrap" />
-                        
-                        <!-- Separador sutil -->
-                        <BoxView Grid.Row="0" 
-                                 Grid.ColumnSpan="3" 
-                                 HeightRequest="1" 
-                                 Color="#ECF0F1" 
-                                 VerticalOptions="End" />
+                    <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto" ColumnSpacing="10" RowSpacing="15">
+                        <VerticalStackLayout Grid.Row="0" Grid.Column="0">
+                            <Label Text="TIMESTAMP" Style="{StaticResource LabelHeader}" />
+                            <Label Text="{Binding SelectedLog.Timestamp, StringFormat='{0:HH:mm:ss.fff}'}" TextColor="#718096" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Row="0" Grid.Column="1">
+                            <Label Text="SERVICIO" Style="{StaticResource LabelHeader}" />
+                            <Label Text="{Binding SelectedLog.Service}" TextColor="#718096" />
+                        </VerticalStackLayout>
                     </Grid>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
     </Grid>
 </ContentPage>

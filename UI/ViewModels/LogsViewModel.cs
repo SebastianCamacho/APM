@@ -3,6 +3,7 @@ using AppsielPrintManager.Core.Interfaces;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Maui.Controls; // Para MainThread.BeginInvokeOnMainThread
+using CommunityToolkit.Mvvm.Input; // Para [RelayCommand]
 
 namespace UI.ViewModels
 {
@@ -13,13 +14,27 @@ namespace UI.ViewModels
         [ObservableProperty]
         private ObservableCollection<LogMessage> logs = new();
 
+        [ObservableProperty]
+        private LogMessage? selectedLog;
+
         public LogsViewModel(ILoggingService loggingService)
         {
             _loggingService = loggingService;
             // Suscribirse al evento de mensajes de log
             _loggingService.OnLogMessage += OnLogMessageReceived;
 
-            // Cargar historial existente desde disco
+            LoadHistory();
+        }
+
+        [RelayCommand]
+        public void RefreshLogs()
+        {
+            LoadHistory();
+        }
+
+        private void LoadHistory()
+        {
+            Logs.Clear();
             foreach (var log in _loggingService.GetLogs())
             {
                 Logs.Add(log);

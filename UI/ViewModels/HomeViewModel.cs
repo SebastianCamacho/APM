@@ -49,7 +49,7 @@ namespace UI.ViewModels
                         status = await Permissions.RequestAsync<Permissions.PostNotifications>();
                         if (status != PermissionStatus.Granted)
                         {
-                            _logger.LogWarning("HomeViewModel: Notification permission denied. Foreground Service notification might not show.");
+                            _logger.LogWarning("Notification permission denied. Foreground Service notification might not show.", "HomeViewModel");
                             // We can choose to return here, or proceed (service will run but notification suppressed)
                         }
                     }
@@ -58,16 +58,16 @@ namespace UI.ViewModels
                 if (!_platformService.IsBackgroundServiceRunning)
                 {
                     await _platformService.StartBackgroundServiceAsync();
-                    _logger.LogInfo("HomeViewModel: Foreground Service start requested.");
+                    _logger.LogInfo("Foreground Service start requested.", "HomeViewModel");
                 }
                 else
                 {
-                    _logger.LogInfo("HomeViewModel: Foreground Service is already running.");
+                    _logger.LogInfo("Foreground Service is already running.", "HomeViewModel");
                 }
             }
             catch (System.Exception ex)
             {
-                _logger.LogError($"HomeViewModel: Error starting foreground service: {ex.Message}", ex);
+                _logger.LogError($"Error starting foreground service: {ex.Message}", ex, "HomeViewModel");
             }
             finally
             {
@@ -85,16 +85,16 @@ namespace UI.ViewModels
                 if (_platformService.IsBackgroundServiceRunning)
                 {
                     await _platformService.StopBackgroundServiceAsync();
-                    _logger.LogInfo("HomeViewModel: Foreground Service stop requested.");
+                    _logger.LogInfo("Foreground Service stop requested.", "HomeViewModel");
                 }
                 else
                 {
-                    _logger.LogInfo("HomeViewModel: Foreground Service is not running.");
+                    _logger.LogInfo("Foreground Service is not running.", "HomeViewModel");
                 }
             }
             catch (System.Exception ex)
             {
-                _logger.LogError($"HomeViewModel: Error stopping foreground service: {ex.Message}", ex);
+                _logger.LogError($"Error stopping foreground service: {ex.Message}", ex, "HomeViewModel");
             }
             finally
             {
@@ -112,7 +112,7 @@ namespace UI.ViewModels
             IsWebSocketServerRunning = _platformService.IsWebSocketServerRunning;
             CurrentClientCount = _platformService.CurrentClientCount;
 
-            // _logger.LogInfo($"HomeViewModel: Service status updated to: {ServiceStatus}, WebSocket: {(IsWebSocketServerRunning ? "Running" : "Stopped")}, Clients: {CurrentClientCount}");
+            // _logger.LogInfo($"Service status updated to: {ServiceStatus}, WebSocket: {(IsWebSocketServerRunning ? "Running" : "Stopped")}, Clients: {CurrentClientCount}", "HomeViewModel");
         }
 
         private bool _isMonitoring;
@@ -121,7 +121,7 @@ namespace UI.ViewModels
         {
             if (_isMonitoring) return;
             _isMonitoring = true;
-            _logger.LogInfo("HomeViewModel: Monitoring started.");
+            _logger.LogInfo("Monitoring started.", "HomeViewModel");
             while (_isMonitoring)
             {
                 UpdateServiceStatus();
@@ -133,7 +133,7 @@ namespace UI.ViewModels
         public void StopMonitoring()
         {
             _isMonitoring = false;
-            _logger.LogInfo("HomeViewModel: Monitoring stopped.");
+            _logger.LogInfo("Monitoring stopped.", "HomeViewModel");
         }
     }
 }

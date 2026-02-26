@@ -7,6 +7,7 @@ using System.Timers;        // Para System.Timers.Timer (actualizaciones periód
 using Application = System.Windows.Application; // Alias para resolver ambigüedad entre System.Windows.Application y System.Windows.Forms.Application.
 using System.IO;            // Para Path.Combine y File.Exists
 using System.Linq;          // Para Process.GetProcessesByName
+using AppsielPrintManager.Core.Interfaces; // Para ILoggingService
 
 namespace TrayApp.Services;
 
@@ -21,7 +22,10 @@ public class TrayIcon : IDisposable
     // Controlador para interactuar con el WorkerService de Appsiel Print Manager.
     private readonly ServiceController _windowsServiceController; // Renombrado para claridad
     // Temporizador para actualizar periódicamente el estado del WorkerService en el menú.
+    // Temporizador para actualizar periódicamente el estado del WorkerService en el menú.
     private readonly System.Timers.Timer _statusUpdateTimer;
+    // Logger para registrar actividad
+    private readonly ILoggingService _logger;
 
     // Recursos de iconos para el menú contextual.
     private Image _iconStatusRunning;
@@ -41,9 +45,12 @@ public class TrayIcon : IDisposable
     /// <summary>
     /// Constructor de la clase TrayIcon.
     /// Inicializa el icono de la bandeja, el controlador del servicio y el menú contextual.
+    /// Constructor de la clase TrayIcon.
+    /// Inicializa el icono de la bandeja, el controlador del servicio y el menú contextual.
     /// </summary>
-    public TrayIcon()
+    public TrayIcon(ILoggingService logger)
     {
+        _logger = logger;
         // Inicializa el controlador del servicio de Windows.
         _windowsServiceController = new ServiceController(WindowsServiceName);
 
@@ -312,9 +319,11 @@ public class TrayIcon : IDisposable
                 UseShellExecute = true // Para UI, generalmente es deseable que Windows lo lance con el shell (muestra ventana).
             });
             System.Windows.MessageBox.Show("UI de Appsiel Print Manager iniciada.", "Appsiel Print Manager", MessageBoxButton.OK, MessageBoxImage.Information);
+            _logger?.LogInfo("UI de APM iniciada correctamente desde bandeja.", "TrayIcon");
         }
         catch (Exception ex)
         {
+            _logger?.LogError($"Error inesperado al abrir la UI de Appsiel Print Manager: {ex.Message}", ex, "TrayIcon");
             System.Windows.MessageBox.Show($"Error inesperado al abrir la UI de Appsiel Print Manager: {ex.Message}", "Appsiel Print Manager", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
@@ -350,9 +359,11 @@ public class TrayIcon : IDisposable
                 CreateNoWindow = true          // No crear una ventana para el proceso
             });
             System.Windows.MessageBox.Show("WorkerService iniciado como proceso. Verifique su estado.", "Appsiel Print Manager", MessageBoxButton.OK, MessageBoxImage.Information);
+            _logger?.LogInfo($"WorkerService fue lanzado manualmente desde TrayApp con éxito usando {workerExePath}", "TrayIcon");
         }
         catch (Exception ex)
         {
+            _logger?.LogError($"Error inesperado al iniciar el WorkerService: {ex.Message}", ex, "TrayIcon");
             System.Windows.MessageBox.Show($"Error inesperado al iniciar el WorkerService: {ex.Message}", "Appsiel Print Manager", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
@@ -381,10 +392,12 @@ public class TrayIcon : IDisposable
                 process.Kill();
                 process.WaitForExit(5000); // Esperar un máximo de 5 segundos para que el proceso termine
             }
+            _logger?.LogInfo("WorkerService fue detenido manualmente desde TrayApp.", "TrayIcon");
             System.Windows.MessageBox.Show("WorkerService detenido correctamente.", "Appsiel Print Manager", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
+            _logger?.LogError($"Error inesperado al detener el WorkerService: {ex.Message}", ex, "TrayIcon");
             System.Windows.MessageBox.Show($"Error inesperado al detener el WorkerService: {ex.Message}", "Appsiel Print Manager", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally

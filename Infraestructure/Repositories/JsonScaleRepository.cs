@@ -29,7 +29,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             }
 
             _filePath = Path.Combine(appSpecificDirectory, ScalesFileName);
-            _logger.LogInfo($"[JsonScaleRepository] Ruta de persistencia de básculas (Windows={OperatingSystem.IsWindows()}): {_filePath}");
+            _logger.LogInfo($"Ruta de persistencia de básculas (Windows={OperatingSystem.IsWindows()}): {_filePath}", "JsonScaleRepository");
         }
 
         public async Task<List<Scale>> GetAllAsync()
@@ -55,7 +55,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
 
             scales.Add(scale);
             await SaveAllScalesAsync(scales);
-            _logger.LogInfo($"Báscula agregada: {scale.Id}");
+            _logger.LogInfo($"Báscula agregada: {scale.Id}", "JsonScaleRepository");
         }
 
         public async Task UpdateAsync(Scale scale)
@@ -69,11 +69,11 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                 scales.Remove(existing);
                 scales.Add(scale);
                 await SaveAllScalesAsync(scales);
-                _logger.LogInfo($"Báscula actualizada: {scale.Id}");
+                _logger.LogInfo($"Báscula actualizada: {scale.Id}", "JsonScaleRepository");
             }
             else
             {
-                _logger.LogWarning($"Intento de actualizar báscula inexistente: {scale.Id}");
+                _logger.LogWarning($"Intento de actualizar báscula inexistente: {scale.Id}", "JsonScaleRepository");
             }
         }
 
@@ -86,7 +86,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             if (removed > 0)
             {
                 await SaveAllScalesAsync(scales);
-                _logger.LogInfo($"Báscula eliminada: {id}");
+                _logger.LogInfo($"Báscula eliminada: {id}", "JsonScaleRepository");
             }
         }
 
@@ -107,7 +107,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error cargando básculas: {ex.Message}", ex);
+                _logger.LogError($"Error cargando básculas: {ex.Message}", ex, "JsonScaleRepository");
                 return new List<Scale>();
             }
         }
@@ -136,15 +136,15 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                 {
                     if (i == maxRetries - 1)
                     {
-                        _logger.LogError($"Fallo crítico al guardar básculas tras {maxRetries} intentos: {ioEx.Message}", ioEx);
+                        _logger.LogError($"Fallo crítico al guardar básculas tras {maxRetries} intentos: {ioEx.Message}", ioEx, "JsonScaleRepository");
                         throw;
                     }
-                    _logger.LogWarning($"Archivo de básculas bloqueado, reintentando ({i + 1}/{maxRetries})...");
+                    _logger.LogWarning($"Archivo de básculas bloqueado, reintentando ({i + 1}/{maxRetries})...", "JsonScaleRepository");
                     await Task.Delay(delayMs);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error inesperado al guardar básculas: {ex.Message}", ex);
+                    _logger.LogError($"Error inesperado al guardar básculas: {ex.Message}", ex, "JsonScaleRepository");
                     throw;
                 }
             }

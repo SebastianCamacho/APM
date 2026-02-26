@@ -32,18 +32,18 @@ namespace UI.ViewModels
             IsBusy = true;
             try
             {
-                _logger.LogInfo("Cargando configuraciones de impresoras...");
+                _logger.LogInfo("Cargando configuraciones de impresoras...", "PrintersViewModel");
                 var loadedPrinters = await _printService.GetAllPrinterSettingsAsync();
                 Printers.Clear();
                 foreach (var printer in loadedPrinters.OrderBy(p => p.PrinterId)) // Ordenar por PrinterId
                 {
                     Printers.Add(printer);
                 }
-                _logger.LogInfo($"Configuraciones de impresoras cargadas. Total: {Printers.Count}");
+                _logger.LogInfo($"Configuraciones de impresoras cargadas. Total: {Printers.Count}", "PrintersViewModel");
             }
             catch (System.Exception ex)
             {
-                _logger.LogError($"Error al cargar impresoras: {ex.Message}", ex);
+                _logger.LogError($"Error al cargar impresoras: {ex.Message}", ex, "PrintersViewModel");
             }
             finally
             {
@@ -54,7 +54,7 @@ namespace UI.ViewModels
         [RelayCommand]
         public async Task AddPrinter()
         {
-            _logger.LogInfo("Comando para añadir nueva impresora.");
+            _logger.LogInfo("Comando para añadir nueva impresora.", "PrintersViewModel");
             // Navegar a una página de detalle para añadir una nueva impresora.
             // Esto se manejará en la vista (PrintersPage.xaml.cs) con Shell.GoToAsync
             // o mediante un mensaje. Por ahora, solo logueamos.
@@ -65,7 +65,7 @@ namespace UI.ViewModels
         public async Task EditPrinter(PrinterSettings printer)
         {
             if (printer == null) return;
-            _logger.LogInfo($"Comando para editar impresora: {printer.PrinterId}");
+            _logger.LogInfo($"Comando para editar impresora: {printer.PrinterId}", "PrintersViewModel");
             // Navegar a la página de detalle con el ID de la impresora para edición.
             await Shell.Current.GoToAsync($"PrinterDetailView?printerId={printer.PrinterId}");
         }
@@ -74,11 +74,11 @@ namespace UI.ViewModels
         public async Task DeletePrinter(PrinterSettings printer)
         {
             if (printer == null) return;
-            _logger.LogInfo($"Comando para eliminar impresora: {printer.PrinterId}");
-            
+            _logger.LogInfo($"Comando para eliminar impresora: {printer.PrinterId}", "PrintersViewModel");
+
             // Confirmación antes de eliminar (ej. con DisplayActionSheet o DisplayAlert)
-            bool confirm = await Shell.Current.DisplayAlert("Confirmar Eliminación", 
-                                                            $"¿Está seguro de que desea eliminar la impresora '{printer.PrinterId}'?", 
+            bool confirm = await Shell.Current.DisplayAlert("Confirmar Eliminación",
+                                                            $"¿Está seguro de que desea eliminar la impresora '{printer.PrinterId}'?",
                                                             "Sí", "No");
             if (confirm)
             {
@@ -87,12 +87,12 @@ namespace UI.ViewModels
                 {
                     await _printService.DeletePrinterSettingsAsync(printer.PrinterId);
                     Printers.Remove(printer);
-                    _logger.LogInfo($"Impresora '{printer.PrinterId}' eliminada exitosamente.");
+                    _logger.LogInfo($"Impresora '{printer.PrinterId}' eliminada exitosamente.", "PrintersViewModel");
                     await Shell.Current.DisplayAlert("Éxito", $"La impresora '{printer.PrinterId}' ha sido eliminada.", "OK"); // Mensaje de éxito añadido
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogError($"Error al eliminar impresora '{printer.PrinterId}': {ex.Message}", ex);
+                    _logger.LogError($"Error al eliminar impresora '{printer.PrinterId}': {ex.Message}", ex, "PrintersViewModel");
                     await Shell.Current.DisplayAlert("Error", $"No se pudo eliminar la impresora '{printer.PrinterId}': {ex.Message}", "OK"); // Añadir mensaje de error
                 }
                 finally

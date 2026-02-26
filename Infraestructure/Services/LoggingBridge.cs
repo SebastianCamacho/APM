@@ -59,21 +59,29 @@ namespace AppsielPrintManager.Infraestructure.Services
             if (!IsEnabled(logLevel)) return;
 
             var message = formatter(state, exception);
-            var fullMessage = $"[{_categoryName}] {message}";
+
+            // Simplificar nombre de categoría para que quepa bien en el dashboard
+            string service = _categoryName;
+            if (service.Contains("."))
+            {
+                service = service.Substring(service.LastIndexOf(".") + 1);
+            }
 
             switch (logLevel)
             {
                 case Microsoft.Extensions.Logging.LogLevel.Trace:
                 case Microsoft.Extensions.Logging.LogLevel.Debug:
+                    _loggingService.LogDebug(message, service);
+                    break;
                 case Microsoft.Extensions.Logging.LogLevel.Information:
-                    _loggingService.LogInfo(fullMessage);
+                    _loggingService.LogInfo(message, service);
                     break;
                 case Microsoft.Extensions.Logging.LogLevel.Warning:
-                    _loggingService.LogWarning(fullMessage);
+                    _loggingService.LogWarning(message, service);
                     break;
                 case Microsoft.Extensions.Logging.LogLevel.Error:
                 case Microsoft.Extensions.Logging.LogLevel.Critical:
-                    _loggingService.LogError(fullMessage, exception);
+                    _loggingService.LogError(message, exception, service);
                     break;
             }
         }

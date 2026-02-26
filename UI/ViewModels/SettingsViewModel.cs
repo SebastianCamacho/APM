@@ -50,7 +50,7 @@ namespace UI.ViewModels
             }
             catch (System.Exception ex)
             {
-                _logger.LogError($"Error cargando plantillas: {ex.Message}", ex);
+                _logger.LogError($"Error cargando plantillas: {ex.Message}", ex, "SettingsViewModel");
             }
             finally
             {
