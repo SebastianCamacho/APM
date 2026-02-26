@@ -2,156 +2,208 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:UI.ViewModels"
-             xmlns:converters="clr-namespace:UI.Converters"
              xmlns:models="clr-namespace:AppsielPrintManager.Core.Interfaces"
              x:Class="UI.Views.LogsPage"
              Title="Registros del Sistema"
-             BackgroundColor="#0B0E14">
+             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1E1E2E}">
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <converters:LogLevelToColorConverter x:Key="LogLevelToColorConverter" />
-            <converters:ObjectToBoolConverter x:Key="ObjectToBoolConverter" />
+            <Color x:Key="RowBGLight">#FFFFFF</Color>
+            <Color x:Key="RowBGDark">#27273A</Color>
             
+            <Color x:Key="TextLightPrimary">#2D3748</Color>
+            <Color x:Key="TextDarkPrimary">#E2E8F0</Color>
+
+            <Color x:Key="TextLightSecondary">#718096</Color>
+            <Color x:Key="TextDarkSecondary">#A0AEC0</Color>
+
             <Style x:Key="LabelHeader" TargetType="Label">
-                <Setter Property="TextColor" Value="#4A5568" />
-                <Setter Property="FontSize" Value="10" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" />
+                <Setter Property="FontSize" Value="{OnPlatform Android=10, Default=11}" />
                 <Setter Property="FontAttributes" Value="Bold" />
                 <Setter Property="CharacterSpacing" Value="1" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+
+            <!-- Estilo base para el Label del Badge de Nivel -->
+            <Style x:Key="BadgeLabelStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+
+            <!-- Estilo base para el Frame del Badge de Nivel -->
+            <Style x:Key="BadgeFrameStyle" TargetType="Frame">
+                <Setter Property="Padding" Value="8,2" />
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="HeightRequest" Value="24" />
+                <Setter Property="HorizontalOptions" Value="Start" />
+                <Setter Property="VerticalOptions" Value="Center" />
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid ColumnDefinitions="*, 350">
-        <!-- Panel Principal: Lista de Logs -->
-        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, *">
-            <!-- Header Técnico -->
-            <BoxView Grid.Row="0" Color="#121721" HeightRequest="50" />
-            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="20,0">
-                <Label Grid.Column="0"
-                       Text="CENTRO DE ACTIVIDAD APM" 
-                       TextColor="#63B3ED" 
-                       FontSize="12" 
-                       FontAttributes="Bold" 
-                       VerticalOptions="Center" 
-                       HorizontalOptions="Start" />
-                       
-                <Button Grid.Column="1"
-                        Text="↻ Refrescar"
-                        Command="{Binding RefreshLogsCommand}"
-                        BackgroundColor="#2B6CB0"
-                        TextColor="White"
-                        FontSize="10"
-                        FontAttributes="Bold"
-                        CornerRadius="4"
-                        HeightRequest="24"
-                        Padding="10,0"
-                        VerticalOptions="Center" />
-            </Grid>
-
-            <!-- Sub-Header Columnas -->
-            <Grid Grid.Row="1" ColumnDefinitions="140, 80, 150, *" Padding="20,10" BackgroundColor="#1A202C">
-                <Label Grid.Column="0" Text="TIMESTAMP" Style="{StaticResource LabelHeader}" />
-                <Label Grid.Column="1" Text="NIVEL" Style="{StaticResource LabelHeader}" />
-                <Label Grid.Column="2" Text="SERVICIO" Style="{StaticResource LabelHeader}" />
-                <Label Grid.Column="3" Text="MENSAJE" Style="{StaticResource LabelHeader}" />
-            </Grid>
-
-            <!-- Colección -->
-            <CollectionView Grid.Row="2"
-                            ItemsSource="{Binding Logs}"
-                            SelectedItem="{Binding SelectedLog}"
-                            SelectionMode="Single"
-                            EmptyView="No hay actividad registrada"
-                            Margin="0">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid ColumnDefinitions="140, 80, 150, *" Padding="20,8" BackgroundColor="Transparent">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup Name="CommonStates">
-                                    <VisualState Name="Normal" />
-                                    <VisualState Name="Selected">
-                                        <VisualState.Setters>
-                                            <Setter Property="BackgroundColor" Value="#2D3748" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-
-                            <Label Grid.Column="0" 
-                                   Text="{Binding Timestamp, StringFormat='{0:yyyy-MM-dd HH:mm:ss}'}" 
-                                   FontSize="11" 
-                                   TextColor="#718096" />
-                            
-                            <Frame Grid.Column="1" 
-                                   Padding="4,1" 
-                                   HasShadow="False" 
-                                   CornerRadius="4"
-                                   HeightRequest="20"
-                                   WidthRequest="60"
-                                   HorizontalOptions="Start"
-                                   BackgroundColor="{Binding Level, Converter={StaticResource LogLevelToColorConverter}}">
-                                <Label Text="{Binding Level}" 
-                                       TextColor="White" 
-                                       FontSize="9" 
-                                       FontAttributes="Bold" 
-                                       HorizontalOptions="Center" />
-                            </Frame>
-
-                            <Label Grid.Column="2" 
-                                   Text="{Binding Service}" 
-                                   FontSize="11" 
-                                   TextColor="#A0AEC0" 
-                                   FontAttributes="Bold" />
-
-                            <Label Grid.Column="3" 
-                                   Text="{Binding Message}" 
-                                   FontSize="11" 
-                                   TextColor="#E2E8F0" 
-                                   LineBreakMode="TailTruncation" />
-
-                            <BoxView Grid.Row="0" Grid.ColumnSpan="4" HeightRequest="1" Color="#2D3748" VerticalOptions="End" />
+    <Grid RowDefinitions="Auto, Auto, *">
+        <!-- Header Principal (Barra Morada Appsiel) -->
+        <Border Grid.Row="0" BackgroundColor="{StaticResource Primary}" Padding="15,10" StrokeThickness="0">
+            <VerticalStackLayout Spacing="10">
+                <!-- Fila 1: Filtros principales (Buscar y Refrescar) -->
+                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="15">
+                    <!-- Barra de búsqueda -->
+                    <Frame Grid.Column="0" BackgroundColor="#20FFFFFF" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="36" BorderColor="Transparent">
+                        <Grid ColumnDefinitions="Auto, *">
+                            <Label Grid.Column="0" Text="🔍" TextColor="White" VerticalOptions="Center" Margin="0,0,10,0" />
+                            <Entry Grid.Column="1" Text="{Binding SearchText}" Placeholder="Buscar logs..." PlaceholderColor="#AAAAAA" TextColor="White" BackgroundColor="Transparent" FontSize="13" VerticalOptions="Center" />
                         </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </Grid>
+                    </Frame>
 
-        <!-- Panel Lateral: Detalles Técnicos -->
-        <Grid Grid.Column="1" RowDefinitions="Auto, *" BackgroundColor="#171923" Padding="20"
-              IsVisible="{Binding SelectedLog, Converter={StaticResource ObjectToBoolConverter}, ConverterParameter='NOTNULL'}">
-            
-            <Label Grid.Row="0" Text="DETALLES DEL REGISTRO" TextColor="#CBD5E0" FontAttributes="Bold" Margin="0,0,0,20" />
-            
-            <ScrollView Grid.Row="1">
-                <VerticalStackLayout Spacing="15">
-                    <VerticalStackLayout>
-                        <Label Text="MENSAJE COMPLETO" Style="{StaticResource LabelHeader}" Margin="0,0,0,5" />
-                        <Label Text="{Binding SelectedLog.Message}" TextColor="#E2E8F0" FontSize="12" LineBreakMode="WordWrap" />
-                    </VerticalStackLayout>
+                    <!-- Boton Refrescar Real -->
+                    <Button Grid.Column="1"
+                            Text="↻ Refrescar"
+                            Command="{Binding RefreshLogsCommand}"
+                            BackgroundColor="#40000000"
+                            TextColor="White"
+                            FontSize="12"
+                            FontAttributes="Bold"
+                            CornerRadius="4"
+                            HeightRequest="36"
+                            Padding="15,0"
+                            VerticalOptions="Center" />
+                </Grid>
 
-                    <VerticalStackLayout IsVisible="{Binding SelectedLog.StructuredData, Converter={StaticResource ObjectToBoolConverter}, ConverterParameter='NOTNULL'}">
-                        <Label Text="DATOS ESTRUCTURADOS (JSON)" Style="{StaticResource LabelHeader}" Margin="0,0,0,5" />
-                        <Frame BackgroundColor="#1A202C" BorderColor="#2D3748" Padding="10">
-                            <Label Text="{Binding SelectedLog.StructuredData}" 
-                                   FontFamily="Monospace" 
-                                   FontSize="10" 
-                                   TextColor="#F6AD55" />
+                <!-- Fila 2: Sub Filtros (Nivel, Cantidad, Fechas) -->
+                <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Center">
+                    <!-- Dropdown Niveles -->
+                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="5,0" HeightRequest="32" Margin="0,0,10,5">
+                        <Picker Title="Nivel" ItemsSource="{Binding AvailableLevels}" SelectedItem="{Binding SelectedLevel}" TextColor="White" TitleColor="#DDDDDD" FontSize="12" BackgroundColor="Transparent" />
+                    </Frame>
+
+                    <!-- Dropdown Cantidad -->
+                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="5,0" HeightRequest="32" Margin="0,0,10,5">
+                        <Picker Title="Límite" ItemsSource="{Binding AvailableCounts}" SelectedItem="{Binding SelectedLogCount}" TextColor="White" TitleColor="#DDDDDD" FontSize="12" BackgroundColor="Transparent" />
+                    </Frame>
+                    
+                    <!-- Fecha Inicio -->
+                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="32" Margin="0,0,10,5">
+                        <HorizontalStackLayout Spacing="5">
+                            <Label Text="Desde:" TextColor="#DDDDDD" FontSize="11" VerticalOptions="Center"/>
+                            <DatePicker Date="{Binding StartDate}" TextColor="White" FontSize="12" BackgroundColor="Transparent"/>
+                        </HorizontalStackLayout>
+                    </Frame>
+
+                    <!-- Fecha Fin -->
+                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="32" Margin="0,0,0,5">
+                        <HorizontalStackLayout Spacing="5">
+                            <Label Text="Hasta:" TextColor="#DDDDDD" FontSize="11" VerticalOptions="Center"/>
+                            <DatePicker Date="{Binding EndDate}" TextColor="White" FontSize="12" BackgroundColor="Transparent"/>
+                        </HorizontalStackLayout>
+                    </Frame>
+                </FlexLayout>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Contenedor HorizontalScroll (Para Android Compacidad y Responsivo) -->
+        <ScrollView Grid.Row="1" Grid.RowSpan="2" Orientation="Horizontal">
+            <Grid RowDefinitions="Auto, *">
+                
+                <!-- Cabecera de la Tabla -->
+                <Grid Grid.Row="0" ColumnDefinitions="160, 90, 160, 500" Padding="{OnPlatform Android='10,10', Default='20,15'}" BackgroundColor="{AppThemeBinding Light={StaticResource RowBGLight}, Dark={StaticResource RowBGDark}}" WidthRequest="{OnPlatform Android=910}">
+                    <Label Grid.Column="0" Text="TIMESTAMP" Style="{StaticResource LabelHeader}" />
+                    <Label Grid.Column="1" Text="NIVEL" Style="{StaticResource LabelHeader}" />
+                    <Label Grid.Column="2" Text="SERVICIO" Style="{StaticResource LabelHeader}" />
+                    <Label Grid.Column="3" Text="MENSAJE" Style="{StaticResource LabelHeader}" />
+                </Grid>
+                
+                <BoxView Grid.Row="0" HeightRequest="1" Color="{AppThemeBinding Light=#E2E8F0, Dark=#3F3F5A}" VerticalOptions="End" />
+
+                <!-- Colección de Logs -->
+                <CollectionView Grid.Row="1"
+                                ItemsSource="{Binding Logs}"
+                                SelectionMode="None"
+                                EmptyView="No hay actividad registrada"
+                                Margin="0">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="160, 90, 160, 500" Padding="{OnPlatform Android='10,8', Default='20,12'}" BackgroundColor="{AppThemeBinding Light={StaticResource RowBGLight}, Dark={StaticResource RowBGDark}}" WidthRequest="{OnPlatform Android=910}">
+                        
+                                <!-- Columna: Timestamp -->
+                                <Label Grid.Column="0" 
+                                       Text="{Binding Timestamp, StringFormat='{0:yyyy-MM-dd HH:mm:ss.fff}'}" 
+                                       FontSize="{OnPlatform Android=11, Default=12}" 
+                                       TextColor="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" 
+                                       VerticalOptions="Center" />
+                        
+                        <!-- Columna: Nivel (Badge Dinámico con DataTriggers) -->
+                        <Frame Grid.Column="1" Style="{StaticResource BadgeFrameStyle}">
+                            <Frame.Triggers>
+                                <DataTrigger TargetType="Frame" Binding="{Binding Level}" Value="Debug">
+                                    <Setter Property="BackgroundColor" Value="#F3F4F6"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Frame" Binding="{Binding Level}" Value="Info">
+                                    <Setter Property="BackgroundColor" Value="#DBEAFE"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Frame" Binding="{Binding Level}" Value="Warning">
+                                    <Setter Property="BackgroundColor" Value="#FEF3C7"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Frame" Binding="{Binding Level}" Value="Error">
+                                    <Setter Property="BackgroundColor" Value="#FEE2E2"/>
+                                </DataTrigger>
+                            </Frame.Triggers>
+                            <Label Text="{Binding Level}" Style="{StaticResource BadgeLabelStyle}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Debug">
+                                        <Setter Property="TextColor" Value="#4B5563"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Info">
+                                        <Setter Property="TextColor" Value="#2563EB"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Warning">
+                                        <Setter Property="TextColor" Value="#D97706"/>
+                                        <Setter Property="Text" Value="WARN"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Error">
+                                        <Setter Property="TextColor" Value="#DC2626"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
                         </Frame>
-                    </VerticalStackLayout>
 
-                    <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto" ColumnSpacing="10" RowSpacing="15">
-                        <VerticalStackLayout Grid.Row="0" Grid.Column="0">
-                            <Label Text="TIMESTAMP" Style="{StaticResource LabelHeader}" />
-                            <Label Text="{Binding SelectedLog.Timestamp, StringFormat='{0:HH:mm:ss.fff}'}" TextColor="#718096" />
-                        </VerticalStackLayout>
-                        <VerticalStackLayout Grid.Row="0" Grid.Column="1">
-                            <Label Text="SERVICIO" Style="{StaticResource LabelHeader}" />
-                            <Label Text="{Binding SelectedLog.Service}" TextColor="#718096" />
-                        </VerticalStackLayout>
-                    </Grid>
-                </VerticalStackLayout>
-            </ScrollView>
-        </Grid>
+                                <!-- Columna: Servicio -->
+                                <Label Grid.Column="2" 
+                                       Text="{Binding Service}" 
+                                       FontSize="{OnPlatform Android=12, Default=13}" 
+                                       TextColor="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" 
+                                       VerticalOptions="Center" />
+
+                                <!-- Columna: Mensaje -->
+                                <!-- Usamos Label con Triggers para pintar el texto en rojo si es un Error -->
+                                <Label Grid.Column="3" 
+                                       Text="{Binding Message}" 
+                                       FontSize="{OnPlatform Android=12, Default=13}" 
+                                       TextColor="{AppThemeBinding Light={StaticResource TextLightPrimary}, Dark={StaticResource TextDarkPrimary}}" 
+                                       LineBreakMode="TailTruncation"
+                                       VerticalOptions="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Error">
+                                            <Setter Property="TextColor" Value="#E53E3E"/>
+                                        </DataTrigger>
+                                        <!-- Add light color text for warning on dark mode -->
+                                        <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Warning">
+                                            <Setter Property="TextColor" Value="{AppThemeBinding Light=#B45309, Dark=#FCD34D}"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+
+                                <!-- Línea separadora -->
+                                <BoxView Grid.Row="0" Grid.ColumnSpan="4" HeightRequest="1" Color="{AppThemeBinding Light=#EDF2F7, Dark=#3F3F5A}" VerticalOptions="End" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </ScrollView>
     </Grid>
 </ContentPage>
