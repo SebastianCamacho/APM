@@ -228,54 +228,31 @@
                                 </DataTemplate>
                             </On>
 
-                            <!-- PLATAFORMAS MOVILES (ANDROID/IOS) OPTIMIZADO -->
+                            <!-- PLATAFORMAS MOVILES (ANDROID/IOS) SUPER OPTIMIZADO TIPO CONSOLA -->
                             <On Platform="Android, iOS">
                                 <DataTemplate>
-                                    <VerticalStackLayout Padding="10,8" Spacing="2" BackgroundColor="{AppThemeBinding Light={StaticResource RowBGLight}, Dark={StaticResource RowBGDark}}">
-                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                            <!-- Nivel -->
-                                            <Label Text="{Binding Level}" FontSize="12" FontAttributes="Bold">
-                                                <Label.Triggers>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Debug">
-                                                        <Setter Property="TextColor" Value="#6B7280"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Info">
-                                                        <Setter Property="TextColor" Value="#3B82F6"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Warning">
-                                                        <Setter Property="TextColor" Value="#D97706"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Error">
-                                                        <Setter Property="TextColor" Value="#EF4444"/>
-                                                    </DataTrigger>
-                                                </Label.Triggers>
-                                            </Label>
-
-                                            <Label Text="•" FontSize="11" TextColor="Gray" VerticalOptions="Center" />
-
-                                            <!-- Servicio -->
-                                            <Label Text="{Binding Service}" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" VerticalOptions="Center" />
-                                            
-                                            <Label Text="•" FontSize="11" TextColor="Gray" VerticalOptions="Center" />
-
-                                            <!-- Fecha -->
-                                            <Label Text="{Binding Timestamp, StringFormat='{0:HH:mm:ss.fff}'}" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" VerticalOptions="Center" />
-                                        </HorizontalStackLayout>
-
-                                        <!-- Mensaje -->
-                                        <Label Text="{Binding Message}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextLightPrimary}, Dark={StaticResource TextDarkPrimary}}" LineBreakMode="WordWrap" Margin="0,2,0,4">
-                                            <Label.Triggers>
-                                                <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Error">
-                                                    <Setter Property="TextColor" Value="#EF4444"/>
-                                                </DataTrigger>
-                                                <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Warning">
-                                                    <Setter Property="TextColor" Value="{AppThemeBinding Light=#B45309, Dark=#FCD34D}"/>
-                                                </DataTrigger>
-                                            </Label.Triggers>
-                                        </Label>
-
-                                        <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#F3F4F6, Dark=#3F3F5A}" />
-                                    </VerticalStackLayout>
+                                    <Label Text="{Binding FullMessage}" 
+                                           FontSize="11" 
+                                           FontFamily="monospace"
+                                           Padding="10,6"
+                                           LineBreakMode="NoWrap"
+                                           BackgroundColor="{AppThemeBinding Light={StaticResource RowBGLight}, Dark={StaticResource RowBGDark}}"
+                                           TextColor="{AppThemeBinding Light={StaticResource TextLightPrimary}, Dark={StaticResource TextDarkPrimary}}">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Debug">
+                                                <Setter Property="TextColor" Value="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Info">
+                                                <Setter Property="TextColor" Value="{AppThemeBinding Light=#2563EB, Dark=#60A5FA}"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Warning">
+                                                <Setter Property="TextColor" Value="{AppThemeBinding Light=#D97706, Dark=#FBBF24}"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Error">
+                                                <Setter Property="TextColor" Value="{AppThemeBinding Light=#DC2626, Dark=#F87171}"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
                                 </DataTemplate>
                             </On>
                         </OnPlatform>
