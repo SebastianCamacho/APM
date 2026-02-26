@@ -11,18 +11,22 @@ namespace UI.ViewModels
         private readonly ILoggingService _loggingService;
 
         [ObservableProperty]
-        public ObservableCollection<LogMessage> logs;
+        private ObservableCollection<LogMessage> logs = new();
 
         public LogsViewModel(ILoggingService loggingService)
         {
             _loggingService = loggingService;
-            Logs = new ObservableCollection<LogMessage>();
+            // Suscribirse al evento de mensajes de log
+            _loggingService.OnLogMessage += OnLogMessageReceived;
 
-            // Suscribirse al evento de mensajes de log (DESACTIVADO TEMPORALMENTE PARA COMPILACIÓN)
-            // _loggingService.OnLogMessage += OnLogMessageReceived;
+            // Cargar historial existente desde disco
+            foreach (var log in _loggingService.GetLogs())
+            {
+                Logs.Add(log);
+            }
         }
 
-        private void OnLogMessageReceived(object sender, LogMessage message)
+        private void OnLogMessageReceived(object? sender, LogMessage message)
         {
             // Asegurarse de que la actualización de la UI ocurra en el hilo principal
             MainThread.BeginInvokeOnMainThread(() =>
@@ -30,7 +34,7 @@ namespace UI.ViewModels
                 Logs.Add(message);
                 // Si la colección crece mucho, se puede implementar una lógica de truncamiento aquí
                 // Por ejemplo, mantener solo los últimos N mensajes.
-                if (Logs.Count > 100) 
+                if (Logs.Count > 100)
                 {
                     Logs.RemoveAt(0);
                 }

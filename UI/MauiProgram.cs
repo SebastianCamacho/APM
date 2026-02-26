@@ -71,7 +71,7 @@ namespace UI
             builder.Services.AddTransient<PrinterDetailViewModel>();
             builder.Services.AddTransient<ScalesViewModel>(); // Added
             builder.Services.AddTransient<ScaleDetailViewModel>(); // Added
-            builder.Services.AddTransient<LogsViewModel>();
+            builder.Services.AddSingleton<LogsViewModel>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<TemplateEditorViewModel>();
 
@@ -81,6 +81,7 @@ namespace UI
             builder.Services.AddTransient<PrintersPage>();
             builder.Services.AddTransient<ScalesPage>();
             builder.Services.AddTransient<ScaleDetailPage>(); // Added
+            builder.Services.AddSingleton<LogsPage>();
             builder.Services.AddTransient<SettingsPage>();
             builder.Services.AddTransient<TemplateEditorPage>();
 

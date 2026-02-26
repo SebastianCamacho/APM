@@ -112,7 +112,7 @@ namespace UI.ViewModels
             IsWebSocketServerRunning = _platformService.IsWebSocketServerRunning;
             CurrentClientCount = _platformService.CurrentClientCount;
 
-            _logger.LogInfo($"HomeViewModel: Service status updated to: {ServiceStatus}, WebSocket: {(IsWebSocketServerRunning ? "Running" : "Stopped")}, Clients: {CurrentClientCount}");
+            // _logger.LogInfo($"HomeViewModel: Service status updated to: {ServiceStatus}, WebSocket: {(IsWebSocketServerRunning ? "Running" : "Stopped")}, Clients: {CurrentClientCount}");
         }
 
         private bool _isMonitoring;

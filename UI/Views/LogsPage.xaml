@@ -1,12 +1,76 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:UI.ViewModels"
+             xmlns:converters="clr-namespace:UI.Converters"
              x:Class="UI.Views.LogsPage"
-             Title="Logs">
-    <VerticalStackLayout>
-        <Label 
-            Text="Visualizador de Logs"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             Title="Registros del Sistema"
+             BackgroundColor="#F5F5F7">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:LogLevelToColorConverter x:Key="LogLevelToColorConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Header Técnico -->
+        <BoxView Grid.Row="0" Color="#2C3E50" HeightRequest="50" />
+        <Label Grid.Row="0" 
+               Text="CENTRO DE ACTIVIDAD APM" 
+               TextColor="White" 
+               FontSize="12" 
+               FontAttributes="Bold" 
+               VerticalOptions="Center" 
+               HorizontalOptions="Start" 
+               Margin="20,0" />
+
+        <!-- Colección de Logs -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Logs}"
+                        EmptyView="Esperando actividad..."
+                        Margin="10">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="60, 60, *" ColumnSpacing="10" Padding="0,5">
+                        <!-- Timestamp -->
+                        <Label Grid.Column="0" 
+                               Text="{Binding Timestamp, StringFormat='{0:HH:mm:ss}'}" 
+                               FontSize="10" 
+                               TextColor="#7F8C8D" />
+                        
+                        <!-- Level Badge -->
+                        <Frame Grid.Column="1" 
+                               Padding="5,1" 
+                               HasShadow="False" 
+                               CornerRadius="3"
+                               HeightRequest="18"
+                               HorizontalOptions="Start"
+                               BackgroundColor="{Binding Level, Converter={StaticResource LogLevelToColorConverter}}">
+                            <Label Text="{Binding Level}" 
+                                   TextColor="White" 
+                                   FontSize="8" 
+                                   FontAttributes="Bold" 
+                                   HorizontalOptions="Center" 
+                                   VerticalOptions="Center" />
+                        </Frame>
+
+                        <!-- Mensaje -->
+                        <Label Grid.Column="2" 
+                               Text="{Binding Message}" 
+                               FontSize="11" 
+                               TextColor="#2C3E50" 
+                               LineBreakMode="CharacterWrap" />
+                        
+                        <!-- Separador sutil -->
+                        <BoxView Grid.Row="0" 
+                                 Grid.ColumnSpan="3" 
+                                 HeightRequest="1" 
+                                 Color="#ECF0F1" 
+                                 VerticalOptions="End" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
 </ContentPage>

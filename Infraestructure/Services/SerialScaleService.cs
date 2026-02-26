@@ -271,7 +271,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             {
                 _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
             } // Cable desconectado físicamente
-            catch (UnauthorizedAccessException ex )
+            catch (UnauthorizedAccessException ex)
             {
                 _logger.LogError($"Error procesando datos serial ({scaleId}): {ex.Message}");
             } // El puerto fue robado o bloqueado
@@ -387,7 +387,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                                         // Si desconectas el USB, "COMx" desaparece de GetPortNames() aunque el objeto SerialPort siga "Open".
                                         bool portExists = osPorts.Any(p => p.Equals(port.PortName, StringComparison.OrdinalIgnoreCase));
 
-                                        _logger.LogInfo($"Diagnóstico: Verificando {scale.Id} en {port.PortName}. Existe en OS: {portExists}. Lista OS: {string.Join(",", osPorts)}");
+                                        // _logger.LogInfo($"Diagnóstico: Verificando {scale.Id} en {port.PortName}. Existe en OS: {portExists}. Lista OS: {string.Join(",", osPorts)}");
 
                                         if (!portExists)
                                         {
