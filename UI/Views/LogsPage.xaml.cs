@@ -9,5 +9,14 @@ namespace UI.Views
             InitializeComponent();
             BindingContext = viewModel;
         }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            if (BindingContext is LogsViewModel vm)
+            {
+                await vm.LoadHistoryAsync();
+            }
+        }
     }
 }

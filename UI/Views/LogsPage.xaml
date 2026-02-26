@@ -60,45 +60,68 @@
                         </Grid>
                     </Frame>
 
-                    <!-- Boton Refrescar Real -->
-                    <Button Grid.Column="1"
-                            Text="↻ Refrescar"
-                            Command="{Binding RefreshLogsCommand}"
-                            BackgroundColor="#40000000"
-                            TextColor="White"
-                            FontSize="12"
-                            FontAttributes="Bold"
-                            CornerRadius="4"
-                            HeightRequest="36"
-                            Padding="15,0"
-                            VerticalOptions="Center" />
+                    <!-- Auto Refresh Toggle y Botones -->
+                    <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalOptions="Center">
+                        <StackLayout Orientation="Horizontal" Spacing="5" VerticalOptions="Center">
+                            <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Color="White" VerticalOptions="Center" />
+                            <Label Text="Auto" TextColor="White" VerticalOptions="Center" FontSize="12" FontAttributes="Bold" />
+                        </StackLayout>
+
+                        <Button Text="↻ Refrescar"
+                                Command="{Binding RefreshLogsCommand}"
+                                BackgroundColor="#40000000"
+                                TextColor="White"
+                                FontSize="12"
+                                FontAttributes="Bold"
+                                CornerRadius="4"
+                                HeightRequest="{OnPlatform Android=40, Default=36}"
+                                Padding="15,0"
+                                VerticalOptions="Center" />
+
+                        <Button Text="🗑️ Limpiar"
+                                Command="{Binding ClearLogsCommand}"
+                                BackgroundColor="#60DC2626"
+                                TextColor="White"
+                                FontSize="12"
+                                FontAttributes="Bold"
+                                CornerRadius="4"
+                                HeightRequest="{OnPlatform Android=40, Default=36}"
+                                Padding="15,0"
+                                VerticalOptions="Center" />
+                    </StackLayout>
                 </Grid>
 
                 <!-- Fila 2: Sub Filtros (Nivel, Cantidad, Fechas) -->
                 <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Center">
                     <!-- Dropdown Niveles -->
-                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="5,0" HeightRequest="32" Margin="0,0,10,5">
-                        <Picker Title="Nivel" ItemsSource="{Binding AvailableLevels}" SelectedItem="{Binding SelectedLevel}" TextColor="White" TitleColor="#DDDDDD" FontSize="12" BackgroundColor="Transparent" />
-                    </Frame>
+                    <HorizontalStackLayout Spacing="5" Margin="0,0,10,5">
+                        <Label Text="Nivel:" TextColor="White" FontSize="12" VerticalOptions="Center" FontAttributes="Bold" />
+                        <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="{OnPlatform Android='5,0', Default='10,0'}" HeightRequest="{OnPlatform Android=40, Default=36}">
+                            <Picker ItemsSource="{Binding AvailableLevels}" SelectedItem="{Binding SelectedLevel}" TextColor="White" FontSize="13" BackgroundColor="Transparent" />
+                        </Frame>
+                    </HorizontalStackLayout>
 
                     <!-- Dropdown Cantidad -->
-                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="5,0" HeightRequest="32" Margin="0,0,10,5">
-                        <Picker Title="Límite" ItemsSource="{Binding AvailableCounts}" SelectedItem="{Binding SelectedLogCount}" TextColor="White" TitleColor="#DDDDDD" FontSize="12" BackgroundColor="Transparent" />
-                    </Frame>
+                    <HorizontalStackLayout Spacing="5" Margin="0,0,10,5">
+                        <Label Text="Límite:" TextColor="White" FontSize="12" VerticalOptions="Center" FontAttributes="Bold" />
+                        <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="{OnPlatform Android='5,0', Default='10,0'}" HeightRequest="{OnPlatform Android=40, Default=36}">
+                            <Picker ItemsSource="{Binding AvailableCounts}" SelectedItem="{Binding SelectedLogCount}" TextColor="White" FontSize="13" BackgroundColor="Transparent" />
+                        </Frame>
+                    </HorizontalStackLayout>
                     
                     <!-- Fecha Inicio -->
-                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="32" Margin="0,0,10,5">
-                        <HorizontalStackLayout Spacing="5">
-                            <Label Text="Desde:" TextColor="#DDDDDD" FontSize="11" VerticalOptions="Center"/>
-                            <DatePicker Date="{Binding StartDate}" TextColor="White" FontSize="12" BackgroundColor="Transparent"/>
+                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="36" Margin="0,0,10,5">
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="Desde:" TextColor="White" FontSize="12" VerticalOptions="Center" FontAttributes="Bold" />
+                            <DatePicker Date="{Binding StartDate}" TextColor="White" FontSize="13" BackgroundColor="Transparent" />
                         </HorizontalStackLayout>
                     </Frame>
 
                     <!-- Fecha Fin -->
-                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="32" Margin="0,0,0,5">
-                        <HorizontalStackLayout Spacing="5">
-                            <Label Text="Hasta:" TextColor="#DDDDDD" FontSize="11" VerticalOptions="Center"/>
-                            <DatePicker Date="{Binding EndDate}" TextColor="White" FontSize="12" BackgroundColor="Transparent"/>
+                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="36" Margin="0,0,0,5">
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="Hasta:" TextColor="White" FontSize="12" VerticalOptions="Center" FontAttributes="Bold" />
+                            <DatePicker Date="{Binding EndDate}" TextColor="White" FontSize="13" BackgroundColor="Transparent" />
                         </HorizontalStackLayout>
                     </Frame>
                 </FlexLayout>
@@ -178,13 +201,12 @@
                                        TextColor="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" 
                                        VerticalOptions="Center" />
 
-                                <!-- Columna: Mensaje -->
-                                <!-- Usamos Label con Triggers para pintar el texto en rojo si es un Error -->
+                                <!-- Columna: Mensaje (Debe usar WordWrap para verse completo) -->
                                 <Label Grid.Column="3" 
                                        Text="{Binding Message}" 
                                        FontSize="{OnPlatform Android=12, Default=13}" 
                                        TextColor="{AppThemeBinding Light={StaticResource TextLightPrimary}, Dark={StaticResource TextDarkPrimary}}" 
-                                       LineBreakMode="TailTruncation"
+                                       LineBreakMode="WordWrap"
                                        VerticalOptions="Center">
                                     <Label.Triggers>
                                         <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Error">
@@ -205,5 +227,10 @@
                 </CollectionView>
             </Grid>
         </ScrollView>
+        
+        <!-- Indicador de Carga sobre la Pantalla -->
+        <Grid Grid.Row="1" Grid.RowSpan="2" IsVisible="{Binding IsLoading}" BackgroundColor="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}">
+            <ActivityIndicator IsRunning="{Binding IsLoading}" Color="{StaticResource Primary}" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="50" HeightRequest="50" />
+        </Grid>
     </Grid>
 </ContentPage>
