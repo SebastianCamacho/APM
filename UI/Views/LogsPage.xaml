@@ -50,46 +50,94 @@
         <!-- Header Principal (Barra Morada Appsiel) -->
         <Border Grid.Row="0" BackgroundColor="{StaticResource Primary}" Padding="15,10" StrokeThickness="0">
             <VerticalStackLayout Spacing="10">
-                <!-- Fila 1: Filtros principales (Buscar y Refrescar) -->
-                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="15">
-                    <!-- Barra de búsqueda -->
-                    <Frame Grid.Column="0" BackgroundColor="#20FFFFFF" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="36" BorderColor="Transparent">
-                        <Grid ColumnDefinitions="Auto, *">
-                            <Label Grid.Column="0" Text="🔍" TextColor="White" VerticalOptions="Center" Margin="0,0,10,0" />
-                            <Entry Grid.Column="1" Text="{Binding SearchText}" Placeholder="Buscar logs..." PlaceholderColor="#AAAAAA" TextColor="White" BackgroundColor="Transparent" FontSize="13" VerticalOptions="Center" />
+                <!-- Fila 1: Filtros principales (Buscar y Refrescar) - Diseño Responsivo -->
+                <OnPlatform x:TypeArguments="View">
+                    <!-- Diseño para PC (Buscar y botones en la misma fila) -->
+                    <On Platform="WinUI, MacCatalyst">
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="15">
+                            <!-- Barra de búsqueda -->
+                            <Frame Grid.Column="0" BackgroundColor="#20FFFFFF" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="36" BorderColor="Transparent">
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <Label Grid.Column="0" Text="🔍" TextColor="White" VerticalOptions="Center" Margin="0,0,10,0" />
+                                    <Entry Grid.Column="1" Text="{Binding SearchText}" Placeholder="Buscar logs..." PlaceholderColor="#AAAAAA" TextColor="White" BackgroundColor="Transparent" FontSize="13" VerticalOptions="Center" />
+                                </Grid>
+                            </Frame>
+
+                            <!-- Auto Refresh Toggle y Botones -->
+                            <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalOptions="Center">
+                                <StackLayout Orientation="Horizontal" Spacing="5" VerticalOptions="Center">
+                                    <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Color="White" VerticalOptions="Center" />
+                                    <Label Text="Auto" TextColor="White" VerticalOptions="Center" FontSize="12" FontAttributes="Bold" />
+                                </StackLayout>
+
+                                <Button Text="↻ Refrescar"
+                                        Command="{Binding RefreshLogsCommand}"
+                                        BackgroundColor="#40000000"
+                                        TextColor="White"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        CornerRadius="4"
+                                        HeightRequest="36"
+                                        Padding="15,0"
+                                        VerticalOptions="Center" />
+
+                                <Button Text="🗑️ Limpiar"
+                                        Command="{Binding ClearLogsCommand}"
+                                        BackgroundColor="#60DC2626"
+                                        TextColor="White"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        CornerRadius="4"
+                                        HeightRequest="36"
+                                        Padding="15,0"
+                                        VerticalOptions="Center" />
+                            </StackLayout>
                         </Grid>
-                    </Frame>
+                    </On>
 
-                    <!-- Auto Refresh Toggle y Botones -->
-                    <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalOptions="Center">
-                        <StackLayout Orientation="Horizontal" Spacing="5" VerticalOptions="Center">
-                            <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Color="White" VerticalOptions="Center" />
-                            <Label Text="Auto" TextColor="White" VerticalOptions="Center" FontSize="12" FontAttributes="Bold" />
-                        </StackLayout>
+                    <!-- Diseño para Móviles (Buscar arriba, botones abajo) -->
+                    <On Platform="Android, iOS">
+                        <VerticalStackLayout Spacing="10">
+                            <!-- Barra de búsqueda ocupa toda la fila -->
+                            <Frame BackgroundColor="#20FFFFFF" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="40" BorderColor="Transparent">
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <Label Grid.Column="0" Text="🔍" TextColor="White" VerticalOptions="Center" Margin="0,0,10,0" />
+                                    <Entry Grid.Column="1" Text="{Binding SearchText}" Placeholder="Buscar logs..." PlaceholderColor="#AAAAAA" TextColor="White" BackgroundColor="Transparent" FontSize="14" VerticalOptions="Center" />
+                                </Grid>
+                            </Frame>
 
-                        <Button Text="↻ Refrescar"
-                                Command="{Binding RefreshLogsCommand}"
-                                BackgroundColor="#40000000"
-                                TextColor="White"
-                                FontSize="12"
-                                FontAttributes="Bold"
-                                CornerRadius="4"
-                                HeightRequest="{OnPlatform Android=40, Default=36}"
-                                Padding="15,0"
-                                VerticalOptions="Center" />
+                            <!-- Botones en otra fila, distribuidos horizontalmente -->
+                            <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Start">
+                                <StackLayout Orientation="Horizontal" Spacing="5" VerticalOptions="Center">
+                                    <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Color="White" VerticalOptions="Center" />
+                                    <Label Text="Auto" TextColor="White" VerticalOptions="Center" FontSize="13" FontAttributes="Bold" />
+                                </StackLayout>
 
-                        <Button Text="🗑️ Limpiar"
-                                Command="{Binding ClearLogsCommand}"
-                                BackgroundColor="#60DC2626"
-                                TextColor="White"
-                                FontSize="12"
-                                FontAttributes="Bold"
-                                CornerRadius="4"
-                                HeightRequest="{OnPlatform Android=40, Default=36}"
-                                Padding="15,0"
-                                VerticalOptions="Center" />
-                    </StackLayout>
-                </Grid>
+                                <Button Text="↻ Refrescar"
+                                        Command="{Binding RefreshLogsCommand}"
+                                        BackgroundColor="#40000000"
+                                        TextColor="White"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        CornerRadius="4"
+                                        HeightRequest="40"
+                                        Padding="15,0"
+                                        VerticalOptions="Center" />
+
+                                <Button Text="🗑️ Limpiar"
+                                        Command="{Binding ClearLogsCommand}"
+                                        BackgroundColor="#60DC2626"
+                                        TextColor="White"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        CornerRadius="4"
+                                        HeightRequest="40"
+                                        Padding="15,0"
+                                        VerticalOptions="Center" />
+                            </StackLayout>
+                        </VerticalStackLayout>
+                    </On>
+                </OnPlatform>
 
                 <!-- Fila 2: Sub Filtros (Nivel, Cantidad, Fechas) -->
                 <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Center">
@@ -152,7 +200,7 @@
                     <OnPlatform x:TypeArguments="DataTemplate">
                         <!-- PLATAFORMAS DE ESCRITORIO (WINUI) -->
                         <On Platform="WinUI, MacCatalyst">
-                            <DataTemplate>
+                            <DataTemplate x:DataType="models:LogMessage">
                                 <!-- Se añade un ScrollView Horizontal localmente por registro SOLO para PC para no reprimir MAUI Android -->
                                 <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Default">
                                     <Grid ColumnDefinitions="160, 90, 160, 500" Padding="20,12" BackgroundColor="{AppThemeBinding Light={StaticResource RowBGLight}, Dark={StaticResource RowBGDark}}">
@@ -232,7 +280,7 @@
 
                         <!-- PLATAFORMAS MOVILES (ANDROID/IOS) - DISEÑO ATRACTIVO OPTIMIZADO -->
                         <On Platform="Android, iOS">
-                            <DataTemplate>
+                            <DataTemplate x:DataType="models:LogMessage">
                                 <VerticalStackLayout Padding="10,8" Spacing="2" BackgroundColor="{AppThemeBinding Light={StaticResource RowBGLight}, Dark={StaticResource RowBGDark}}">
                                     <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
                                         <!-- Nivel -->
