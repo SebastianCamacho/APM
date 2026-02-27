@@ -6,13 +6,57 @@ using UI; // Añadir este using para LoginSuccessMessage (definido en App.xaml.c
 using Microsoft.Maui.ApplicationModel;
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using AppsielPrintManager.Core.Interfaces;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace UI.ViewModels
 {
     public partial class LoginViewModel : ObservableObject
     {
+        private readonly IAppConfigRepository _appConfigRepository;
+
+        public LoginViewModel(IAppConfigRepository appConfigRepository)
+        {
+            _appConfigRepository = appConfigRepository;
+            InitializeConfigAsync();
+        }
+
+        private async void InitializeConfigAsync()
+        {
+            var config = await _appConfigRepository.GetConfigAsync();
+            if (string.IsNullOrEmpty(config.AdminPasswordHash))
+            {
+                config.AdminPasswordHash = ComputeSha256Hash("AppsielAPM123*");
+                await _appConfigRepository.SaveConfigAsync(config);
+            }
+        }
+
+        private string ComputeSha256Hash(string rawData)
+        {
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+                return builder.ToString();
+            }
+        }
+
         [ObservableProperty]
-        private string password = "123456";
+        private string password = "AppsielAPM123*";
+
+        [ObservableProperty]
+        private bool isPasswordHidden = true;
+
+        [RelayCommand]
+        private void TogglePasswordVisibility()
+        {
+            IsPasswordHidden = !IsPasswordHidden;
+        }
 
         [ObservableProperty]
         private string errorMessage;
@@ -20,14 +64,22 @@ namespace UI.ViewModels
         [ObservableProperty]
         private bool hasError;
 
-        private const string CorrectPassword = "123456"; // Contraseña estática por ahora
-
         [RelayCommand]
         private async Task Login()
         {
-
             HasError = false;
-            if (Password == CorrectPassword)
+            var config = await _appConfigRepository.GetConfigAsync();
+
+            // Asegurar que exista la contraseña por defecto si se borró el json
+            if (string.IsNullOrEmpty(config.AdminPasswordHash))
+            {
+                config.AdminPasswordHash = ComputeSha256Hash("AppsielAPM123*");
+                await _appConfigRepository.SaveConfigAsync(config);
+            }
+
+            string inputHash = ComputeSha256Hash(Password ?? "");
+
+            if (inputHash == config.AdminPasswordHash)
             {
                 // Enviar mensaje de login exitoso
                 WeakReferenceMessenger.Default.Send(new LoginSuccessMessage());
@@ -97,7 +149,7 @@ namespace UI.ViewModels
                     intent.SetData(Android.Net.Uri.Parse($"package:{context.PackageName}"));
                     intent.SetFlags(Android.Content.ActivityFlags.NewTask);
                     context.StartActivity(intent);
-                    
+
                     // 3. Esperar confirmación
                     if (Application.Current?.MainPage != null)
                     {
@@ -107,7 +159,7 @@ namespace UI.ViewModels
                             "Sí, ya está concedido");
 #pragma warning restore CS0618
                     }
-                    
+
                     // 4. Validar el resultado de la acción del usuario
                     if (!pm.IsIgnoringBatteryOptimizations(context.PackageName))
                     {
@@ -122,7 +174,7 @@ namespace UI.ViewModels
                                 "Entendido");
 #pragma warning restore CS0618
                         }
-                        
+
                         // Cerrar app si no cumplió
                         Application.Current?.Quit();
                         return;

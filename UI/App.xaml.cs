@@ -10,7 +10,6 @@ namespace UI
     public partial class App : Application
     {
         private readonly IServiceProvider _serviceProvider;
-        private IWorkerServiceManager _workerServiceManager;
         private ITrayAppService _trayAppService;
         private IPlatformService _platformService;
 
@@ -21,8 +20,8 @@ namespace UI
             _serviceProvider = serviceProvider;
             UserAppTheme = AppTheme.Light;
 
-            // Establecer LoginView como MainPage inicial
-            MainPage = new LoginView();
+            // Establecer LoginView como MainPage inicial usando DI
+            MainPage = _serviceProvider.GetService<LoginView>();
 
             // Suscribirse al mensaje de login exitoso
             WeakReferenceMessenger.Default.Register<LoginSuccessMessage>(this, (r, m) =>

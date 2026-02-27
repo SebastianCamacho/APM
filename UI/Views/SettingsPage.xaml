@@ -6,36 +6,53 @@
              x:Class="UI.Views.SettingsPage"
              Title="Configuración"
              x:DataType="viewmodels:SettingsViewModel">
-    <Grid RowDefinitions="Auto, *, Auto" Padding="20">
-        <Label Grid.Row="0" Text="Plantillas de Impresión" Style="{StaticResource Headline}" HorizontalOptions="Center" />
-
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Templates}" SelectionMode="None">
-            <CollectionView.EmptyView>
-                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
-                    <Label Text="No se encontraron plantillas." FontSize="Medium" TextColor="Gray" />
-                    <Button Text="Cargar Plantillas" Command="{Binding LoadTemplatesCommand}" Margin="10" />
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <!-- Sección de Seguridad -->
+            <Label Text="Seguridad" Style="{StaticResource Headline}" HorizontalOptions="Center" />
+            <Border StrokeShape="RoundRectangle 10" Padding="15" BackgroundColor="{AppThemeBinding Light=White, Dark=#333}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Cambiar Contraseña Maestra (Requerida al Iniciar)" FontAttributes="Bold" />
+                    <Label Text="Solo a-z, A-Z, 0-9 y caracteres * - . /" FontSize="Small" TextColor="Gray" />
+                    <Entry IsPassword="True" Placeholder="Contraseña actual" Text="{Binding CurrentPassword}" />
+                    <Entry IsPassword="True" Placeholder="Nueva contraseña" Text="{Binding NewPassword}" />
+                    <Entry IsPassword="True" Placeholder="Confirmar nueva contraseña" Text="{Binding ConfirmPassword}" />
+                    <Label Text="{Binding PasswordErrorMessage}" TextColor="Red" IsVisible="{Binding HasPasswordError}" />
+                    <Button Text="Guardar Contraseña" Command="{Binding ChangePasswordCommand}" HorizontalOptions="End" />
                 </VerticalStackLayout>
-            </CollectionView.EmptyView>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:PrintTemplate">
-                    <Border StrokeShape="RoundRectangle 10" Margin="0,5" Padding="15" BackgroundColor="{AppThemeBinding Light=White, Dark=#333}">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SettingsViewModel}}, Path=EditTemplateCommand}" CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
-                        <Grid ColumnDefinitions="*, Auto">
-                            <VerticalStackLayout Grid.Column="0">
-                                <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="Medium" />
-                                <Label Text="{Binding DocumentType, StringFormat='Tipo: {0}'}" TextColor="Gray" />
-                            </VerticalStackLayout>
-                            <Image Grid.Column="1" Source="icono_editar.png" HeightRequest="24" WidthRequest="24" />
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            </Border>
 
-        <Button Grid.Row="2" Text="Refrescar Plantillas" Command="{Binding LoadTemplatesCommand}" />
+            <!-- Sección de Plantillas -->
+            <Label Text="Plantillas de Impresión" Style="{StaticResource Headline}" HorizontalOptions="Center" Margin="0,10,0,0"/>
 
-        <ActivityIndicator Grid.RowSpan="3" IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" />
-    </Grid>
+            <CollectionView ItemsSource="{Binding Templates}" SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
+                        <Label Text="No se encontraron plantillas." FontSize="Medium" TextColor="Gray" />
+                        <Button Text="Cargar Plantillas" Command="{Binding LoadTemplatesCommand}" Margin="10" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:PrintTemplate">
+                        <Border StrokeShape="RoundRectangle 10" Margin="0,5" Padding="15" BackgroundColor="{AppThemeBinding Light=White, Dark=#333}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SettingsViewModel}}, Path=EditTemplateCommand}" CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <VerticalStackLayout Grid.Column="0">
+                                    <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="Medium" />
+                                    <Label Text="{Binding DocumentType, StringFormat='Tipo: {0}'}" TextColor="Gray" />
+                                </VerticalStackLayout>
+                                <Image Grid.Column="1" Source="icono_editar.png" HeightRequest="24" WidthRequest="24" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Button Text="Refrescar Plantillas" Command="{Binding LoadTemplatesCommand}" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

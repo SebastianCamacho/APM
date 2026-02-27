@@ -32,6 +32,7 @@ namespace UI
             builder.Services.AddSingleton<ILoggingService, Logger>();
             builder.Services.AddSingleton<ILoggerProvider>(sp => new AppsielLoggerProvider(sp.GetRequiredService<ILoggingService>()));
             builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
+            builder.Services.AddSingleton<IAppConfigRepository, AppConfigRepository>();
             builder.Services.AddSingleton<ITemplateRepository, TemplateRepository>();
             builder.Services.AddSingleton<ITicketRenderer, TicketRendererService>();
             builder.Services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>();
@@ -75,6 +76,7 @@ namespace UI
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<TemplateEditorViewModel>();
             builder.Services.AddTransient<AboutViewModel>();
+            builder.Services.AddTransient<LoginViewModel>();
 
             builder.Services.AddTransient<LoginView>();
             builder.Services.AddSingleton<AppShell>();

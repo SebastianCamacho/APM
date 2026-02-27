@@ -15,6 +15,7 @@ var builder = Host.CreateDefaultBuilder(args) // Changed to CreateDefaultBuilder
 
         services.AddSingleton<IWebSocketService, WebSocketServerService>();
         services.AddSingleton<ISettingsRepository, SettingsRepository>();
+        services.AddSingleton<IAppConfigRepository, AppConfigRepository>();
         services.AddSingleton<ITemplateRepository, TemplateRepository>(); // Agregado para resolver dependencia en TicketRendererService
         services.AddSingleton<ITicketRenderer, TicketRendererService>();
         services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>();

@@ -6,10 +6,6 @@
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False"
              Title="Login">
-    
-    <ContentPage.BindingContext>
-        <viewmodels:LoginViewModel />
-    </ContentPage.BindingContext>
 
     <VerticalStackLayout
         Padding="30"
@@ -22,10 +18,28 @@
                FontAttributes="Bold"
                HorizontalOptions="Center" />
 
-        <Entry Placeholder="Contraseña"
-               IsPassword="True"
-               WidthRequest="250"
-               Text="{Binding Password}" />
+        <Grid WidthRequest="250" ColumnDefinitions="*, Auto" HorizontalOptions="Center">
+            <Entry Grid.Column="0"
+                   Placeholder="Contraseña"
+                   IsPassword="{Binding IsPasswordHidden}"
+                   Text="{Binding Password}" />
+            <Button Grid.Column="1"
+                    Command="{Binding TogglePasswordVisibilityCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                    FontSize="18"
+                    Padding="10,0"
+                    VerticalOptions="Center">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding IsPasswordHidden}" Value="True">
+                        <Setter Property="Text" Value="👁" />
+                    </DataTrigger>
+                    <DataTrigger TargetType="Button" Binding="{Binding IsPasswordHidden}" Value="False">
+                        <Setter Property="Text" Value="🙈" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+        </Grid>
 
         <Button Text="Entrar"
                 WidthRequest="250"

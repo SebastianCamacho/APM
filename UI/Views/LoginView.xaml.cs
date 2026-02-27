@@ -2,9 +2,10 @@ namespace UI.Views
 {
     public partial class LoginView : ContentPage
     {
-        public LoginView()
+        public LoginView(ViewModels.LoginViewModel viewModel)
         {
             InitializeComponent();
+            BindingContext = viewModel;
         }
 
         protected override async void OnAppearing()
