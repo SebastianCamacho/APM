@@ -15,10 +15,12 @@ namespace UI.ViewModels
     public partial class LoginViewModel : ObservableObject
     {
         private readonly IAppConfigRepository _appConfigRepository;
+        private readonly IPlatformService _platformService;
 
-        public LoginViewModel(IAppConfigRepository appConfigRepository)
+        public LoginViewModel(IAppConfigRepository appConfigRepository, IPlatformService platformService)
         {
             _appConfigRepository = appConfigRepository;
+            _platformService = platformService;
             InitializeConfigAsync();
         }
 
@@ -63,6 +65,31 @@ namespace UI.ViewModels
 
         [ObservableProperty]
         private bool hasError;
+
+        [RelayCommand]
+        private async Task StopService()
+        {
+            try
+            {
+                await _platformService.StopBackgroundServiceAsync();
+
+                // Mensaje temporal de éxito o cerrado total dependiendo de la plataforma
+                if (Application.Current?.MainPage != null)
+                {
+#pragma warning disable CS0618
+                    await Application.Current.MainPage.DisplayAlert(
+                        "Servicio Detenido",
+                        "El motor de impresión en segundo plano ha sido detenido correctamente.",
+                        "OK");
+#pragma warning restore CS0618
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Error al detener el servicio: {ex.Message}";
+                HasError = true;
+            }
+        }
 
         [RelayCommand]
         private async Task Login()

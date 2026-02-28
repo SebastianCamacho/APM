@@ -26,6 +26,28 @@ namespace UI.ViewModels
         [ObservableProperty]
         private bool isBusy;
 
+        // Propiedades de Acordeón
+        [ObservableProperty]
+        private bool isSecurityExpanded = false;
+
+        [ObservableProperty]
+        private bool isTemplatesExpanded = true;
+
+        [RelayCommand]
+        private void ToggleSection(string section)
+        {
+            if (section == "Security")
+            {
+                IsSecurityExpanded = !IsSecurityExpanded;
+                if (IsSecurityExpanded) IsTemplatesExpanded = false; // Acordeón exclusivo (opcional)
+            }
+            else if (section == "Templates")
+            {
+                IsTemplatesExpanded = !IsTemplatesExpanded;
+                if (IsTemplatesExpanded) IsSecurityExpanded = false; // Acordeón exclusivo (opcional)
+            }
+        }
+
         // Propiedades para Cambio de Contraseña
         [ObservableProperty]
         private string currentPassword = string.Empty;

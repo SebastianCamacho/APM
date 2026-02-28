@@ -7,47 +7,88 @@
              Shell.TabBarIsVisible="False"
              Title="Login">
 
-    <VerticalStackLayout
-        Padding="30"
-        Spacing="25"
-        VerticalOptions="Center"
-        HorizontalOptions="Center">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Entry">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
-        <Label Text="Iniciar Sesión"
-               FontSize="32"
-               FontAttributes="Bold"
-               HorizontalOptions="Center" />
+    <Grid>
+        <!-- Contenido Central del Login -->
+        <VerticalStackLayout
+            Padding="30"
+            Spacing="30"
+            VerticalOptions="Center"
+            HorizontalOptions="Center">
 
-        <Grid WidthRequest="250" ColumnDefinitions="*, Auto" HorizontalOptions="Center">
-            <Entry Grid.Column="0"
-                   Placeholder="Contraseña"
-                   IsPassword="{Binding IsPasswordHidden}"
-                   Text="{Binding Password}" />
-            <Button Grid.Column="1"
-                    Command="{Binding TogglePasswordVisibilityCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                    FontSize="18"
-                    Padding="10,0"
-                    VerticalOptions="Center">
-                <Button.Triggers>
-                    <DataTrigger TargetType="Button" Binding="{Binding IsPasswordHidden}" Value="True">
-                        <Setter Property="Text" Value="👁" />
-                    </DataTrigger>
-                    <DataTrigger TargetType="Button" Binding="{Binding IsPasswordHidden}" Value="False">
-                        <Setter Property="Text" Value="🙈" />
-                    </DataTrigger>
-                </Button.Triggers>
-            </Button>
-        </Grid>
+            <Image Source="app_icon.png" HeightRequest="100" HorizontalOptions="Center" Margin="0,0,0,10"/>
 
-        <Button Text="Entrar"
-                WidthRequest="250"
-                Command="{Binding LoginCommand}" />
+            <Label Text="Iniciar Sesión"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource Primary}"
+                   HorizontalOptions="Center" />
 
-        <Label Text="{Binding ErrorMessage}"
-               TextColor="Red"
-               HorizontalOptions="Center"
-               IsVisible="{Binding HasError}" />
-    </VerticalStackLayout>
+            <VerticalStackLayout Spacing="8" WidthRequest="280" HorizontalOptions="Center">
+                <Label Text="Contraseña" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="45">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Entry Grid.Column="0"
+                               Placeholder="Ingresa la contraseña..."
+                               IsPassword="{Binding IsPasswordHidden}"
+                               Text="{Binding Password}"
+                               VerticalOptions="Center"
+                               Margin="10,0,0,0" />
+                        <ImageButton Grid.Column="1"
+                                     Command="{Binding TogglePasswordVisibilityCommand}"
+                                     BackgroundColor="Transparent"
+                                     WidthRequest="24"
+                                     HeightRequest="24"
+                                     Margin="10,0"
+                                     VerticalOptions="Center">
+                            <ImageButton.Triggers>
+                                <DataTrigger TargetType="ImageButton" Binding="{Binding IsPasswordHidden}" Value="True">
+                                    <Setter Property="Source" Value="icono_visible.png" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="ImageButton" Binding="{Binding IsPasswordHidden}" Value="False">
+                                    <Setter Property="Source" Value="icono_no_visible.png" />
+                                </DataTrigger>
+                            </ImageButton.Triggers>
+                        </ImageButton>
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+
+            <Button Text="Entrar"
+                    WidthRequest="280"
+                    HeightRequest="45"
+                    FontSize="15"
+                    CornerRadius="8"
+                    Command="{Binding LoginCommand}" />
+
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="Red"
+                   HorizontalOptions="Center"
+                   IsVisible="{Binding HasError}" />
+        </VerticalStackLayout>
+
+        <!-- Botón para detener el servicio en la esquina inferior derecha (Solo visible en Android) -->
+        <VerticalStackLayout VerticalOptions="End" HorizontalOptions="End" Margin="20"
+                             IsVisible="{OnPlatform Android=True, Default=False}">
+            <ImageButton Source="icono_stop.png"
+                         Command="{Binding StopServiceCommand}"
+                         WidthRequest="40"
+                         HeightRequest="40"
+                         BackgroundColor="Transparent"
+                         ToolTipProperties.Text="Detener Servicio de Impresión" />
+            <Label Text="Detener"
+                   FontSize="10"
+                   TextColor="Gray"
+                   HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </Grid>
 </ContentPage>

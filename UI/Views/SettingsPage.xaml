@@ -8,49 +8,155 @@
              x:DataType="viewmodels:SettingsViewModel">
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
-            <!-- Sección de Seguridad -->
-            <Label Text="Seguridad" Style="{StaticResource Headline}" HorizontalOptions="Center" />
-            <Border StrokeShape="RoundRectangle 10" Padding="15" BackgroundColor="{AppThemeBinding Light=White, Dark=#333}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Cambiar Contraseña Maestra (Requerida al Iniciar)" FontAttributes="Bold" />
-                    <Label Text="Solo a-z, A-Z, 0-9 y caracteres * - . /" FontSize="Small" TextColor="Gray" />
-                    <Entry IsPassword="True" Placeholder="Contraseña actual" Text="{Binding CurrentPassword}" />
-                    <Entry IsPassword="True" Placeholder="Nueva contraseña" Text="{Binding NewPassword}" />
-                    <Entry IsPassword="True" Placeholder="Confirmar nueva contraseña" Text="{Binding ConfirmPassword}" />
-                    <Label Text="{Binding PasswordErrorMessage}" TextColor="Red" IsVisible="{Binding HasPasswordError}" />
-                    <Button Text="Guardar Contraseña" Command="{Binding ChangePasswordCommand}" HorizontalOptions="End" />
-                </VerticalStackLayout>
-            </Border>
 
             <!-- Sección de Plantillas -->
-            <Label Text="Plantillas de Impresión" Style="{StaticResource Headline}" HorizontalOptions="Center" Margin="0,10,0,0"/>
+            <VerticalStackLayout Spacing="0">
+                <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="Transparent" Padding="10">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleSectionCommand}" CommandParameter="Templates" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Label Grid.Column="0" Text="Plantillas de Impresión" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource Primary}" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="▼" FontSize="16" TextColor="{DynamicResource Primary}" VerticalOptions="Center" IsVisible="{Binding IsTemplatesExpanded}" />
+                        <Label Grid.Column="1" Text="▶" FontSize="16" TextColor="{DynamicResource Primary}" VerticalOptions="Center" IsVisible="{Binding IsTemplatesExpanded, Converter={StaticResource InverseBoolConverter}}" />
+                    </Grid>
+                </Border>
 
-            <CollectionView ItemsSource="{Binding Templates}" SelectionMode="None">
-                <CollectionView.EmptyView>
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
-                        <Label Text="No se encontraron plantillas." FontSize="Medium" TextColor="Gray" />
-                        <Button Text="Cargar Plantillas" Command="{Binding LoadTemplatesCommand}" Margin="10" />
-                    </VerticalStackLayout>
-                </CollectionView.EmptyView>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:PrintTemplate">
-                        <Border StrokeShape="RoundRectangle 10" Margin="0,5" Padding="15" BackgroundColor="{AppThemeBinding Light=White, Dark=#333}">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SettingsViewModel}}, Path=EditTemplateCommand}" CommandParameter="{Binding .}" />
-                            </Border.GestureRecognizers>
-                            <Grid ColumnDefinitions="*, Auto">
-                                <VerticalStackLayout Grid.Column="0">
-                                    <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="Medium" />
-                                    <Label Text="{Binding DocumentType, StringFormat='Tipo: {0}'}" TextColor="Gray" />
-                                </VerticalStackLayout>
-                                <Image Grid.Column="1" Source="icono_editar.png" HeightRequest="24" WidthRequest="24" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                <VerticalStackLayout Spacing="10" IsVisible="{Binding IsTemplatesExpanded}" Margin="0,10,0,0">
+                    <CollectionView ItemsSource="{Binding Templates}" SelectionMode="None">
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
+                                <Label Text="No se encontraron plantillas." FontSize="Medium" TextColor="Gray" />
+                                <Button Text="Cargar Plantillas" Command="{Binding LoadTemplatesCommand}" Margin="10" />
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:PrintTemplate">
+                                <Border StrokeShape="RoundRectangle 10" Margin="0,5" Padding="15" BackgroundColor="{AppThemeBinding Light=White, Dark=#333}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SettingsViewModel}}, Path=EditTemplateCommand}" CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <VerticalStackLayout Grid.Column="0">
+                                            <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="Medium" />
+                                            <Label Text="{Binding DocumentType, StringFormat='Tipo: {0}'}" TextColor="Gray" />
+                                        </VerticalStackLayout>
+                                        <Image Grid.Column="1" Source="icono_editar.png" HeightRequest="24" WidthRequest="24" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
 
-            <Button Text="Refrescar Plantillas" Command="{Binding LoadTemplatesCommand}" />
+                    <Button Text="Refrescar Plantillas" Command="{Binding LoadTemplatesCommand}" />
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <BoxView HeightRequest="1" Color="{DynamicResource Gray200}" Margin="0,10" />
+
+            <!-- Sección de Seguridad -->
+            <VerticalStackLayout Spacing="0">
+                <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="Transparent" Padding="10">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleSectionCommand}" CommandParameter="Security" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Label Grid.Column="0" Text="Seguridad" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource Primary}" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="▼" FontSize="16" TextColor="{DynamicResource Primary}" VerticalOptions="Center" IsVisible="{Binding IsSecurityExpanded}" />
+                        <Label Grid.Column="1" Text="▶" FontSize="16" TextColor="{DynamicResource Primary}" VerticalOptions="Center" IsVisible="{Binding IsSecurityExpanded, Converter={StaticResource InverseBoolConverter}}" />
+                    </Grid>
+                </Border>
+
+                <VerticalStackLayout IsVisible="{Binding IsSecurityExpanded}" Margin="0,10,0,0">
+                    <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{DynamicResource Gray200}" Padding="20" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}">
+                        <VerticalStackLayout Spacing="15">
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="Cambiar Contraseña Maestra (Requerida al Iniciar)" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                                <Label Text="Permitido: a-z, A-Z, 0-9 y caracteres * - . /" FontSize="12" TextColor="Gray" />
+                            </VerticalStackLayout>
+                            
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="Contraseña Actual" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                                <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <Entry Grid.Column="0" IsPassword="{Binding IsPasswordHidden}" Placeholder="Ingresa la contraseña actual" Text="{Binding CurrentPassword}" VerticalOptions="Center" Margin="5,0" BackgroundColor="Transparent" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                        <ImageButton Grid.Column="1"
+                                                     Command="{Binding TogglePasswordVisibilityCommand}"
+                                                     BackgroundColor="Transparent"
+                                                     WidthRequest="24"
+                                                     HeightRequest="24"
+                                                     Margin="10,0"
+                                                     VerticalOptions="Center">
+                                            <ImageButton.Triggers>
+                                                <DataTrigger TargetType="ImageButton" Binding="{Binding IsPasswordHidden}" Value="True">
+                                                    <Setter Property="Source" Value="icono_visible.png" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="ImageButton" Binding="{Binding IsPasswordHidden}" Value="False">
+                                                    <Setter Property="Source" Value="icono_no_visible.png" />
+                                                </DataTrigger>
+                                            </ImageButton.Triggers>
+                                        </ImageButton>
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="Nueva Contraseña" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                                <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <Entry Grid.Column="0" IsPassword="{Binding IsPasswordHidden}" Placeholder="Ingresa la nueva contraseña" Text="{Binding NewPassword}" VerticalOptions="Center" Margin="5,0" BackgroundColor="Transparent" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                        <ImageButton Grid.Column="1"
+                                                     Command="{Binding TogglePasswordVisibilityCommand}"
+                                                     BackgroundColor="Transparent"
+                                                     WidthRequest="24"
+                                                     HeightRequest="24"
+                                                     Margin="10,0"
+                                                     VerticalOptions="Center">
+                                            <ImageButton.Triggers>
+                                                <DataTrigger TargetType="ImageButton" Binding="{Binding IsPasswordHidden}" Value="True">
+                                                    <Setter Property="Source" Value="icono_visible.png" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="ImageButton" Binding="{Binding IsPasswordHidden}" Value="False">
+                                                    <Setter Property="Source" Value="icono_no_visible.png" />
+                                                </DataTrigger>
+                                            </ImageButton.Triggers>
+                                        </ImageButton>
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="Confirmar Nueva Contraseña" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
+                                <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <Entry Grid.Column="0" IsPassword="{Binding IsPasswordHidden}" Placeholder="Confirma la nueva contraseña" Text="{Binding ConfirmPassword}" VerticalOptions="Center" Margin="5,0" BackgroundColor="Transparent" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                        <ImageButton Grid.Column="1"
+                                                     Command="{Binding TogglePasswordVisibilityCommand}"
+                                                     BackgroundColor="Transparent"
+                                                     WidthRequest="24"
+                                                     HeightRequest="24"
+                                                     Margin="10,0"
+                                                     VerticalOptions="Center">
+                                            <ImageButton.Triggers>
+                                                <DataTrigger TargetType="ImageButton" Binding="{Binding IsPasswordHidden}" Value="True">
+                                                    <Setter Property="Source" Value="icono_visible.png" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="ImageButton" Binding="{Binding IsPasswordHidden}" Value="False">
+                                                    <Setter Property="Source" Value="icono_no_visible.png" />
+                                                </DataTrigger>
+                                            </ImageButton.Triggers>
+                                        </ImageButton>
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <Label Text="{Binding PasswordErrorMessage}" TextColor="Red" FontSize="13" HorizontalOptions="Center" IsVisible="{Binding HasPasswordError}" />
+                            
+                            <Button Text="Guardar Contraseña" Command="{Binding ChangePasswordCommand}" HeightRequest="42" FontSize="14" CornerRadius="8" HorizontalOptions="End" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
 
             <ActivityIndicator IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" />
         </VerticalStackLayout>
