@@ -17,13 +17,21 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid>
+    <Grid BackgroundColor="{AppThemeBinding Light=#F5F7FA, Dark=#1A1C1E}">
         <!-- Contenido Central del Login -->
-        <VerticalStackLayout
-            Padding="30"
-            Spacing="30"
-            VerticalOptions="Center"
-            HorizontalOptions="Center">
+        <Border StrokeShape="RoundRectangle 16"
+                StrokeThickness="1"
+                Stroke="{AppThemeBinding Light=#EAECEE, Dark=#3A3F45}"
+                BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3033}"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                WidthRequest="350"
+                Padding="30,40">
+            <Border.Shadow>
+                <Shadow Brush="#000000" Offset="0,4" Radius="10" Opacity="0.04" />
+            </Border.Shadow>
+            
+            <VerticalStackLayout Spacing="25">
 
             <Image Source="app_icon.png" HeightRequest="100" HorizontalOptions="Center" Margin="0,0,0,10"/>
 
@@ -46,10 +54,11 @@
                         <ImageButton Grid.Column="1"
                                      Command="{Binding TogglePasswordVisibilityCommand}"
                                      BackgroundColor="Transparent"
-                                     WidthRequest="24"
-                                     HeightRequest="24"
+                                     WidthRequest="16"
+                                     HeightRequest="16"
                                      Margin="10,0"
-                                     VerticalOptions="Center">
+                                     VerticalOptions="Center"
+                                     Opacity="0.8">
                             <ImageButton.Triggers>
                                 <DataTrigger TargetType="ImageButton" Binding="{Binding IsPasswordHidden}" Value="True">
                                     <Setter Property="Source" Value="icono_visible.png" />
@@ -74,7 +83,8 @@
                    TextColor="Red"
                    HorizontalOptions="Center"
                    IsVisible="{Binding HasError}" />
-        </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
 
         <!-- Botón para detener el servicio en la esquina inferior derecha (Solo visible en Android) -->
         <VerticalStackLayout VerticalOptions="End" HorizontalOptions="End" Margin="20"

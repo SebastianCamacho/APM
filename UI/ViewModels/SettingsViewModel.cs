@@ -19,6 +19,13 @@ namespace UI.ViewModels
         private readonly ITemplateRepository _templateRepository;
         private readonly IAppConfigRepository _appConfigRepository;
         private readonly ILoggingService _logger;
+        private readonly IPlatformService _platformService;
+
+        [ObservableProperty]
+        private bool isServiceRunning;
+
+        [ObservableProperty]
+        private string serviceStatusTitle = string.Empty;
 
         [ObservableProperty]
         private ObservableCollection<PrintTemplate> templates = new();
@@ -73,11 +80,37 @@ namespace UI.ViewModels
             IsPasswordHidden = !IsPasswordHidden;
         }
 
-        public SettingsViewModel(ITemplateRepository templateRepository, IAppConfigRepository appConfigRepository, ILoggingService logger)
+        public SettingsViewModel(ITemplateRepository templateRepository, IAppConfigRepository appConfigRepository, ILoggingService logger, IPlatformService platformService)
         {
             _templateRepository = templateRepository;
             _appConfigRepository = appConfigRepository;
             _logger = logger;
+            _platformService = platformService;
+            UpdateServiceStatus();
+        }
+
+        public void UpdateServiceStatus()
+        {
+            IsServiceRunning = _platformService.IsBackgroundServiceRunning;
+            ServiceStatusTitle = IsServiceRunning ? "Servicio Activo" : "Servicio Inactivo";
+        }
+
+        private bool _isMonitoring;
+
+        public async void StartMonitoring()
+        {
+            if (_isMonitoring) return;
+            _isMonitoring = true;
+            while (_isMonitoring)
+            {
+                UpdateServiceStatus();
+                await Task.Delay(1000);
+            }
+        }
+
+        public void StopMonitoring()
+        {
+            _isMonitoring = false;
         }
 
         [RelayCommand]

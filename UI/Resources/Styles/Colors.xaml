@@ -27,6 +27,21 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
+    <!-- Service Status Colors -->
+    <Color x:Key="Running">#1EA565</Color>
+    <Color x:Key="Stopped">#D23232</Color>
+    
+    <Color x:Key="RunningText">#116F42</Color>
+    <Color x:Key="StoppedText">#9D1F1F</Color>
+    
+    <Color x:Key="RunningBg">#DCFCE7</Color>
+    <Color x:Key="StoppedBg">#FEE2E2</Color>
+    
+    <Color x:Key="StartBg">#159154</Color>
+    <Color x:Key="StopBg">#CD2121</Color>
+    <Color x:Key="DisabledBg">#Eef0F2</Color>
+    <Color x:Key="DisabledText">#9BA3AB</Color>
+
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>

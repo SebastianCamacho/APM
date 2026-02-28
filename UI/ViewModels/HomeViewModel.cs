@@ -27,6 +27,9 @@ namespace UI.ViewModels
         [ObservableProperty]
         private int currentClientCount;
 
+        [ObservableProperty]
+        private string serviceStatusTitle;
+
         public HomeViewModel(IPlatformService platformService, ILoggingService logger)
         {
             _platformService = platformService;
@@ -94,6 +97,7 @@ namespace UI.ViewModels
         {
             IsServiceRunning = _platformService.IsBackgroundServiceRunning;
             ServiceStatus = IsServiceRunning ? "En ejecución" : "Detenido";
+            ServiceStatusTitle = IsServiceRunning ? "Servicio Activo" : "Servicio Detenido";
 
             // Actualizar estado del WebSocket
             IsWebSocketServerRunning = _platformService.IsWebSocketServerRunning;
