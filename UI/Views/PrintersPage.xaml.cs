@@ -29,11 +29,11 @@ namespace UI.Views
 #if WINDOWS || MACCATALYST
             if (sender is Border border)
             {
-                // Buscar el StackLayout de acciones ("ActionIcons")
+                // Buscar el contenedor de acciones ("ActionIcons")
                 var actionIcons = border.FindByName<HorizontalStackLayout>("ActionIcons");
                 if (actionIcons != null)
                 {
-                    // Transición suave
+                    actionIcons.IsVisible = true;
                     actionIcons.FadeTo(1, 150);
                 }
             }
@@ -48,8 +48,65 @@ namespace UI.Views
                 var actionIcons = border.FindByName<HorizontalStackLayout>("ActionIcons");
                 if (actionIcons != null)
                 {
-                    actionIcons.FadeTo(0, 150);
+                    actionIcons.FadeTo(0, 150).ContinueWith(t => {
+                        MainThread.BeginInvokeOnMainThread(() => actionIcons.IsVisible = false);
+                    });
                 }
+            }
+#endif
+        }
+
+        // --- Swapping Dinámico para los Botones (Windows) ---
+
+        private void OnEditPointerEntered(object sender, PointerEventArgs e)
+        {
+#if WINDOWS || MACCATALYST
+            if (sender is ImageButton btn)
+            {
+                btn.Source = "icono_edit.png";
+                
+                // Extraer Color PrimaryTintBg según el tema actual (Light/Dark)
+                if (Application.Current != null && Application.Current.Resources.TryGetValue("PrimaryTintBgLight", out var colorL) && Application.Current.Resources.TryGetValue("PrimaryTintBgDark", out var colorD))
+                {
+                   btn.BackgroundColor = (Application.Current.RequestedTheme == AppTheme.Dark) ? (Color)colorD : (Color)colorL;
+                }
+            }
+#endif
+        }
+
+        private void OnEditPointerExited(object sender, PointerEventArgs e)
+        {
+#if WINDOWS || MACCATALYST
+            if (sender is ImageButton btn)
+            {
+                btn.Source = "icono_edit_gray.png";
+                btn.BackgroundColor = Colors.Transparent;
+            }
+#endif
+        }
+
+        private void OnDeletePointerEntered(object sender, PointerEventArgs e)
+        {
+#if WINDOWS || MACCATALYST
+            if (sender is ImageButton btn)
+            {
+                btn.Source = "icono_delete.png";
+                
+                if (Application.Current != null && Application.Current.Resources.TryGetValue("DangerTintBgLight", out var colorL) && Application.Current.Resources.TryGetValue("DangerTintBgDark", out var colorD))
+                {
+                   btn.BackgroundColor = (Application.Current.RequestedTheme == AppTheme.Dark) ? (Color)colorD : (Color)colorL;
+                }
+            }
+#endif
+        }
+
+        private void OnDeletePointerExited(object sender, PointerEventArgs e)
+        {
+#if WINDOWS || MACCATALYST
+            if (sender is ImageButton btn)
+            {
+                btn.Source = "icono_delete_gray.png";
+                btn.BackgroundColor = Colors.Transparent;
             }
 #endif
         }
