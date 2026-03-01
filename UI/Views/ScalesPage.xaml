@@ -108,7 +108,7 @@
                                     
                                     <!-- Punto de Estado Flotante -->
                                     <Border StrokeShape="RoundRectangle 8" StrokeThickness="2" Stroke="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" BackgroundColor="{Binding StatusColor}" 
-                                            HeightRequest="16" WidthRequest="16" HorizontalOptions="End" VerticalOptions="Bottom" TranslationX="5" TranslationY="5" />
+                                            HeightRequest="16" WidthRequest="16" HorizontalOptions="End" VerticalOptions="End" TranslationX="5" TranslationY="5" />
                                 </Grid>
 
                                 <!-- Sección Central: Información de la Báscula -->
