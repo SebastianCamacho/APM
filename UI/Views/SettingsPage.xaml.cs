@@ -18,35 +18,39 @@ namespace UI.Views
             base.OnAppearing();
             _viewModel.StartMonitoring();
             await _viewModel.LoadTemplatesAsync();
-            PulseAnimation();
+#if WINDOWS
+            StartPulseAnimation();
+#endif
         }
 
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
             _viewModel.StopMonitoring();
-            _isPulsing = false;
+            _isAnimating = false;
         }
 
-        private bool _isPulsing;
+        private bool _isAnimating;
 
-        private async void PulseAnimation()
+        private async void StartPulseAnimation()
         {
-            if (_isPulsing) return;
-            _isPulsing = true;
+            if (_isAnimating) return;
+            _isAnimating = true;
 
-            var pulseIndicator = (Microsoft.Maui.Controls.Shapes.Ellipse)this.FindByName("PulseIndicator");
-            if (pulseIndicator == null) return;
-
-            while (_isPulsing)
+            while (_isAnimating)
             {
-                await pulseIndicator.ScaleToAsync(1.5, 800, Easing.CubicOut);
-                await pulseIndicator.FadeToAsync(0, 800, Easing.CubicOut);
+                var aura = this.FindByName<BoxView>("StatusAura");
+                if (aura == null) break;
 
-                pulseIndicator.Scale = 1;
-                pulseIndicator.Opacity = 0.5;
+                aura.Scale = 1;
+                aura.Opacity = 0.6;
 
-                await Task.Delay(200);
+                await Task.WhenAll(
+                    aura.ScaleToAsync(2.5, 1200, Easing.SinOut),
+                    aura.FadeToAsync(0, 1200, Easing.SinOut)
+                );
+
+                await Task.Delay(400);
             }
         }
     }

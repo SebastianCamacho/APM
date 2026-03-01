@@ -17,6 +17,13 @@
     <Color x:Key="Magenta">#D600AA</Color>
     <Color x:Key="MidnightBlue">#190649</Color>
     <Color x:Key="OffBlack">#1f1f1f</Color>
+    <Color x:Key="SuccessIcon">#2E7D32</Color>
+    <Color x:Key="DangerIcon">#C62828</Color>
+    
+    <!-- Glassmorphism Effects -->
+    <Color x:Key="GlassStroke">#60FFFFFF</Color>
+    <Color x:Key="GlassBg">#20FFFFFF</Color>
+    <Color x:Key="GlassPlaceholder">#B0FFFFFF</Color>
 
     <Color x:Key="Gray100">#E1E1E1</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>
@@ -30,6 +37,7 @@
     <!-- Service Status Colors -->
     <Color x:Key="Running">#1EA565</Color>
     <Color x:Key="Stopped">#D23232</Color>
+    <Color x:Key="Success">#21C063</Color>
     
     <Color x:Key="RunningText">#116F42</Color>
     <Color x:Key="StoppedText">#9D1F1F</Color>
@@ -79,6 +87,8 @@
     <Color x:Key="TextMutedLight">#8E9EAA</Color>
     <Color x:Key="TextMutedDark">#8A949E</Color>
     <Color x:Key="TextPurple">#6B21A8</Color>
+    <Color x:Key="HeaderTextPageLight">#333A45</Color>
+    <Color x:Key="HeaderTextPageDark">#E1E5EA</Color>
 
     <!-- Borders & Strokes -->
     <Color x:Key="CardStrokeLight">#EAECEE</Color>

@@ -36,10 +36,29 @@
     </ContentPage.ToolbarItems>
 
     <ContentPage.Content>
-        <Grid RowDefinitions="Auto, *" RowSpacing="20" Padding="{OnPlatform Android='15,20', Default='40,30'}">
+        <Grid RowDefinitions="Auto, Auto, *" RowSpacing="20" Padding="0">
             
+            <!-- Header Toolbar Falso -->
+            <Border Grid.Row="0" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="30,15" Margin="0,0,0,5">
+                <Border.Shadow>
+                    <Shadow Brush="#000000" Offset="0,2" Radius="5" Opacity="0.05" />
+                </Border.Shadow>
+                <Grid ColumnDefinitions="*, Auto">
+                    <Label Grid.Column="0" Text="Básculas" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
+                    <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                        <Grid WidthRequest="12" HeightRequest="12" VerticalOptions="Center">
+                            <BoxView x:Name="StatusAura" WidthRequest="12" HeightRequest="12" CornerRadius="6" 
+                                     BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" Scale="1" Opacity="0.6" />
+                            <BoxView x:Name="StatusDot" WidthRequest="8" HeightRequest="8" CornerRadius="4" 
+                                     BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" VerticalOptions="Center" HorizontalOptions="Center" />
+                        </Grid>
+                        <Label Text="{Binding ServiceStatusTitle}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource HeaderTextPageLight}, Dark={StaticResource HeaderTextPageDark}}" FontAttributes="Bold" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Grid>
+            </Border>
+
             <!-- Encabezado y Acción Principal -->
-            <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
+            <Grid Grid.Row="1" ColumnDefinitions="*, Auto" Padding="{OnPlatform Android='15,0', Default='30,0'}">
                 <VerticalStackLayout Grid.Column="0" Spacing="5" VerticalOptions="Center">
                     <Label Text="Gestión de Básculas" FontSize="28" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
                     <Label Text="Administra y configura las balanzas pesadoras del sistema" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
@@ -52,7 +71,7 @@
             </Grid>
 
             <!-- Grid de Tarjetas de Básculas -->
-            <CollectionView Grid.Row="1" ItemsSource="{Binding Scales}" SelectionMode="None">
+            <CollectionView Grid.Row="2" ItemsSource="{Binding Scales}" SelectionMode="None" Margin="{OnPlatform Android='15,0', Default='30,0'}">
                 <CollectionView.ItemsLayout>
                     <!-- Columnas adaptativas: 1 en móviles, 2 en Desktop -->
                     <GridItemsLayout Orientation="Vertical" Span="{OnPlatform Android=1, Default=2}" VerticalItemSpacing="15" HorizontalItemSpacing="15" />

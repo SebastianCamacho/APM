@@ -49,8 +49,13 @@
                 <Label Grid.Column="0" Text="Impresoras" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
                 <!-- Status Indicator with Pulses (Omitido por ahora si no está en VM, usar hardcoded o bindings reales) -->
                 <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
-                    <Ellipse Fill="#10B981" WidthRequest="10" HeightRequest="10" VerticalOptions="Center" />
-                    <Label Text="Servicio Activo" FontSize="13" TextColor="{AppThemeBinding Light=#333A45, Dark=#E1E5EA}" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Grid WidthRequest="12" HeightRequest="12" VerticalOptions="Center">
+                            <BoxView x:Name="StatusAura" WidthRequest="12" HeightRequest="12" CornerRadius="6" 
+                                     BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" Scale="1" Opacity="0.6" />
+                            <BoxView x:Name="StatusDot" WidthRequest="8" HeightRequest="8" CornerRadius="4" 
+                                     BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" VerticalOptions="Center" HorizontalOptions="Center" />
+                        </Grid>
+                        <Label Text="{Binding ServiceStatusTitle}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource HeaderTextPageLight}, Dark={StaticResource HeaderTextPageDark}}" FontAttributes="Bold" VerticalOptions="Center" />
                 </HorizontalStackLayout>
             </Grid>
         </Border>

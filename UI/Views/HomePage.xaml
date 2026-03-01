@@ -45,10 +45,13 @@
                     <Label Grid.Column="0" Text="Inicio" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
                     <!-- Status Indicator with Pulses -->
                     <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
-                        <!-- Elise for Pulse Animation -->
                         <Grid WidthRequest="12" HeightRequest="12" VerticalOptions="Center">
-                            <Ellipse x:Name="PulseIndicator" Fill="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" Opacity="0.5" Scale="1" />
-                            <Ellipse Fill="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" WidthRequest="8" HeightRequest="8" HorizontalOptions="Center" VerticalOptions="Center" />
+                            <!-- Aura de Pálpito -->
+                            <BoxView x:Name="StatusAura" WidthRequest="12" HeightRequest="12" CornerRadius="6" 
+                                     BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" Scale="1" Opacity="0.6" />
+                            <!-- Punto Principal -->
+                            <BoxView x:Name="StatusDot" WidthRequest="8" HeightRequest="8" CornerRadius="4" 
+                                     BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" VerticalOptions="Center" HorizontalOptions="Center" />
                         </Grid>
                         <Label Text="{Binding ServiceStatusTitle}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" VerticalOptions="Center" />
                     </HorizontalStackLayout>

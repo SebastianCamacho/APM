@@ -11,7 +11,14 @@ namespace UI.ViewModels
     public partial class PrintersViewModel : ObservableObject
     {
         private readonly IPrintService _printService;
+        private readonly IPlatformService _platformService;
         private readonly ILoggingService _logger;
+
+        [ObservableProperty]
+        private bool isServiceRunning;
+
+        [ObservableProperty]
+        private string serviceStatusTitle = "Servicio Inactivo";
 
         [ObservableProperty]
         public ObservableCollection<PrinterSettings> printers;
@@ -21,11 +28,37 @@ namespace UI.ViewModels
 
         public bool HasNoPrinters => Printers == null || Printers.Count == 0;
 
-        public PrintersViewModel(IPrintService printService, ILoggingService logger)
+        public PrintersViewModel(IPrintService printService, ILoggingService logger, IPlatformService platformService)
         {
             _printService = printService;
             _logger = logger;
+            _platformService = platformService;
             Printers = new ObservableCollection<PrinterSettings>();
+            UpdateServiceStatus();
+        }
+
+        public void UpdateServiceStatus()
+        {
+            IsServiceRunning = _platformService.IsBackgroundServiceRunning;
+            ServiceStatusTitle = IsServiceRunning ? "Servicio Activo" : "Servicio Inactivo";
+        }
+
+        private bool _isMonitoring;
+
+        public async void StartMonitoring()
+        {
+            if (_isMonitoring) return;
+            _isMonitoring = true;
+            while (_isMonitoring)
+            {
+                UpdateServiceStatus();
+                await Task.Delay(1000);
+            }
+        }
+
+        public void StopMonitoring()
+        {
+            _isMonitoring = false;
         }
 
         [RelayCommand]

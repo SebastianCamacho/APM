@@ -2,90 +2,119 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:UI.ViewModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="UI.Views.AboutPage"
              x:DataType="viewmodels:AboutViewModel"
              Title="Acerca de"
-             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1E1E2E}">
+             BackgroundColor="{AppThemeBinding Light={StaticResource PageBgLight}, Dark={StaticResource PageBgDark}}">
     
-    <ScrollView>
-        <VerticalStackLayout Spacing="30" Padding="20,40" HorizontalOptions="Center" VerticalOptions="Center">
+    <Grid RowDefinitions="Auto, Auto, *, Auto">
+        
+        <!-- Cabecera de Estado Superior -->
+        <Border Grid.Row="0" Margin="0" Padding="15,10" StrokeThickness="0" 
+                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource CardBgDark}}">
+            <Grid ColumnDefinitions="*, Auto">
+                <Label Grid.Column="0" Text="Soporte" VerticalOptions="Center" 
+                       TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" 
+                       FontSize="12" />
+                
+                <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                    <Grid WidthRequest="12" HeightRequest="12" VerticalOptions="Center">
+                        <!-- Aura de Pálpito -->
+                        <BoxView x:Name="StatusAura" WidthRequest="12" HeightRequest="12" CornerRadius="6" 
+                                 BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" Scale="1" Opacity="0.6" />
+                        <!-- Punto Principal -->
+                        <BoxView x:Name="StatusDot" WidthRequest="8" HeightRequest="8" CornerRadius="4" 
+                                 BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" VerticalOptions="Center" HorizontalOptions="Center" />
+                    </Grid>
+                    <Label Text="{Binding ServiceStatusTitle}" VerticalOptions="Center" 
+                           TextColor="{AppThemeBinding Light={StaticResource HeaderTextPageLight}, Dark={StaticResource HeaderTextPageDark}}" 
+                           FontSize="13" FontAttributes="Bold" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
 
-            <!-- Logo o Ícono Principal -->
-            <Border StrokeShape="RoundRectangle 20" 
-                    Stroke="Transparent"
-                    BackgroundColor="#20FFFFFF" 
-                    HeightRequest="120" 
-                    WidthRequest="120" 
-                    HorizontalOptions="Center"
-                    Shadow="{Shadow Brush=#80000000, Offset='0,10', Opacity=0.3, Radius=20}">
-                <Label Text="🖨️" FontSize="60" HorizontalOptions="Center" VerticalOptions="Center" />
-            </Border>
+        <!-- Título de Página -->
+        <Label Grid.Row="1" Text="Ayuda y Soporte" FontSize="26" FontAttributes="Bold" 
+               TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+               Margin="30,30,30,10" />
 
-            <!-- Título y Versión -->
-            <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
-                <Label Text="Appsiel Print Manager" 
-                       FontSize="26" 
-                       FontAttributes="Bold" 
-                       TextColor="{AppThemeBinding Light=#2C3E50, Dark=#FFFFFF}" 
-                       HorizontalTextAlignment="Center" />
-                <Label Text="{Binding AppVersion, StringFormat='Versión {0}'}" 
-                       FontSize="16" 
-                       TextColor="{AppThemeBinding Light=#7F8C8D, Dark=#AAAAAA}" 
-                       HorizontalTextAlignment="Center" />
+        <ScrollView Grid.Row="2">
+            <VerticalStackLayout Spacing="0" Padding="20">
+                
+                <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" 
+                        Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource CardBgDark}}"
+                        Margin="0,10,0,20">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Opacity="0.05" Radius="10" />
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Padding="30" Spacing="25">
+                        
+                        <!-- Contenedor del Logo/Icono -->
+                        <Border HeightRequest="90" WidthRequest="90" CornerRadius="20" HorizontalOptions="Center"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryTintBgLight}, Dark={StaticResource PrimaryTintBgDark}}"
+                                StrokeThickness="0">
+                            <Image Source="logo_appsiel.png" WidthRequest="60" HeightRequest="60" HorizontalOptions="Center" VerticalOptions="Center" Aspect="AspectFit" />
+                        </Border>
+
+                        <!-- Nombre y Versión -->
+                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label Text="Appsiel Print Manager" FontSize="22" FontAttributes="Bold" 
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" 
+                                   HorizontalTextAlignment="Center" />
+                            
+                            <!-- Version Pill -->
+                            <Border StrokeShape="RoundRectangle 20" BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryTintBgLight}, Dark={StaticResource PrimaryTintBgDark}}"
+                                    Padding="12,4" HorizontalOptions="Center" StrokeThickness="0">
+                                <Label Text="{Binding AppVersion, StringFormat='Versión {0}'}" FontSize="12" FontAttributes="Bold"
+                                       TextColor="{StaticResource Primary}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Descripción -->
+                        <Label Text="Este gestor de impresión garantiza el flujo continuo, rápido y estable de sus facturas, comandas y tickets directamente desde la nube hacia el hardware local de su punto de venta."
+                               FontSize="14" HorizontalTextAlignment="Center" LineHeight="1.5"
+                               TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                               Margin="10,0" />
+
+                        <!-- Botones de Acción Modernos -->
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="15" Margin="0,10,0,0">
+                            <!-- Visitar Sitio Web -->
+                            <Button x:Name="WebsiteBtn" Grid.Column="0" Text="Visitar Sitio Web" 
+                                    ImageSource="icono_globe.png" ContentLayout="Left, 10"
+                                    Command="{Binding OpenWebsiteCommand}"
+                                    BackgroundColor="{StaticResource Primary}" TextColor="White"
+                                    FontSize="13" FontAttributes="Bold" CornerRadius="8" HeightRequest="46" Padding="10,0">
+                                <Button.GestureRecognizers>
+                                    <PointerGestureRecognizer PointerEntered="OnWebsitePointerEntered" PointerExited="OnWebsitePointerExited" />
+                                </Button.GestureRecognizers>
+                            </Button>
+
+                            <!-- Contactar Soporte -->
+                            <Button x:Name="SupportBtn" Grid.Column="1" Text="Contactar Soporte" 
+                                    ImageSource="icono_phone.png" ContentLayout="Left, 10"
+                                    Command="{Binding WhatsAppSupportCommand}"
+                                    BackgroundColor="Transparent" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                                    BorderColor="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}"
+                                    BorderWidth="1.5" FontSize="13" FontAttributes="Bold" CornerRadius="8" HeightRequest="46" Padding="10,0">
+                                <Button.GestureRecognizers>
+                                    <PointerGestureRecognizer PointerEntered="OnSupportPointerEntered" PointerExited="OnSupportPointerExited" />
+                                </Button.GestureRecognizers>
+                            </Button>
+                        </Grid>
+
+                        <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" Margin="-30,10,-30,0" />
+                        
+                        <!-- Copyright -->
+                        <Label Text="© 2026 Appsiel. Todos los derechos reservados." FontSize="11" 
+                               TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" 
+                               HorizontalTextAlignment="Center" />
+
+                    </VerticalStackLayout>
+                </Border>
             </VerticalStackLayout>
-
-            <!-- Tarjeta de Descripción -->
-            <Frame BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#2A2A3C}" 
-                   CornerRadius="15" 
-                   HasShadow="False" 
-                   Padding="20" 
-                   BorderColor="{AppThemeBinding Light=#E0E0E0, Dark=#404050}"
-                   Margin="0,10">
-                <Label Text="Este gestor de impresión garantiza el flujo continuo, rápido y estable de sus facturas, comandas y tickets directamente desde la nube hacia el hardware local de su punto de venta." 
-                       FontSize="15" 
-                       TextColor="{AppThemeBinding Light=#555555, Dark=#DDDDDD}" 
-                       HorizontalTextAlignment="Center"
-                       LineHeight="1.4" />
-            </Frame>
-
-            <!-- Botones de Acción -->
-            <VerticalStackLayout Spacing="15" Margin="0,10">
-                <!-- Botón Web -->
-                <Button Text="🌐 Visitar Sitio Web"
-                        Command="{Binding OpenWebsiteCommand}"
-                        BackgroundColor="{StaticResource Primary}"
-                        TextColor="White"
-                        FontSize="16"
-                        FontAttributes="Bold"
-                        CornerRadius="10"
-                        HeightRequest="50"
-                        Margin="20,0">
-                    <Button.Shadow>
-                        <Shadow Brush="{StaticResource Primary}" Offset="0,5" Opacity="0.4" Radius="10" />
-                    </Button.Shadow>
-                </Button>
-
-                <!-- Botón Soporte -->
-                <Button Text="💬 Contactar Soporte (WhatsApp)"
-                        Command="{Binding WhatsAppSupportCommand}"
-                        BackgroundColor="Transparent"
-                        TextColor="{AppThemeBinding Light=#2C3E50, Dark=#FFFFFF}"
-                        BorderColor="{AppThemeBinding Light=#CCCCCC, Dark=#505050}"
-                        BorderWidth="1"
-                        FontSize="16"
-                        FontAttributes="Bold"
-                        CornerRadius="10"
-                        HeightRequest="50"
-                        Margin="20,0" />
-            </VerticalStackLayout>
-
-            <!-- Derechos de Autor -->
-            <Label Text="© 2026 Appsiel. Todos los derechos reservados." 
-                   FontSize="12" 
-                   TextColor="{AppThemeBinding Light=#A0A0A0, Dark=#777777}" 
-                   HorizontalTextAlignment="Center" 
-                   Margin="0,20,0,0"/>
-            
-        </VerticalStackLayout>
-    </ScrollView>
+        </ScrollView>
+    </Grid>
 </ContentPage>

@@ -75,11 +75,11 @@
                     
                     <!-- Contenedor de Entry con efecto translúcido (Glassmorphism) -->
                     <Border StrokeShape="RoundRectangle 8" StrokeThickness="1" 
-                            Stroke="#60FFFFFF" 
-                            BackgroundColor="#20FFFFFF" 
+                            Stroke="{StaticResource GlassStroke}" 
+                            BackgroundColor="{StaticResource GlassBg}" 
                             HeightRequest="40">
                         <Entry Text="{Binding TemplateName}" Placeholder="Nombre de la Plantilla" 
-                               TextColor="White" PlaceholderColor="#B0FFFFFF"
+                               TextColor="White" PlaceholderColor="{StaticResource GlassPlaceholder}"
                                FontSize="13" BackgroundColor="Transparent" VerticalOptions="Center" Margin="10,0" />
                     </Border>
                 </VerticalStackLayout>
@@ -186,7 +186,7 @@
                                                              Padding="9" BackgroundColor="Transparent" Aspect="AspectFit"
                                                              HorizontalOptions="Center" VerticalOptions="Center">
                                                     <ImageButton.Behaviors>
-                                                        <toolkit:IconTintColorBehavior TintColor="#2E7D32" />
+                                                        <toolkit:IconTintColorBehavior TintColor="{StaticResource SuccessIcon}" />
                                                     </ImageButton.Behaviors>
                                                 </ImageButton>
 
@@ -199,7 +199,7 @@
                                                              BackgroundColor="Transparent" Aspect="AspectFit"
                                                              HorizontalOptions="Center" VerticalOptions="Center">
                                                     <ImageButton.Behaviors>
-                                                        <toolkit:IconTintColorBehavior TintColor="#C62828" />
+                                                        <toolkit:IconTintColorBehavior TintColor="{StaticResource DangerIcon}" />
                                                     </ImageButton.Behaviors>
                                                 </ImageButton>
 
@@ -300,7 +300,7 @@
                                                                                  CommandParameter="{Binding .}" Padding="9" 
                                                                                  BackgroundColor="Transparent" Aspect="AspectFit">
                                                                         <ImageButton.Behaviors>
-                                                                            <toolkit:IconTintColorBehavior TintColor="#C62828" />
+                                                                            <toolkit:IconTintColorBehavior TintColor="{StaticResource DangerIcon}" />
                                                                         </ImageButton.Behaviors>
                                                                     </ImageButton>
                                                                 </Grid>

@@ -3,18 +3,53 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.ApplicationModel;
 using System;
 using System.Threading.Tasks;
+using AppsielPrintManager.Core.Interfaces;
 
 namespace UI.ViewModels
 {
     public partial class AboutViewModel : ObservableObject
     {
+        private readonly IPlatformService _platformService;
+
         [ObservableProperty]
         private string appVersion;
 
-        public AboutViewModel()
+        [ObservableProperty]
+        private bool isServiceRunning;
+
+        [ObservableProperty]
+        private string serviceStatusTitle = "Servicio Inactivo";
+
+        public AboutViewModel(IPlatformService platformService)
         {
+            _platformService = platformService;
             // Obtener la versión de la aplicación de forma dinámica
             AppVersion = VersionTracking.CurrentVersion;
+            UpdateServiceStatus();
+        }
+
+        public void UpdateServiceStatus()
+        {
+            IsServiceRunning = _platformService.IsBackgroundServiceRunning;
+            ServiceStatusTitle = IsServiceRunning ? "Servicio Activo" : "Servicio Inactivo";
+        }
+
+        private bool _isMonitoring;
+
+        public async void StartMonitoring()
+        {
+            if (_isMonitoring) return;
+            _isMonitoring = true;
+            while (_isMonitoring)
+            {
+                UpdateServiceStatus();
+                await Task.Delay(1000);
+            }
+        }
+
+        public void StopMonitoring()
+        {
+            _isMonitoring = false;
         }
 
         [RelayCommand]
