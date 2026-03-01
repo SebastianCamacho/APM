@@ -135,81 +135,18 @@
                                                 BackgroundColor="Transparent" TextColor="{DynamicResource Primary}"
                                                 FontSize="16" FontAttributes="Bold" />
 
-                                        <!-- Nombre de la Sección -->
-                                        <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="1" 
-                                                Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" 
-                                                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PageBgDark}}" 
-                                                HeightRequest="38">
-                                            <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="13" 
-                                                   Placeholder="Nombre Sección" BackgroundColor="Transparent" 
-                                                   VerticalOptions="Center" Margin="10,0" 
-                                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-                                        </Border>
-                                        
-                                        <!-- Grupo de Botones de Acción UNIFICADO (Optimizado para iconos de 24px) -->
-                                        <Border Grid.Column="2" StrokeShape="RoundRectangle 8" StrokeThickness="1" 
-                                                Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" 
-                                                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PageBgDark}}" 
-                                                HeightRequest="42" Padding="0">
-                                            
-                                            <Grid ColumnDefinitions="42, 1, 42, 1, 42, 1, 42" ColumnSpacing="0">
-                                                
-                                                <!-- Subir -->
-                                                <ImageButton Grid.Column="0" Source="icono_up.png" 
-                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" 
-                                                             CommandParameter="{Binding .}" Padding="9" 
-                                                             BackgroundColor="Transparent" Aspect="AspectFit"
-                                                             HorizontalOptions="Center" VerticalOptions="Center">
-                                                    <ImageButton.Behaviors>
-                                                        <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
-                                                    </ImageButton.Behaviors>
-                                                </ImageButton>
+                                    <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
+                                        <!-- SAFE MODE: FontSize 14 -->
+                                        <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="14" Placeholder="Nombre Sección" BackgroundColor="Transparent" VerticalOptions="Center" Margin="5,0" TextColor="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                                    </Border>
+                                    
+                                    <Button Grid.Column="2" Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" CommandParameter="{Binding .}" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" BackgroundColor="{DynamicResource Primary}" />
+                                    <Button Grid.Column="3" Text="↓" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveDownCommand}" CommandParameter="{Binding .}" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" BackgroundColor="{DynamicResource Primary}" />
+                                    <Button Grid.Column="4" Text="+" Command="{Binding AddElementCommand}" BackgroundColor="#2E7D32" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
+                                    <Button Grid.Column="5" Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=RemoveSectionCommand}" CommandParameter="{Binding .}" BackgroundColor="#C62828" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
+                                </Grid>
 
-                                                <BoxView Grid.Column="1" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
-
-                                                <!-- Bajar -->
-                                                <ImageButton Grid.Column="2" Source="icono_down.png" 
-                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveDownCommand}" 
-                                                             CommandParameter="{Binding .}" Padding="9" 
-                                                             BackgroundColor="Transparent" Aspect="AspectFit"
-                                                             HorizontalOptions="Center" VerticalOptions="Center">
-                                                    <ImageButton.Behaviors>
-                                                        <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
-                                                    </ImageButton.Behaviors>
-                                                </ImageButton>
-
-                                                <BoxView Grid.Column="3" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
-
-                                                <!-- Añadir Elemento -->
-                                                <ImageButton Grid.Column="4" Source="icono_anadir.png" 
-                                                             Command="{Binding AddElementCommand}" 
-                                                             Padding="9" BackgroundColor="Transparent" Aspect="AspectFit"
-                                                             HorizontalOptions="Center" VerticalOptions="Center">
-                                                    <ImageButton.Behaviors>
-                                                        <toolkit:IconTintColorBehavior TintColor="{StaticResource SuccessIcon}" />
-                                                    </ImageButton.Behaviors>
-                                                </ImageButton>
-
-                                                <BoxView Grid.Column="5" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
-
-                                                <!-- Eliminar Sección -->
-                                                <ImageButton Grid.Column="6" Source="icono_delete.png" 
-                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=RemoveSectionCommand}" 
-                                                             CommandParameter="{Binding .}" Padding="9" 
-                                                             BackgroundColor="Transparent" Aspect="AspectFit"
-                                                             HorizontalOptions="Center" VerticalOptions="Center">
-                                                    <ImageButton.Behaviors>
-                                                        <toolkit:IconTintColorBehavior TintColor="{StaticResource DangerIcon}" />
-                                                    </ImageButton.Behaviors>
-                                                </ImageButton>
-
-                                            </Grid>
-                                        </Border>
-                                    </Grid>
-                                </Border>
-
-                                <!-- Contenido de la Sección (Configuración) -->
-                                <VerticalStackLayout Spacing="12" Padding="18" IsVisible="{Binding IsExpanded}">
+                                <VerticalStackLayout Spacing="8" IsVisible="{Binding IsExpanded}">
                                     <!-- SAFE MODE: ColumnSpacing 5 -->
                                     <Grid ColumnDefinitions="Auto, *, Auto, *, Auto, 1.5*" ColumnSpacing="5">
                                         <Label Grid.Column="0" Text="Tipo:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
