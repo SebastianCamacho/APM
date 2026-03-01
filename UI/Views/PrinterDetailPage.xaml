@@ -4,162 +4,205 @@
              xmlns:viewmodels="clr-namespace:UI.ViewModels"
              xmlns:converters="clr-namespace:UI.Converters"
              x:Class="UI.Views.PrinterDetailPage"
-             Title="Detalle de Impresora"
-             x:DataType="viewmodels:PrinterDetailViewModel">
+             Title="Configuración de Impresora"
+             x:DataType="viewmodels:PrinterDetailViewModel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource PageBgLight}, Dark={StaticResource PageBgDark}}">
 
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
             <converters:NumericToStringConverter x:Key="NumericToStringConverter" />
             
-            <Style x:Key="EditorInputStyle" TargetType="View">
-                <Setter Property="Margin" Value="2" />
-            </Style>
+            <!-- Estilo Premium para Entradas -->
             <Style TargetType="Entry">
                 <Setter Property="FontSize" Value="14" />
-                <Setter Property="TextColor" Value="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
                 <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
             </Style>
+
+            <!-- Estilo Premium para Pickers -->
             <Style TargetType="Picker">
                 <Setter Property="FontSize" Value="14" />
-                <Setter Property="TitleColor" Value="{DynamicResource Gray500}" />
-                <Setter Property="TextColor" Value="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
                 <Setter Property="BackgroundColor" Value="Transparent" />
             </Style>
 
-            <Style x:Key="ButtonOutline" TargetType="Button">
-                <Setter Property="BackgroundColor" Value="Transparent" />
-                <Setter Property="BorderColor" Value="{DynamicResource Primary}" />
-                <Setter Property="BorderWidth" Value="1" />
-                <Setter Property="TextColor" Value="{DynamicResource Primary}" />
-                <Setter Property="CornerRadius" Value="8" />
+            <!-- Estilo de Contenedores de Input (Los bordes grises) -->
+            <Style x:Key="InputContainerStyle" TargetType="Border">
+                <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+                <Setter Property="StrokeThickness" Value="1" />
+                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource NeutralTintBgLight}, Dark={StaticResource NeutralTintBgDark}}" />
+                <Setter Property="HeightRequest" Value="{OnPlatform Android=40, Default=35}" />
+            </Style>
+
+            <!-- Estilo para Labels Titulares de Campo -->
+            <Style x:Key="FieldLabelStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto, *, Auto">
-        <!-- Header -->
-        <Border Grid.Row="0" Padding="10,12" BackgroundColor="{DynamicResource Primary}" StrokeThickness="0">
-            <Label Text="Configuración de Impresora" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource White}" HorizontalOptions="Center" />
-        </Border>
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="{OnPlatform Android='10,15', Default='30,10'}" Spacing="{OnPlatform Android=15, Default=10}" HorizontalOptions="{OnPlatform Android=Fill, Default=Fill}" MaximumWidthRequest="1000" WidthRequest="{OnPlatform Windows=800}">
+                
+                <!-- Encabezado de la Página -->
+                <HorizontalStackLayout Spacing="10" VerticalOptions="Center" Margin="{OnPlatform Android='5,0,0,5', Default='0,0,0,5'}">
+                    <Label Text="Configuración de Impresora" FontSize="22" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                </HorizontalStackLayout>
 
-        <ScrollView Grid.Row="1" Padding="20">
-            <Border StrokeShape="RoundRectangle 12" Padding="20" StrokeThickness="1" Stroke="{DynamicResource Gray200}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" HorizontalOptions="Center" VerticalOptions="Start">
-                <VerticalStackLayout Spacing="15" WidthRequest="320">
+                <!-- Tarjeta Principal Blanca -->
+                <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="{OnPlatform Android='15', Default='25,15'}">
+                    <VerticalStackLayout Spacing="{OnPlatform Android=20, Default=12}">
 
-                    <!-- ID Impresora -->
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="ID de Impresora" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
-                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                            <Entry Text="{Binding Printer.PrinterId}" Placeholder="Ej: ImpresoraCocina" VerticalOptions="Center" Margin="5,0"/>
-                        </Border>
-                    </VerticalStackLayout>
-
-                    <!-- Tipo de Impresora -->
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="Tipo de Impresora" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
-                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                            <Picker SelectedItem="{Binding SelectedPrinterType}" ItemsSource="{Binding PrinterTypes}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
-                        </Border>
-                    </VerticalStackLayout>
-
-                    <!-- Tipo de Conexión -->
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="Tipo de Conexión" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
-                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                            <Picker SelectedItem="{Binding SelectedConnectionType}" ItemsSource="{Binding ConnectionTypes}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
-                        </Border>
-                    </VerticalStackLayout>
-
-                    <!-- IP Address (Solo TCP) -->
-                    <VerticalStackLayout Spacing="5" IsVisible="{Binding IsTcpConnection}">
-                        <Label Text="Dirección IP" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
-                        <Grid ColumnDefinitions="*,Auto,*,Auto,*,Auto,*" ColumnSpacing="4">
-                            <Border Grid.Column="0" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                                <Entry Text="{Binding IpSegment1}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                        <!-- FILA 1: ID de Impresora (Ancho completo) -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="ID de Impresora" Style="{StaticResource FieldLabelStyle}" />
+                            <Border Style="{StaticResource InputContainerStyle}">
+                                <Entry Text="{Binding Printer.PrinterId}" Placeholder="Ej: ImpresoraCocina" VerticalOptions="Center" Margin="10,0"/>
                             </Border>
-                            <Label Grid.Column="1" Text="." VerticalOptions="Center" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+
+                        <!-- FILA 2: Tipo de Impresora y Tipo de Conexión (Dinámico) -->
+                        <Grid ColumnDefinitions="{OnPlatform Android='*', Default='*,*'}" RowDefinitions="{OnPlatform Android='Auto,Auto', Default='Auto'}" ColumnSpacing="20" RowSpacing="{OnPlatform Android=20, Default=15}">
                             
-                            <Border Grid.Column="2" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                                <Entry Text="{Binding IpSegment2}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
-                            </Border>
-                            <Label Grid.Column="3" Text="." VerticalOptions="Center" FontAttributes="Bold" />
+                            <!-- Tipo de Impresora -->
+                            <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="4">
+                                <Label Text="Tipo de Impresora" Style="{StaticResource FieldLabelStyle}" />
+                                <Border Style="{StaticResource InputContainerStyle}">
+                                    <Picker SelectedItem="{Binding SelectedPrinterType}" ItemsSource="{Binding PrinterTypes}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <!-- Tipo de Conexión -->
+                            <VerticalStackLayout Grid.Row="{OnPlatform Android=1, Default=0}" Grid.Column="{OnPlatform Android=0, Default=1}" Spacing="4">
+                                <Label Text="Tipo de Conexión" Style="{StaticResource FieldLabelStyle}" />
+                                <Border Style="{StaticResource InputContainerStyle}">
+                                    <Picker SelectedItem="{Binding SelectedConnectionType}" ItemsSource="{Binding ConnectionTypes}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
+                                </Border>
+                            </VerticalStackLayout>
                             
-                            <Border Grid.Column="4" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                                <Entry Text="{Binding IpSegment3}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
-                            </Border>
-                            <Label Grid.Column="5" Text="." VerticalOptions="Center" FontAttributes="Bold" />
+                        </Grid>
+
+                        <!-- FILA 3: Dirección IP y Puerto -->
+                        <!-- Usamos el mismo diseño en malla para alineación inteligente -->
+                        <Grid ColumnDefinitions="{OnPlatform Android='*', Default='*,*'}" RowDefinitions="{OnPlatform Android='Auto,Auto', Default='Auto'}" ColumnSpacing="20" RowSpacing="{OnPlatform Android=20, Default=15}" IsVisible="{Binding IsTcpConnection}">
                             
-                            <Border Grid.Column="6" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                                <Entry Text="{Binding IpSegment4}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                            <!-- Dirección IP (Segmentada) -->
+                            <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="4">
+                                <Label Text="Dirección IP" Style="{StaticResource FieldLabelStyle}" />
+                                <Grid ColumnDefinitions="*,Auto,*,Auto,*,Auto,*" ColumnSpacing="4">
+                                    <Border Grid.Column="0" Style="{StaticResource InputContainerStyle}">
+                                        <Entry Text="{Binding IpSegment1}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                                    </Border>
+                                    <Label Grid.Column="1" Text="." VerticalOptions="Center" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+                                    
+                                    <Border Grid.Column="2" Style="{StaticResource InputContainerStyle}">
+                                        <Entry Text="{Binding IpSegment2}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                                    </Border>
+                                    <Label Grid.Column="3" Text="." VerticalOptions="Center" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+                                    
+                                    <Border Grid.Column="4" Style="{StaticResource InputContainerStyle}">
+                                        <Entry Text="{Binding IpSegment3}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                                    </Border>
+                                    <Label Grid.Column="5" Text="." VerticalOptions="Center" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+                                    
+                                    <Border Grid.Column="6" Style="{StaticResource InputContainerStyle}">
+                                        <Entry Text="{Binding IpSegment4}" Keyboard="Numeric" MaxLength="3" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                                    </Border>
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <!-- Puerto -->
+                            <VerticalStackLayout Grid.Row="{OnPlatform Android=1, Default=0}" Grid.Column="{OnPlatform Android=0, Default=1}" Spacing="4">
+                                <Label Text="Puerto" Style="{StaticResource FieldLabelStyle}" />
+                                <Border Style="{StaticResource InputContainerStyle}">
+                                    <Entry Text="{Binding Printer.Port, Converter={StaticResource NumericToStringConverter}}" Keyboard="Numeric" VerticalOptions="Center" Margin="10,0"/>
+                                </Border>
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                        <!-- Nombre Impresora Local (Solo USB) -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding IsUsbConnection}">
+                            <Label Text="Nombre Impresora Local (Windows)" Style="{StaticResource FieldLabelStyle}" />
+                            <Border Style="{StaticResource InputContainerStyle}">
+                                <Entry Text="{Binding Printer.LocalPrinterName}" Placeholder="Ej: EPSON LX-300+ II" VerticalOptions="Center" Margin="10,0"/>
                             </Border>
-                        </Grid>
-                    </VerticalStackLayout>
+                        </VerticalStackLayout>
 
-                    <!-- Puerto (Solo TCP y si no es Matricial limitada) -->
-                    <VerticalStackLayout Spacing="5" IsVisible="{Binding IsTcpConnection}">
-                        <Label Text="Puerto" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
-                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                            <Entry Text="{Binding Printer.Port, Converter={StaticResource NumericToStringConverter}}" Keyboard="Numeric" VerticalOptions="Center" Margin="5,0"/>
-                        </Border>
-                    </VerticalStackLayout>
+                        <!-- URI IPP (Solo IPP) -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding IsIppConnection}">
+                            <Label Text="URI de Impresión (IPP/HTTP)" Style="{StaticResource FieldLabelStyle}" />
+                            <Border Style="{StaticResource InputContainerStyle}">
+                                <Entry Text="{Binding ManualUri}" Placeholder="Ej: ipp://192.168.1.50/ipp/print" VerticalOptions="Center" Margin="10,0"/>
+                            </Border>
+                        </VerticalStackLayout>
 
-                    <!-- Nombre Impresora Local (Solo USB) -->
-                    <VerticalStackLayout Spacing="5" IsVisible="{Binding IsUsbConnection}">
-                        <Label Text="Nombre Impresora Local (Windows)" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
-                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                            <Entry Text="{Binding Printer.LocalPrinterName}" Placeholder="Ej: EPSON LX-300+ II" VerticalOptions="Center" Margin="5,0"/>
-                        </Border>
-                    </VerticalStackLayout>
+                        <!-- Ancho Papel -->
+                        <VerticalStackLayout Spacing="4" IsVisible="{Binding ShowThermalFields}">
+                            <Label Text="Ancho Papel (mm)" Style="{StaticResource FieldLabelStyle}" />
+                            <Border Style="{StaticResource InputContainerStyle}">
+                                <Picker SelectedItem="{Binding SelectedPaperWidthMm}" ItemsSource="{Binding AvailablePaperWidths}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
+                            </Border>
+                        </VerticalStackLayout>
 
-                    <!-- URI IPP (Solo IPP) -->
-                    <VerticalStackLayout Spacing="5" IsVisible="{Binding IsIppConnection}">
-                        <Label Text="URI de Impresión (IPP/HTTP)" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
-                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                            <Entry Text="{Binding ManualUri}" Placeholder="Ej: ipp://192.168.1.50/ipp/print" VerticalOptions="Center" Margin="5,0"/>
-                        </Border>
-                    </VerticalStackLayout>
+                        <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" Margin="0,5" IsVisible="{Binding ShowThermalFields}" />
 
-                    <!-- Ancho Papel (Solo Térmica o Matricial TCP) -->
-                    <VerticalStackLayout Spacing="5" IsVisible="{Binding ShowThermalFields}">
-                        <Label Text="Ancho Papel (mm)" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Primary}" />
-                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                            <Picker SelectedItem="{Binding SelectedPaperWidthMm}" ItemsSource="{Binding AvailablePaperWidths}" HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0"/>
-                        </Border>
-                    </VerticalStackLayout>
+                        <!-- Switches Premium -->
+                        <VerticalStackLayout Spacing="10" Margin="0" IsVisible="{Binding ShowThermalFields}">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <Label Grid.Column="0" Text="Beep al imprimir" VerticalOptions="Center" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                                <Switch Grid.Column="1" IsToggled="{Binding Printer.BeepOnPrint}" OnColor="{DynamicResource Primary}" />
+                            </Grid>
+                            
+                            <Grid ColumnDefinitions="*, Auto">
+                                <Label Grid.Column="0" Text="Abrir cajón al final" VerticalOptions="Center" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                                <Switch Grid.Column="1" IsToggled="{Binding Printer.OpenCashDrawerAfterPrint}" OnColor="{DynamicResource Primary}" />
+                            </Grid>
+                            
+                            <Grid ColumnDefinitions="*, Auto">
+                                <Label Grid.Column="0" Text="Abrir cajón sin imprimir" VerticalOptions="Center" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                                <Switch Grid.Column="1" IsToggled="{Binding Printer.OpenCashDrawerWithoutPrint}" OnColor="{DynamicResource Primary}" />
+                            </Grid>
+                        </VerticalStackLayout>
 
-                    <!-- Switches (Ocultar si es Matricial USB) -->
-                    <VerticalStackLayout Spacing="10" Margin="0,5,0,0" IsVisible="{Binding ShowThermalFields}">
-                        <Grid ColumnDefinitions="*, Auto">
-                            <Label Grid.Column="0" Text="Beep al imprimir" VerticalOptions="Center" FontSize="14" />
-                            <Switch Grid.Column="1" IsToggled="{Binding Printer.BeepOnPrint}" />
-                        </Grid>
-                        
-                        <Grid ColumnDefinitions="*, Auto">
-                            <Label Grid.Column="0" Text="Abrir cajón al final" VerticalOptions="Center" FontSize="14" />
-                            <Switch Grid.Column="1" IsToggled="{Binding Printer.OpenCashDrawerAfterPrint}" />
-                        </Grid>
-                        
-                        <Grid ColumnDefinitions="*, Auto">
-                            <Label Grid.Column="0" Text="Abrir cajón sin imprimir" VerticalOptions="Center" FontSize="14" />
-                            <Switch Grid.Column="1" IsToggled="{Binding Printer.OpenCashDrawerWithoutPrint}" />
-                        </Grid>
-                    </VerticalStackLayout>
+                        <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" Margin="0,5,0,5" />
 
-                </VerticalStackLayout>
-            </Border>
+                        <!-- Botón Footer flotando a la derecha -->
+                        <HorizontalStackLayout HorizontalOptions="End" Spacing="15">
+                            <Button Text="Cancelar" 
+                                    Command="{Binding GoBackCommand}" 
+                                    BackgroundColor="Transparent" 
+                                    TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                                    FontAttributes="Bold"
+                                    HeightRequest="40" />
+
+                            <Button Text="Guardar Impresora" 
+                                    Command="{Binding SavePrinterCommand}"
+                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                                    BackgroundColor="{DynamicResource Primary}"
+                                    TextColor="White"
+                                    FontAttributes="Bold"
+                                    CornerRadius="8"
+                                    Padding="25,0"
+                                    HeightRequest="40" />
+                        </HorizontalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+                
+            </VerticalStackLayout>
         </ScrollView>
-        
-        <!-- Botones Pie de Página -->
-        <Border Grid.Row="2" StrokeThickness="0" Padding="15,10" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}">
-             <Button Text="Guardar Impresora" Command="{Binding SavePrinterCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
-                        HeightRequest="42" FontSize="14" CornerRadius="8" />
-        </Border>
 
-        <ActivityIndicator Grid.RowSpan="3"
-                           IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
-                           VerticalOptions="Center" HorizontalOptions="Center"
-                           Color="{StaticResource Primary}" WidthRequest="50" HeightRequest="50" />
+        <!-- Indicador de Carga -->
+        <Border Grid.RowSpan="3" IsVisible="{Binding IsBusy}" BackgroundColor="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}" StrokeThickness="0">
+            <ActivityIndicator IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" Color="{DynamicResource Primary}" WidthRequest="50" HeightRequest="50" />
+        </Border>
     </Grid>
 </ContentPage>
