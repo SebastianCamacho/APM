@@ -8,16 +8,16 @@
              Title="Configuración"
              NavigationPage.HasNavigationBar="False"
              x:DataType="viewmodels:SettingsViewModel">
-    <ScrollView BackgroundColor="{AppThemeBinding Light=#F5F7FA, Dark=#1A1C1E}">
+    <ScrollView BackgroundColor="{AppThemeBinding Light={StaticResource PageBgLight}, Dark={StaticResource PageBgDark}}">
         <VerticalStackLayout Padding="30,20" Spacing="25">
 
             <!-- Header Toolbar Falso -->
-            <Border StrokeThickness="0" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3033}" Padding="20,15" Margin="-30,-20,-30,10">
+            <Border StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="20,15" Margin="-30,-20,-30,10">
                 <Border.Shadow>
                     <Shadow Brush="#000000" Offset="0,2" Radius="5" Opacity="0.05" />
                 </Border.Shadow>
                 <Grid ColumnDefinitions="*, Auto">
-                    <Label Grid.Column="0" Text="Configuración" FontSize="14" TextColor="{AppThemeBinding Light=#5A6A85, Dark=#A9B4C2}" VerticalOptions="Center" />
+                    <Label Grid.Column="0" Text="Configuración" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
                     <!-- Status Indicator with Pulses -->
                     <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
                         <!-- Elise for Pulse Animation -->
@@ -25,20 +25,20 @@
                             <Ellipse x:Name="PulseIndicator" Fill="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" Opacity="0.5" Scale="1" />
                             <Ellipse Fill="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" WidthRequest="8" HeightRequest="8" HorizontalOptions="Center" VerticalOptions="Center" />
                         </Grid>
-                        <Label Text="{Binding ServiceStatusTitle}" FontSize="13" TextColor="{AppThemeBinding Light=#333A45, Dark=#E1E5EA}" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Label Text="{Binding ServiceStatusTitle}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" VerticalOptions="Center" />
                     </HorizontalStackLayout>
                 </Grid>
             </Border>
 
-            <Label Text="Configuración" FontSize="26" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1D263B, Dark=White}" Margin="0,-5,0,0" />
+            <Label Text="Configuración" FontSize="26" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" Margin="0,-5,0,0" />
 
             <!-- Sección de Plantillas -->
-            <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{DynamicResource Gray200}" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3033}" Padding="0">
+            <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{DynamicResource Gray200}" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="0">
                 <Border.Shadow>
                     <Shadow Brush="#000000" Offset="0,4" Radius="8" Opacity="0.03" />
                 </Border.Shadow>
                 <VerticalStackLayout Spacing="0">
-                    <Border StrokeShape="RoundRectangle 0" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light=#F5F7FA, Dark=#33383D}" Padding="25,15">
+                    <Border StrokeShape="RoundRectangle 0" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource InnerCardBgLight}, Dark={StaticResource InnerCardBgDark}}" Padding="25,15">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding ToggleSectionCommand}" CommandParameter="Templates" />
                         </Border.GestureRecognizers>
@@ -72,7 +72,7 @@
                         </CollectionView.EmptyView>
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:PrintTemplate">
-                                <Border StrokeShape="RoundRectangle 10" Stroke="{DynamicResource Gray200}" StrokeThickness="1" Margin="0,5" Padding="15" BackgroundColor="{AppThemeBinding Light=White, Dark=#333}">
+                                <Border StrokeShape="RoundRectangle 10" Stroke="{DynamicResource Gray200}" StrokeThickness="1" Margin="0,5" Padding="15" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource InnerCardBgDark}}">
                                     <Border.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SettingsViewModel}}, Path=EditTemplateCommand}" CommandParameter="{Binding .}" />
                                     </Border.GestureRecognizers>
@@ -96,7 +96,7 @@
                             Stroke="{DynamicResource Primary}" 
                             StrokeDashArray="4,4" 
                             StrokeThickness="1" 
-                            BackgroundColor="{AppThemeBinding Light=#F5F7FA, Dark=#33383D}" 
+                            BackgroundColor="{AppThemeBinding Light={StaticResource InnerCardBgLight}, Dark={StaticResource InnerCardBgDark}}" 
                             Margin="0,15,0,0" 
                             HeightRequest="45">
                         <Button Text="Refrescar Plantillas" 
@@ -113,12 +113,12 @@
             </Border>
 
             <!-- Sección de Seguridad -->
-            <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{DynamicResource Gray200}" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3033}" Padding="0">
+            <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{DynamicResource Gray200}" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="0">
                 <Border.Shadow>
                     <Shadow Brush="#000000" Offset="0,4" Radius="8" Opacity="0.03" />
                 </Border.Shadow>
                 <VerticalStackLayout Spacing="0">
-                    <Border StrokeShape="RoundRectangle 0" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light=#F5F7FA, Dark=#33383D}" Padding="25,15">
+                    <Border StrokeShape="RoundRectangle 0" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource InnerCardBgLight}, Dark={StaticResource InnerCardBgDark}}" Padding="25,15">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding ToggleSectionCommand}" CommandParameter="Security" />
                         </Border.GestureRecognizers>

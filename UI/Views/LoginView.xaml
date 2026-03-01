@@ -17,12 +17,12 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid BackgroundColor="{AppThemeBinding Light=#F5F7FA, Dark=#1A1C1E}">
+    <Grid BackgroundColor="{AppThemeBinding Light={StaticResource PageBgLight}, Dark={StaticResource PageBgDark}}">
         <!-- Contenido Central del Login -->
         <Border StrokeShape="RoundRectangle 16"
                 StrokeThickness="1"
-                Stroke="{AppThemeBinding Light=#EAECEE, Dark=#3A3F45}"
-                BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3033}"
+                Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}"
                 VerticalOptions="Center"
                 HorizontalOptions="Center"
                 WidthRequest="350"

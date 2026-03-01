@@ -34,15 +34,15 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <ScrollView BackgroundColor="{AppThemeBinding Light=#F5F7FA, Dark=#1A1C1E}">
+    <ScrollView BackgroundColor="{AppThemeBinding Light={StaticResource PageBgLight}, Dark={StaticResource PageBgDark}}">
         <VerticalStackLayout Spacing="0">
             <!-- Header Toolbar Falso -->
-            <Border StrokeThickness="0" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3033}" Padding="20,15" Margin="0,0,0,30">
+            <Border StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="20,15" Margin="0,0,0,30">
                 <Border.Shadow>
                     <Shadow Brush="#000000" Offset="0,2" Radius="5" Opacity="0.05" />
                 </Border.Shadow>
                 <Grid ColumnDefinitions="*, Auto">
-                    <Label Grid.Column="0" Text="Inicio" FontSize="14" TextColor="{AppThemeBinding Light=#5A6A85, Dark=#A9B4C2}" VerticalOptions="Center" />
+                    <Label Grid.Column="0" Text="Inicio" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
                     <!-- Status Indicator with Pulses -->
                     <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
                         <!-- Elise for Pulse Animation -->
@@ -50,7 +50,7 @@
                             <Ellipse x:Name="PulseIndicator" Fill="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" Opacity="0.5" Scale="1" />
                             <Ellipse Fill="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" WidthRequest="8" HeightRequest="8" HorizontalOptions="Center" VerticalOptions="Center" />
                         </Grid>
-                        <Label Text="{Binding ServiceStatusTitle}" FontSize="13" TextColor="{AppThemeBinding Light=#333A45, Dark=#E1E5EA}" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Label Text="{Binding ServiceStatusTitle}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" FontAttributes="Bold" VerticalOptions="Center" />
                     </HorizontalStackLayout>
                 </Grid>
             </Border>
@@ -58,21 +58,21 @@
             <VerticalStackLayout Padding="30,0" Spacing="30">
                 <!-- Welcome Title -->
                 <VerticalStackLayout Spacing="5">
-                    <Label Text="Bienvenido a Appsiel Print Manager" FontSize="26" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1D263B, Dark=White}" />
-                    <Label Text="Panel de control principal del servicio de impresión." FontSize="14" TextColor="{AppThemeBinding Light=#7A8B9E, Dark=#A9B4C2}" />
+                    <Label Text="Bienvenido a Appsiel Print Manager" FontSize="26" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                    <Label Text="Panel de control principal del servicio de impresión." FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
                 </VerticalStackLayout>
 
                 <!-- Layout para Escritorio (Windows/Mac) Lado a Lado -->
                 <Grid ColumnDefinitions="*, *" ColumnSpacing="20" IsVisible="{OnPlatform WinUI=True, MacCatalyst=True, Default=False}">
                     <!-- Tarjeta 1: Estado del Servicio -->
-                    <Border Grid.Column="0" StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{AppThemeBinding Light=#EAECEE, Dark=#3A3F45}" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3033}" Padding="25">
+                    <Border Grid.Column="0" StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="25">
                         <Border.Shadow>
                             <Shadow Brush="#000000" Offset="0,4" Radius="8" Opacity="0.03" />
                         </Border.Shadow>
                         <VerticalStackLayout Spacing="30">
                             <!-- Titulo de Tarjeta -->
                             <Grid ColumnDefinitions="*, Auto">
-                                <Label Grid.Column="0" Text="Estado del Servicio" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1D263B, Dark=White}" VerticalOptions="Center" />
+                                <Label Grid.Column="0" Text="Estado del Servicio" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" VerticalOptions="Center" />
                                 
                                 <Border Grid.Column="1" StrokeShape="RoundRectangle 15" StrokeThickness="0" BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='RunningBg|StoppedBg'}" Padding="12,6">
                                     <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
@@ -116,25 +116,25 @@
                     </Border>
 
                     <!-- Tarjeta 2: Conexiones WebSocket -->
-                    <Border Grid.Column="1" StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{AppThemeBinding Light=#EAECEE, Dark=#3A3F45}" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3033}" Padding="25">
+                    <Border Grid.Column="1" StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="25">
                         <Border.Shadow>
                             <Shadow Brush="#000000" Offset="0,4" Radius="8" Opacity="0.03" />
                         </Border.Shadow>
                         <VerticalStackLayout Spacing="25">
-                            <Label Text="Conexiones WebSocket" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1D263B, Dark=White}" />
+                            <Label Text="Conexiones WebSocket" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
 
                             <!-- Info Box 1 -->
-                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#33383D}" Padding="20,15">
+                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource InfoBoxBgLight}, Dark={StaticResource InfoBoxBgDark}}" Padding="20,15">
                                 <Grid ColumnDefinitions="*, Auto">
-                                    <Label Grid.Column="0" Text="Clientes conectados" FontSize="14" TextColor="{AppThemeBinding Light=#4A5568, Dark=#CBD5E0}" VerticalOptions="Center" />
-                                    <Label Grid.Column="1" Text="{Binding CurrentClientCount}" FontSize="20" FontAttributes="Bold" TextColor="#6B21A8" VerticalOptions="Center" />
+                                    <Label Grid.Column="0" Text="Clientes conectados" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
+                                    <Label Grid.Column="1" Text="{Binding CurrentClientCount}" FontSize="20" FontAttributes="Bold" TextColor="{StaticResource TextPurple}" VerticalOptions="Center" />
                                 </Grid>
                             </Border>
 
                             <!-- Info Box 2 -->
-                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#33383D}" Padding="20,15">
+                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource InfoBoxBgLight}, Dark={StaticResource InfoBoxBgDark}}" Padding="20,15">
                                 <Grid ColumnDefinitions="*, Auto">
-                                    <Label Grid.Column="0" Text="Estado del socket" FontSize="14" TextColor="{AppThemeBinding Light=#4A5568, Dark=#CBD5E0}" VerticalOptions="Center" />
+                                    <Label Grid.Column="0" Text="Estado del socket" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
                                     <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                                         <Ellipse Fill="{Binding IsWebSocketServerRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" WidthRequest="6" HeightRequest="6" VerticalOptions="Center" />
                                         <Label Text="{Binding IsWebSocketServerRunning, Converter={StaticResource BoolToStringConverter}, ConverterParameter='Activo|Inactivo'}" FontSize="14" FontAttributes="Bold" TextColor="{Binding IsWebSocketServerRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='RunningText|StoppedText'}" VerticalOptions="Center" />
@@ -148,14 +148,14 @@
                 <!-- Layout para Móvil (Android/iOS) Apilados uno debajo de otro -->
                 <VerticalStackLayout Spacing="20" IsVisible="{OnPlatform Android=True, iOS=True, Default=False}">
                     <!-- Tarjeta 1: Estado del Servicio -->
-                    <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{AppThemeBinding Light=#EAECEE, Dark=#3A3F45}" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3033}" Padding="25">
+                    <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="25">
                         <Border.Shadow>
                             <Shadow Brush="#000000" Offset="0,4" Radius="8" Opacity="0.03" />
                         </Border.Shadow>
                         <VerticalStackLayout Spacing="30">
                             <!-- Titulo de Tarjeta -->
                             <Grid ColumnDefinitions="*, Auto">
-                                <Label Grid.Column="0" Text="Estado del Servicio" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1D263B, Dark=White}" VerticalOptions="Center" />
+                                <Label Grid.Column="0" Text="Estado del Servicio" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" VerticalOptions="Center" />
                                 
                                 <Border Grid.Column="1" StrokeShape="RoundRectangle 15" StrokeThickness="0" BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='RunningBg|StoppedBg'}" Padding="12,6">
                                     <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
@@ -199,25 +199,25 @@
                     </Border>
 
                     <!-- Tarjeta 2: Conexiones WebSocket -->
-                    <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{AppThemeBinding Light=#EAECEE, Dark=#3A3F45}" BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3033}" Padding="25">
+                    <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="25">
                         <Border.Shadow>
                             <Shadow Brush="#000000" Offset="0,4" Radius="8" Opacity="0.03" />
                         </Border.Shadow>
                         <VerticalStackLayout Spacing="25">
-                            <Label Text="Conexiones WebSocket" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1D263B, Dark=White}" />
+                            <Label Text="Conexiones WebSocket" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
 
                             <!-- Info Box 1 -->
-                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#33383D}" Padding="20,15">
+                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource InfoBoxBgLight}, Dark={StaticResource InfoBoxBgDark}}" Padding="20,15">
                                 <Grid ColumnDefinitions="*, Auto">
-                                    <Label Grid.Column="0" Text="Clientes conectados" FontSize="14" TextColor="{AppThemeBinding Light=#4A5568, Dark=#CBD5E0}" VerticalOptions="Center" />
-                                    <Label Grid.Column="1" Text="{Binding CurrentClientCount}" FontSize="20" FontAttributes="Bold" TextColor="#6B21A8" VerticalOptions="Center" />
+                                    <Label Grid.Column="0" Text="Clientes conectados" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
+                                    <Label Grid.Column="1" Text="{Binding CurrentClientCount}" FontSize="20" FontAttributes="Bold" TextColor="{StaticResource TextPurple}" VerticalOptions="Center" />
                                 </Grid>
                             </Border>
 
                             <!-- Info Box 2 -->
-                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#33383D}" Padding="20,15">
+                            <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource InfoBoxBgLight}, Dark={StaticResource InfoBoxBgDark}}" Padding="20,15">
                                 <Grid ColumnDefinitions="*, Auto">
-                                    <Label Grid.Column="0" Text="Estado del socket" FontSize="14" TextColor="{AppThemeBinding Light=#4A5568, Dark=#CBD5E0}" VerticalOptions="Center" />
+                                    <Label Grid.Column="0" Text="Estado del socket" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
                                     <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                                         <Ellipse Fill="{Binding IsWebSocketServerRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" WidthRequest="6" HeightRequest="6" VerticalOptions="Center" />
                                         <Label Text="{Binding IsWebSocketServerRunning, Converter={StaticResource BoolToStringConverter}, ConverterParameter='Activo|Inactivo'}" FontSize="14" FontAttributes="Bold" TextColor="{Binding IsWebSocketServerRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='RunningText|StoppedText'}" VerticalOptions="Center" />
