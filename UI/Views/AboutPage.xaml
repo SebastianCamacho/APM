@@ -53,7 +53,7 @@
                     <VerticalStackLayout Padding="30" Spacing="25">
                         
                         <!-- Contenedor del Logo/Icono -->
-                        <Border HeightRequest="90" WidthRequest="90" CornerRadius="20" HorizontalOptions="Center"
+                        <Border HeightRequest="90" WidthRequest="90" StrokeShape="RoundRectangle 20" HorizontalOptions="Center"
                                 BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryTintBgLight}, Dark={StaticResource PrimaryTintBgDark}}"
                                 StrokeThickness="0">
                             <Image Source="logo_appsiel.png" WidthRequest="60" HeightRequest="60" HorizontalOptions="Center" VerticalOptions="Center" Aspect="AspectFit" />

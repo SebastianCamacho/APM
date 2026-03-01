@@ -345,5 +345,11 @@ namespace UI.ViewModels
                 IsBusy = false;
             }
         }
+
+        [RelayCommand]
+        public async Task Cancel()
+        {
+            await Shell.Current.GoToAsync("..");
+        }
     }
 }

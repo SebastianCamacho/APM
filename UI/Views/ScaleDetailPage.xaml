@@ -48,7 +48,7 @@
 
     <Grid>
         <ScrollView>
-            <VerticalStackLayout Padding="{OnPlatform Android='10,15', Default='30,10'}" Spacing="{OnPlatform Android=15, Default=10}" HorizontalOptions="{OnPlatform Android=Fill, Default=Fill}" MaximumWidthRequest="1000" WidthRequest="{OnPlatform Windows=800}">
+            <VerticalStackLayout Padding="{OnPlatform Android='10,15', Default='30,10'}" Spacing="{OnPlatform Android=15, Default=10}" HorizontalOptions="{OnPlatform Android=Fill, Default=Fill}" MaximumWidthRequest="1000" WidthRequest="{OnPlatform WinUI=800}">
                 
                 <!-- Encabezado de la Página -->
                 <HorizontalStackLayout Spacing="10" VerticalOptions="Center" Margin="{OnPlatform Android='5,0,0,5', Default='0,0,0,5'}">
@@ -150,7 +150,7 @@
                         <!-- Botón Footer flotando a la derecha -->
                         <HorizontalStackLayout HorizontalOptions="End" Spacing="15">
                             <Button Text="Cancelar" 
-                                    Command="{Binding GoBackCommand}" 
+                                    Command="{Binding CancelCommand}" 
                                     BackgroundColor="Transparent" 
                                     TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
                                     FontAttributes="Bold"

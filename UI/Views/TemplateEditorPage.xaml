@@ -127,26 +127,82 @@
                                 <Border StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource NeutralTintBgLight}, Dark={StaticResource NeutralTintBgDark}}" Padding="12,8">
                                     <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12">
                                         
-                                        <!-- Toggle Expandir (Restaurado a Button para usar Converter de caracteres ▼/▲) -->
+                                        <!-- Toggle Expandir -->
                                         <Button Grid.Column="0" 
                                                 Text="{Binding IsExpanded, Converter={StaticResource ExpandedIconConverter}}" 
                                                 Command="{Binding ToggleExpandedCommand}"
-                                                WidthRequest="30" HeightRequest="30" Padding="0"
+                                                WidthRequest="32" HeightRequest="32" Padding="0"
                                                 BackgroundColor="Transparent" TextColor="{DynamicResource Primary}"
-                                                FontSize="16" FontAttributes="Bold" />
+                                                FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
 
-                                    <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                                        <!-- SAFE MODE: FontSize 14 -->
-                                        <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="14" Placeholder="Nombre Sección" BackgroundColor="Transparent" VerticalOptions="Center" Margin="5,0" TextColor="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                                        <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" 
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" 
+                                                HeightRequest="36" VerticalOptions="Center">
+                                            <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="14" 
+                                                   Placeholder="Nombre Sección" BackgroundColor="Transparent" 
+                                                   VerticalOptions="Center" Margin="8,0" 
+                                                   TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                        </Border>
+                                        
+                                        <!-- Grupo de Botones de Acción UNIFICADO -->
+                                        <Border Grid.Column="2" StrokeShape="RoundRectangle 8" StrokeThickness="1" 
+                                                Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" 
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PageBgDark}}" 
+                                                HeightRequest="36" Padding="0" VerticalOptions="Center">
+                                            
+                                            <Grid ColumnDefinitions="36, 1, 36, 1, 36, 1, 36" ColumnSpacing="0">
+                                            
+                                            <!-- Subir -->
+                                            <ImageButton Grid.Column="0" Source="icono_up.png" 
+                                                         Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" 
+                                                         CommandParameter="{Binding .}" Padding="8" 
+                                                         BackgroundColor="Transparent" Aspect="AspectFit">
+                                                <ImageButton.Behaviors>
+                                                    <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
+                                                </ImageButton.Behaviors>
+                                            </ImageButton>
+
+                                            <BoxView Grid.Column="1" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
+
+                                            <!-- Bajar -->
+                                            <ImageButton Grid.Column="2" Source="icono_down.png" 
+                                                         Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveDownCommand}" 
+                                                         CommandParameter="{Binding .}" Padding="8" 
+                                                         BackgroundColor="Transparent" Aspect="AspectFit">
+                                                <ImageButton.Behaviors>
+                                                    <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
+                                                </ImageButton.Behaviors>
+                                            </ImageButton>
+
+                                            <BoxView Grid.Column="3" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
+
+                                            <!-- Añadir Elemento -->
+                                            <ImageButton Grid.Column="4" Source="icono_anadir.png" 
+                                                         Command="{Binding AddElementCommand}" 
+                                                         Padding="8" BackgroundColor="Transparent" Aspect="AspectFit">
+                                                <ImageButton.Behaviors>
+                                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource SuccessIcon}" />
+                                                </ImageButton.Behaviors>
+                                            </ImageButton>
+
+                                            <BoxView Grid.Column="5" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
+
+                                            <!-- Eliminar Sección -->
+                                            <ImageButton Grid.Column="6" Source="icono_delete.png" 
+                                                         Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=RemoveSectionCommand}" 
+                                                         CommandParameter="{Binding .}" Padding="8" 
+                                                         BackgroundColor="Transparent" Aspect="AspectFit">
+                                                <ImageButton.Behaviors>
+                                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource DangerIcon}" />
+                                                </ImageButton.Behaviors>
+                                            </ImageButton>
+
+                                        </Grid>
                                     </Border>
-                                    
-                                    <Button Grid.Column="2" Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" CommandParameter="{Binding .}" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" BackgroundColor="{DynamicResource Primary}" />
-                                    <Button Grid.Column="3" Text="↓" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveDownCommand}" CommandParameter="{Binding .}" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" BackgroundColor="{DynamicResource Primary}" />
-                                    <Button Grid.Column="4" Text="+" Command="{Binding AddElementCommand}" BackgroundColor="#2E7D32" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
-                                    <Button Grid.Column="5" Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=RemoveSectionCommand}" CommandParameter="{Binding .}" BackgroundColor="#C62828" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
-                                </Grid>
+                                    </Grid>
+                                </Border>
 
-                                <VerticalStackLayout Spacing="8" IsVisible="{Binding IsExpanded}">
+                                <VerticalStackLayout Spacing="12" Padding="15" IsVisible="{Binding IsExpanded}">
                                     <!-- SAFE MODE: ColumnSpacing 5 -->
                                     <Grid ColumnDefinitions="Auto, *, Auto, *, Auto, 1.5*" ColumnSpacing="5">
                                         <Label Grid.Column="0" Text="Tipo:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
