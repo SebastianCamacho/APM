@@ -33,6 +33,9 @@ namespace UI.Views
                 var actionIcons = border.FindByName<HorizontalStackLayout>("ActionIcons");
                 if (actionIcons != null)
                 {
+                    // Cancelar cualquier Fade Out (opacidad en curso) fantasma
+                    actionIcons.CancelAnimations();
+                    
                     actionIcons.IsVisible = true;
                     actionIcons.FadeTo(1, 150);
                 }
@@ -48,8 +51,18 @@ namespace UI.Views
                 var actionIcons = border.FindByName<HorizontalStackLayout>("ActionIcons");
                 if (actionIcons != null)
                 {
+                    // Cancelar cualquier Fade In en progreso antes de ocultar
+                    actionIcons.CancelAnimations();
+
                     actionIcons.FadeTo(0, 150).ContinueWith(t => {
-                        MainThread.BeginInvokeOnMainThread(() => actionIcons.IsVisible = false);
+                        // Importante: No apagar 'IsVisible' si el Opacity volvió a 1 por un re-ingreso súper rápido
+                        MainThread.BeginInvokeOnMainThread(() => 
+                        {
+                            if (actionIcons.Opacity == 0)
+                            {
+                                actionIcons.IsVisible = false;
+                            }
+                        });
                     });
                 }
             }

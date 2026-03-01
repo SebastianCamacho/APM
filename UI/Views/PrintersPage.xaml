@@ -31,14 +31,6 @@
                 </Setter>
             </Style>
 
-            <!-- Estilo Hover para la Tarjeta de la Impresora (Revela las acciones hijas) -->
-            <Style x:Key="PrinterCardStyle" TargetType="Border">
-                <Setter Property="StrokeShape" Value="RoundRectangle 12" />
-                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
-                <Setter Property="StrokeThickness" Value="1.0" />
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" />
-                <Setter Property="Padding" Value="20" />
-            </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -100,30 +92,29 @@
 
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="model:PrinterSettings">
-                            <Border Style="{StaticResource PrinterCardStyle}" VerticalOptions="Fill">
+                            <Border StrokeShape="RoundRectangle 12" StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}"
+                                    Padding="20"
+                                    VerticalOptions="Fill">
+                                    
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup Name="CommonStates">
+                                        <VisualState Name="Normal" />
+                                        <VisualState Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+                                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource NeutralTintBgLight}, Dark={StaticResource NeutralTintBgDark}}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PrintersViewModel}}, Path=EditPrinterCommand}"
                                                           CommandParameter="{Binding .}" />
                                     <PointerGestureRecognizer PointerEntered="OnCardPointerEntered" PointerExited="OnCardPointerExited" />
                                 </Border.GestureRecognizers>
-                                <Border.VisualStateManager>
-                                    <VisualStateGroupList>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal">
-                                                <VisualState.Setters>
-                                                    <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
-                                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="PointerOver">
-                                                <VisualState.Setters>
-                                                    <Setter Property="Stroke" Value="{DynamicResource PrimaryLight}" />
-                                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource CardHoverBgLight}, Dark={StaticResource CardHoverBgDark}}" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateGroupList>
-                                </Border.VisualStateManager>
                                 <Grid ColumnDefinitions="{OnPlatform Android='Auto, *', Default='Auto, *, 85'}" ColumnSpacing="12">
                                         
                                         <!-- Col 0: Cajita Lila del Ícono -->
