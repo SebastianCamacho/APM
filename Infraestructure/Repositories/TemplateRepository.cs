@@ -23,7 +23,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                 : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
             _directoryPath = Path.Combine(appDataDirectory, "AppsielPrintManager", "Templates");
-            _logger.LogInfo($"[TemplateRepository] Ruta de plantillas (Windows={OperatingSystem.IsWindows()}): {_directoryPath}");
+            _logger.LogInfo($"Ruta de plantillas (Windows={OperatingSystem.IsWindows()}): {_directoryPath}", "TemplateRepository");
 
             if (!Directory.Exists(_directoryPath))
             {
@@ -38,7 +38,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
 
             if (!File.Exists(filePath))
             {
-                _logger.LogWarning($"Plantilla para '{documentType}' no encontrada en {filePath}. Generando plantilla por defecto.");
+                _logger.LogWarning($"Plantilla para '{documentType}' no encontrada en {filePath}. Generando plantilla por defecto.", "TemplateRepository");
 
                 // Intentar obtener plantilla por defecto
                 var defaultTemplate = AppsielPrintManager.Core.Services.DefaultTemplateProvider.GetDefaultTemplate(documentType);
@@ -56,7 +56,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al leer la plantilla '{documentType}': {ex.Message}", ex);
+                _logger.LogError($"Error al leer la plantilla '{documentType}': {ex.Message}", ex, "TemplateRepository");
                 return null;
             }
         }
@@ -70,11 +70,12 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             {
                 var json = JsonSerializer.Serialize(template, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(filePath, json);
-                _logger.LogInfo($"Plantilla '{template.DocumentType}' guardada exitosamente.");
+                _logger.LogInfo($"Plantilla '{template.DocumentType}' guardada exitosamente.", "TemplateRepository");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al guardar la plantilla '{template.DocumentType}': {ex.Message}", ex);
+                _logger.LogError($"Error al guardar la plantilla '{template.DocumentType}': {ex.Message}", ex, "TemplateRepository");
+                throw; // Propagar el error para que la UI pueda manejarlo
             }
         }
 
@@ -93,7 +94,8 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error al cargar plantilla desde archivo {file}: {ex.Message}", ex);
+
+                    _logger.LogError($"Error al cargar plantilla desde archivo {file}: {ex.Message}", ex, "TemplateRepository");
                 }
             }
 
@@ -107,7 +109,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
-                _logger.LogInfo($"Plantilla '{templateId}' eliminada.");
+                _logger.LogInfo($"Plantilla '{templateId}' eliminada.", "TemplateRepository");
             }
             return Task.CompletedTask;
         }
@@ -121,30 +123,30 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             {
                 try
                 {
-                    _logger.LogInfo($"[TemplateRepository] Verificando plantilla: '{type}'");
+                    _logger.LogInfo($"Verificando plantilla: '{type}'", "TemplateRepository");
                     var fileName = $"{type.ToLower()}.json";
                     var filePath = Path.Combine(_directoryPath, fileName);
 
                     if (!File.Exists(filePath))
                     {
-                        _logger.LogInfo($"Validación inicial: Plantilla '{type}' no existe en '{filePath}'. Creándola...");
+                        _logger.LogInfo($"Validación inicial: Plantilla '{type}' no existe en '{filePath}'. Creándola...", "TemplateRepository");
                         var defaultTemplate = AppsielPrintManager.Core.Services.DefaultTemplateProvider.GetDefaultTemplate(type);
                         if (defaultTemplate == null)
                         {
-                            _logger.LogError($"[TemplateRepository] FATAL: GetDefaultTemplate devolvió null para '{type}'");
+                            _logger.LogError($"FATAL: GetDefaultTemplate devolvió null para '{type}'", null, "TemplateRepository");
                             continue;
                         }
                         await SaveTemplateAsync(defaultTemplate);
-                        _logger.LogInfo($"[TemplateRepository] Plantilla '{type}' creada exitosamente.");
+                        _logger.LogInfo($"Plantilla '{type}' creada exitosamente.", "TemplateRepository");
                     }
                     else
                     {
-                        _logger.LogInfo($"[TemplateRepository] Plantilla '{type}' ya existe.");
+                        _logger.LogInfo($"Plantilla '{type}' ya existe.", "TemplateRepository");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[TemplateRepository] Error verificando/creando plantilla '{type}': {ex.Message}", ex);
+                    _logger.LogError($"Error verificando/creando plantilla '{type}': {ex.Message}", ex, "TemplateRepository");
                 }
             }
         }
@@ -156,7 +158,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
 
             if (!File.Exists(filePath))
             {
-                _logger.LogWarning($"Plantilla matricial para '{documentType}' no encontrada en {filePath}.");
+                _logger.LogDebug($"Plantilla matricial para '{documentType}' no encontrada en {filePath}. (Es opcional)", "TemplateRepository");
                 return null;
             }
 
@@ -167,7 +169,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al leer la plantilla matricial '{documentType}': {ex.Message}", ex);
+                _logger.LogError($"Error al leer la plantilla matricial '{documentType}': {ex.Message}", ex, "TemplateRepository");
                 return null;
             }
         }
@@ -181,11 +183,12 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             {
                 var json = JsonSerializer.Serialize(template, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(filePath, json);
-                _logger.LogInfo($"Plantilla matricial '{template.DocumentType}' guardada exitosamente.");
+                _logger.LogInfo($"Plantilla matricial '{template.DocumentType}' guardada exitosamente.", "TemplateRepository");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al guardar la plantilla matricial '{template.DocumentType}': {ex.Message}", ex);
+                _logger.LogError($"Error al guardar la plantilla matricial '{template.DocumentType}': {ex.Message}", ex, "TemplateRepository");
+                throw; // Propagar el error para que la UI pueda manejarlo
             }
         }
     }

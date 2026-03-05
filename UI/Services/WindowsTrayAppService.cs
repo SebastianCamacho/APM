@@ -30,16 +30,16 @@ namespace UI.Services
                 if (existingProcesses.Any())
                 {
                     _trayAppProcess = existingProcesses.First();
-                    _logger.LogInfo($"[TrayAppService] TrayApp '{TrayAppProcessName}' ya en ejecución en la sesión {currentSessionId} con PID: {_trayAppProcess.Id}");
+                    _logger.LogInfo($"TrayApp '{TrayAppProcessName}' ya en ejecución en la sesión {currentSessionId} con PID: {_trayAppProcess.Id}", "WindowsTrayAppService");
                 }
                 else
                 {
-                    _logger.LogInfo($"[TrayAppService] TrayApp '{TrayAppProcessName}' no encontrado en la sesión actual ({currentSessionId}).");
+                    _logger.LogInfo($"TrayApp '{TrayAppProcessName}' no encontrado en la sesión actual ({currentSessionId}).", "WindowsTrayAppService");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[TrayAppService] Error al buscar procesos existentes: {ex.Message}");
+                _logger.LogError($"Error al buscar procesos existentes: {ex.Message}", null, "WindowsTrayAppService");
             }
         }
 
@@ -54,19 +54,19 @@ namespace UI.Services
                 {
                     if (_trayAppProcess.Responding)
                     {
-                        _logger.LogInfo($"[TrayAppService] TrayApp '{TrayAppProcessName}' ya está en ejecución y respondiendo.");
+                        _logger.LogInfo($"TrayApp '{TrayAppProcessName}' ya está en ejecución y respondiendo.", "WindowsTrayAppService");
                         return Task.FromResult(true);
                     }
                     else
                     {
-                        _logger.LogWarning($"[TrayAppService] TrayApp detectado (PID: {_trayAppProcess.Id}) pero no responde. Intentando reiniciar...");
+                        _logger.LogWarning($"TrayApp detectado (PID: {_trayAppProcess.Id}) pero no responde. Intentando reiniciar...", "WindowsTrayAppService");
                         _trayAppProcess.Kill();
                         _trayAppProcess.WaitForExit(2000);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[TrayAppService] Error al verificar salud de TrayApp existente: {ex.Message}");
+                    _logger.LogError($"Error al verificar salud de TrayApp existente: {ex.Message}", null, "WindowsTrayAppService");
                 }
             }
 
@@ -96,21 +96,21 @@ namespace UI.Services
                 if (File.Exists(productionPath))
                 {
                     trayAppExePath = productionPath;
-                    _logger.LogInfo($"[TrayAppService] Usando ruta de producción (subdirectorio 'tray'): '{trayAppExePath}'");
+                    _logger.LogInfo($"Usando ruta de producción (subdirectorio 'tray'): '{trayAppExePath}'", "WindowsTrayAppService");
                 }
                 else if (File.Exists(debugPath))
                 {
                     trayAppExePath = debugPath;
-                    _logger.LogInfo($"[TrayAppService] Usando ruta de desarrollo (Debug): '{trayAppExePath}'");
+                    _logger.LogInfo($"Usando ruta de desarrollo (Debug): '{trayAppExePath}'", "WindowsTrayAppService");
                 }
                 else if (File.Exists(releasePath))
                 {
                     trayAppExePath = releasePath;
-                    _logger.LogInfo($"[TrayAppService] Usando ruta de desarrollo (Release): '{trayAppExePath}'");
+                    _logger.LogInfo($"Usando ruta de desarrollo (Release): '{trayAppExePath}'", "WindowsTrayAppService");
                 }
                 else
                 {
-                    _logger.LogError($"[TrayAppService] No se pudo encontrar el ejecutable '{TrayAppExeName}' en ninguna ruta conocida.");
+                    _logger.LogError($"No se pudo encontrar el ejecutable '{TrayAppExeName}' en ninguna ruta conocida.", null, "WindowsTrayAppService");
                     return Task.FromResult(false);
                 }
 
@@ -128,12 +128,12 @@ namespace UI.Services
 
                 _trayAppProcess.Start();
 
-                _logger.LogInfo($"[TrayAppService] TrayApp iniciado con PID: {_trayAppProcess.Id}");
+                _logger.LogInfo($"TrayApp iniciado con PID: {_trayAppProcess.Id}", "WindowsTrayAppService");
                 return Task.FromResult(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[TrayAppService] Error al iniciar: {ex.Message}", ex);
+                _logger.LogError($"Error al iniciar: {ex.Message}", ex, "WindowsTrayAppService");
                 return Task.FromResult(false);
             }
         }

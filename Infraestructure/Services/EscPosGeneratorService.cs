@@ -61,6 +61,17 @@ namespace AppsielPrintManager.Infraestructure.Services
             // --- PROCESAMIENTO SECUENCIAL DE SECCIONES ---
             foreach (var section in ticketContent.Sections)
             {
+                // Aplicar interlineado personalizado si existe
+                if (section.LineSpacing.HasValue)
+                {
+                    _logger.LogInfo($"[EscPosGenerator] Aplicando interlineado escala {section.LineSpacing.Value} a la sección '{section.Name}'");
+                    commands.AddRange(SetLineSpacing(section.LineSpacing.Value));
+                }
+                else
+                {
+                    commands.AddRange(ResetLineSpacing());
+                }
+
                 if (section.Type?.Equals("Table", StringComparison.OrdinalIgnoreCase) == true)
                 {
                     commands.AddRange(SetAlignment("Left"));
@@ -175,6 +186,9 @@ namespace AppsielPrintManager.Infraestructure.Services
                         barcodeBuffer.Clear();
                     }
                 }
+
+                // Resetear interlineado al finalizar la sección para no afectar a la siguiente
+                commands.AddRange(ResetLineSpacing());
             }
 
             // --- MEDIA ADICIONAL (Logo, etc) ---
@@ -206,7 +220,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 extraMediaBuffer.Clear();
             }
 
-            commands.AddRange(FeedLines(5));
+            commands.AddRange(FeedLines(8));
             if (printerSettings.OpenCashDrawerWithoutPrint) commands.AddRange(OpenCashDrawer());
             if (printerSettings.BeepOnPrint) commands.AddRange(GenerateBeep());
             commands.AddRange(CutPaper());
@@ -285,6 +299,32 @@ namespace AppsielPrintManager.Infraestructure.Services
         {
             // NOTA: NO reseteamos la fuente aquí (ESC M) para evitar solapamientos en tablas
             return new byte[] { ESC, 0x45, 0x00, ESC, 0x2D, 0x00, GS, 0x21, 0x00 };
+        }
+
+        private byte[] SetLineSpacing(int scale)
+        {
+            // Escala 1-10 mapeada a puntos de la impresora
+            // 4 es el estándar (30 puntos aprox 1/6 pulgada)
+            int dots = 30;
+
+            // Si es mayor a 4 (Normal), aumentamos agresivamente (20 puntos por nivel) 
+            // Esto asegura que en nivel 10 lleguemos a 150 puntos, lo suficiente para fuentes grandes.
+            if (scale > 4) dots += (scale - 4) * 20;
+            // Si es menor a 4, reducimos (5 puntos por nivel)
+            else if (scale < 4) dots -= (4 - scale) * 5;
+
+            // Log para depuración
+            _logger.LogInfo($"[EscPosGenerator] SetLineSpacing: Escala {scale} -> {dots} puntos (CMD: 1B 33 {dots:X2})");
+
+            if (dots < 0) dots = 0;
+            if (dots > 255) dots = 255;
+
+            return new byte[] { ESC, 0x33, (byte)dots };
+        }
+
+        private byte[] ResetLineSpacing()
+        {
+            return new byte[] { ESC, 0x32 }; // ESC 2 vuelve al interlineado por defecto (aprox 1/6 pulgada)
         }
 
         private byte[] FeedLines(int lines) => new byte[] { ESC, 0x64, (byte)Math.Clamp(lines, 1, 255) };

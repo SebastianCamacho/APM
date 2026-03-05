@@ -153,10 +153,15 @@ namespace UI.ViewModels
                 await Shell.Current.DisplayAlert("Éxito", "Plantilla guardada correctamente", "OK");
                 await Shell.Current.GoToAsync("..");
             }
+            catch (System.UnauthorizedAccessException)
+            {
+                _logger.LogError("Error de permisos al guardar la plantilla. Falta ejecutar como administrador.", null, "TemplateEditorViewModel");
+                await Shell.Current.DisplayAlert("Error de Permisos", "No se tiene permiso para modificar el archivo. Por favor, ejecuta la aplicación como Administrador.", "OK");
+            }
             catch (System.Exception ex)
             {
-                _logger.LogError($"Error guardando plantilla: {ex.Message}", ex);
-                await Shell.Current.DisplayAlert("Error", "No se pudo guardar la plantilla", "OK");
+                _logger.LogError($"Error guardando plantilla: {ex.Message}", ex, "TemplateEditorViewModel");
+                await Shell.Current.DisplayAlert("Error", $"No se pudo guardar la plantilla: {ex.Message}", "OK");
             }
             finally
             {

@@ -17,8 +17,15 @@ namespace UI.ViewModels
     {
         private readonly IScaleRepository _scaleRepository;
         private readonly ILoggingService _logger;
+        private readonly IPlatformService _platformService;
         private readonly HttpClient _httpClient;
         private CancellationTokenSource _cts;
+
+        [ObservableProperty]
+        private bool isServiceRunning;
+
+        [ObservableProperty]
+        private string serviceStatusTitle = "Servicio Inactivo";
 
         [ObservableProperty]
         public ObservableCollection<ScaleViewModelItem> scales;
@@ -29,10 +36,11 @@ namespace UI.ViewModels
         // URL para obtener el estado desde el WorkerService
         private const string StatusUrl = "http://localhost:7000/websocket/status";
 
-        public ScalesViewModel(IScaleRepository scaleRepository, ILoggingService logger)
+        public ScalesViewModel(IScaleRepository scaleRepository, ILoggingService logger, IPlatformService platformService)
         {
             _scaleRepository = scaleRepository;
             _logger = logger;
+            _platformService = platformService;
             Scales = new ObservableCollection<ScaleViewModelItem>();
             _httpClient = new HttpClient();
             _httpClient.Timeout = TimeSpan.FromSeconds(1);
@@ -40,6 +48,31 @@ namespace UI.ViewModels
 
             // Iniciar polling de estado
             _ = MonitorStatusesAsync(_cts.Token);
+            UpdateServiceStatus();
+        }
+
+        public void UpdateServiceStatus()
+        {
+            IsServiceRunning = _platformService.IsBackgroundServiceRunning;
+            ServiceStatusTitle = IsServiceRunning ? "Servicio Activo" : "Servicio Inactivo";
+        }
+
+        private bool _isMonitoring;
+
+        public async void StartMonitoring()
+        {
+            if (_isMonitoring) return;
+            _isMonitoring = true;
+            while (_isMonitoring)
+            {
+                UpdateServiceStatus();
+                await Task.Delay(1000);
+            }
+        }
+
+        public void StopMonitoring()
+        {
+            _isMonitoring = false;
         }
 
         [RelayCommand]
@@ -52,7 +85,7 @@ namespace UI.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error cargando básculas: {ex.Message}", ex);
+                _logger.LogError($"Error cargando básculas: {ex.Message}", ex, "ScalesViewModel");
             }
             finally
             {
@@ -127,7 +160,7 @@ namespace UI.ViewModels
                     }
                     catch (Exception reloadEx)
                     {
-                        _logger.LogWarning($"No se pudo notificar recarga al WorkerService: {reloadEx.Message}");
+                        _logger.LogWarning($"No se pudo notificar recarga al WorkerService: {reloadEx.Message}", "ScalesViewModel");
                     }
                 }
                 catch (Exception ex)
@@ -166,7 +199,7 @@ namespace UI.ViewModels
                 catch (Exception)
                 {
                     // Si falla la conexión, asumir desconectado para todas (o mantener último estado)
-                    // _logger.LogWarning($"No se pudo conectar al servicio de estado: {ex.Message}");
+                    // _logger.LogWarning($"No se pudo conectar al servicio de estado: {ex.Message}", "ScalesViewModel");
                 }
 
                 await Task.Delay(1000, token);

@@ -10,7 +10,6 @@ namespace UI
     public partial class App : Application
     {
         private readonly IServiceProvider _serviceProvider;
-        private IWorkerServiceManager _workerServiceManager;
         private ITrayAppService _trayAppService;
         private IPlatformService _platformService;
 
@@ -21,8 +20,8 @@ namespace UI
             _serviceProvider = serviceProvider;
             UserAppTheme = AppTheme.Light;
 
-            // Establecer LoginView como MainPage inicial
-            MainPage = new LoginView();
+            // Establecer LoginView como MainPage inicial usando DI
+            MainPage = _serviceProvider.GetService<LoginView>();
 
             // Suscribirse al mensaje de login exitoso
             WeakReferenceMessenger.Default.Register<LoginSuccessMessage>(this, (r, m) =>
@@ -78,25 +77,6 @@ namespace UI
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine($"Error starting tray app: {ex}");
-                    }
-                });
-            }
-#elif ANDROID 
-            _platformService = _serviceProvider.GetService<IPlatformService>();
-            if (_platformService != null)
-            {
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        if (!_platformService.IsBackgroundServiceRunning)
-                        {
-                            await _platformService.StartBackgroundServiceAsync();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Error starting background service: {ex}");
                     }
                 });
             }

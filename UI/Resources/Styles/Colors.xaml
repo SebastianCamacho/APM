@@ -17,6 +17,13 @@
     <Color x:Key="Magenta">#D600AA</Color>
     <Color x:Key="MidnightBlue">#190649</Color>
     <Color x:Key="OffBlack">#1f1f1f</Color>
+    <Color x:Key="SuccessIcon">#2E7D32</Color>
+    <Color x:Key="DangerIcon">#C62828</Color>
+    
+    <!-- Glassmorphism Effects -->
+    <Color x:Key="GlassStroke">#60FFFFFF</Color>
+    <Color x:Key="GlassBg">#20FFFFFF</Color>
+    <Color x:Key="GlassPlaceholder">#B0FFFFFF</Color>
 
     <Color x:Key="Gray100">#E1E1E1</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>
@@ -26,6 +33,22 @@
     <Color x:Key="Gray600">#404040</Color>
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
+
+    <!-- Service Status Colors -->
+    <Color x:Key="Running">#1EA565</Color>
+    <Color x:Key="Stopped">#D23232</Color>
+    <Color x:Key="Success">#21C063</Color>
+    
+    <Color x:Key="RunningText">#116F42</Color>
+    <Color x:Key="StoppedText">#9D1F1F</Color>
+    
+    <Color x:Key="RunningBg">#DCFCE7</Color>
+    <Color x:Key="StoppedBg">#FEE2E2</Color>
+    
+    <Color x:Key="StartBg">#159154</Color>
+    <Color x:Key="StopBg">#CD2121</Color>
+    <Color x:Key="DisabledBg">#Eef0F2</Color>
+    <Color x:Key="DisabledText">#9BA3AB</Color>
 
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
@@ -41,4 +64,46 @@
     <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+
+    <!-- ============================================== -->
+    <!-- PREMUM UI REDESIGN COLORS (Global Abstraction) -->
+    <!-- ============================================== -->
+
+    <!-- Backgrounds & Surfaces -->
+    <Color x:Key="PageBgLight">#F5F7FA</Color>
+    <Color x:Key="PageBgDark">#1A1C1E</Color>
+    <Color x:Key="CardBgLight">White</Color>
+    <Color x:Key="CardBgDark">#2D3033</Color>
+    <Color x:Key="InnerCardBgLight">#F5F7FA</Color>
+    <Color x:Key="InnerCardBgDark">#33383D</Color>
+    <Color x:Key="InfoBoxBgLight">#F8F9FA</Color>
+    <Color x:Key="InfoBoxBgDark">#33383D</Color>
+
+    <!-- Typography -->
+    <Color x:Key="TextPrimaryLight">#1D263B</Color>
+    <Color x:Key="TextPrimaryDark">White</Color>
+    <Color x:Key="TextSecondaryLight">#5A6A85</Color>
+    <Color x:Key="TextSecondaryDark">#A9B4C2</Color>
+    <Color x:Key="TextMutedLight">#8E9EAA</Color>
+    <Color x:Key="TextMutedDark">#8A949E</Color>
+    <Color x:Key="TextPurple">#6B21A8</Color>
+    <Color x:Key="HeaderTextPageLight">#333A45</Color>
+    <Color x:Key="HeaderTextPageDark">#E1E5EA</Color>
+
+    <!-- Borders & Strokes -->
+    <Color x:Key="CardStrokeLight">#EAECEE</Color>
+    <Color x:Key="CardStrokeDark">#3A3F45</Color>
+
+    <!-- Badges & Interactivity (Tints) -->
+    <Color x:Key="PrimaryTintBgLight">#F4F0FF</Color>
+    <Color x:Key="PrimaryTintBgDark">#2A2542</Color>
+    <Color x:Key="NeutralTintBgLight">#F0F2F5</Color>
+    <Color x:Key="NeutralTintBgDark">#3A3F45</Color>
+    <Color x:Key="DangerTintBgLight">#FEF2F2</Color>
+    <Color x:Key="DangerTintBgDark">#3F282A</Color>
+    
+    <!-- Hover Effects for Cards/Buttons -->
+    <Color x:Key="CardHoverBgLight">#FCFBFF</Color>
+    <Color x:Key="CardHoverBgDark">#33313B</Color>
+
 </ResourceDictionary>

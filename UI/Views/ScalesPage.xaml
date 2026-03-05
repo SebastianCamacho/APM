@@ -2,113 +2,202 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:UI.ViewModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="UI.Views.ScalesPage"
              Title="Básculas"
+             BackgroundColor="{AppThemeBinding Light={StaticResource PageBgLight}, Dark={StaticResource PageBgDark}}"
              x:DataType="viewmodels:ScalesViewModel">
+
+    <ContentPage.Resources>
+        <!-- Efecto Hover Dinámico para Ocultar/Mostrar Iconos en Windows -->
+        <Style x:Key="ActionIconStyle" TargetType="ImageButton">
+            <!-- Por defecto en Android siempre es visible, en Windows los ocultamos para el Hover -->
+            <Setter Property="IsVisible" Value="{OnPlatform Android=True, Default=False}" />
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal" />
+                        <VisualState x:Name="PointerOver">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="1.0" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Añadir Báscula" Command="{Binding AddScaleCommand}" IconImageSource="icono_anadir_impresora.svg" />
     </ContentPage.ToolbarItems>
 
     <ContentPage.Content>
-        <Grid RowDefinitions="Auto, *" RowSpacing="10" Padding="10">
-            <Label Grid.Row="0" Text="Gestión de Básculas" 
-                   Style="{StaticResource SubHeadline}"
-                   HorizontalOptions="Center" VerticalOptions="Center" />
+        <Grid RowDefinitions="Auto, Auto, *" RowSpacing="20" Padding="0">
+            
+            <!-- Header Toolbar Falso -->
+            <Border Grid.Row="0" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="30,15" Margin="0,0,0,5">
+                <Border.Shadow>
+                    <Shadow Brush="#000000" Offset="0,2" Radius="5" Opacity="0.05" />
+                </Border.Shadow>
+                <Grid ColumnDefinitions="*, Auto">
+                    <Label Grid.Column="0" Text="Básculas" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
+                    <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                        <Grid WidthRequest="12" HeightRequest="12" VerticalOptions="Center">
+                            <BoxView x:Name="StatusAura" WidthRequest="12" HeightRequest="12" CornerRadius="6" 
+                                     BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" Scale="1" Opacity="0.6" />
+                            <BoxView x:Name="StatusDot" WidthRequest="8" HeightRequest="8" CornerRadius="4" 
+                                     BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" VerticalOptions="Center" HorizontalOptions="Center" />
+                        </Grid>
+                        <Label Text="{Binding ServiceStatusTitle}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource HeaderTextPageLight}, Dark={StaticResource HeaderTextPageDark}}" FontAttributes="Bold" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Grid>
+            </Border>
 
-            <CollectionView Grid.Row="1" ItemsSource="{Binding Scales}" SelectionMode="None">
+            <!-- Encabezado y Acción Principal -->
+            <Grid Grid.Row="1" ColumnDefinitions="*, Auto" Padding="{OnPlatform Android='15,0', Default='30,0'}">
+                <VerticalStackLayout Grid.Column="0" Spacing="5" VerticalOptions="Center">
+                    <Label Text="Gestión de Básculas" FontSize="28" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                    <Label Text="Administra y configura las balanzas pesadoras del sistema" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                </VerticalStackLayout>
+                
+                <Button Grid.Column="1" Text="Nueva Báscula" ImageSource="icono_anadir_impresora.svg"
+                        Command="{Binding AddScaleCommand}"
+                        BackgroundColor="{DynamicResource Primary}" TextColor="White"
+                        CornerRadius="8" Padding="15,0" HeightRequest="40" FontAttributes="Bold" />
+            </Grid>
+
+            <!-- Grid de Tarjetas de Básculas -->
+            <CollectionView Grid.Row="2" ItemsSource="{Binding Scales}" SelectionMode="None" Margin="{OnPlatform Android='15,0', Default='30,0'}">
+                <CollectionView.ItemsLayout>
+                    <!-- Columnas adaptativas: 1 en móviles, 2 en Desktop -->
+                    <GridItemsLayout Orientation="Vertical" Span="{OnPlatform Android=1, Default=2}" VerticalItemSpacing="15" HorizontalItemSpacing="15" />
+                </CollectionView.ItemsLayout>
+
                 <CollectionView.EmptyView>
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
-                        <Label Text="No hay básculas configuradas." FontSize="Medium" TextColor="Gray" />
-                        <Button Text="Añadir Báscula" Command="{Binding AddScaleCommand}" />
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="15">
+                        <Label Text="No hay básculas configuradas." FontSize="18" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+                        <Button Text="Añadir Primera Báscula" Command="{Binding AddScaleCommand}" BackgroundColor="{DynamicResource Primary}" TextColor="White" CornerRadius="8" />
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
+
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="viewmodels:ScaleViewModelItem">
-                        <SwipeView Margin="0,5">
-                            <SwipeView.RightItems>
-                                <SwipeItems Mode="Reveal">
-                                    <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=EditScaleCommand}"
-                                                   CommandParameter="{Binding .}">
-                                        <Grid BackgroundColor="LightBlue">
-                                            <Label Text="Editar"
-                                                   TextColor="White"
-                                                   FontAttributes="Bold"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center" />
-                                        </Grid>
-                                    </SwipeItemView>
-                                    <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=DeleteScaleCommand}"
-                                                   CommandParameter="{Binding .}">
-                                        <Grid BackgroundColor="Red">
-                                            <Label Text="Eliminar"
-                                                   TextColor="White"
-                                                   FontAttributes="Bold"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center" />
-                                        </Grid>
-                                    </SwipeItemView>
-                                </SwipeItems>
-                            </SwipeView.RightItems>
-                            <Border StrokeShape="RoundRectangle 10" StrokeThickness="1"
-                                    Stroke="{StaticResource Gray300}"
-                                    BackgroundColor="{AppThemeBinding Light=White, Dark=DarkGray}">
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=EditScaleCommand}"
-                                                          CommandParameter="{Binding .}" />
-                                </Border.GestureRecognizers>
-                                <Grid ColumnDefinitions="Auto, *, Auto" Padding="15">
-                                    <!-- Status Icon on the left -->
-                                    <Grid Grid.Column="0" Margin="0,0,15,0" VerticalOptions="Center" WidthRequest="45">
-                                        <Image Source="icono_balanza.png" HeightRequest="40" WidthRequest="40" VerticalOptions="Center" HorizontalOptions="Center" />
-                                        <BoxView Color="{Binding StatusColor}" 
-                                                 HeightRequest="12" WidthRequest="12" 
-                                                 CornerRadius="6"
-                                                 HorizontalOptions="End" VerticalOptions="End"
-                                                 TranslationX="4" TranslationY="4" />
-                                    </Grid>
+                        
+                        <!-- Tarjeta Principal con VisualStateManager -->
+                        <Border StrokeShape="RoundRectangle 12" StrokeThickness="1"
+                                Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}"
+                                Padding="20">
+                            
+                            <!-- Hover Transitions en XAML (Borde y Fondo) -->
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup Name="CommonStates">
+                                    <VisualState Name="Normal" />
+                                    <VisualState Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+                                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource NeutralTintBgLight}, Dark={StaticResource NeutralTintBgDark}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
 
-                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                        <HorizontalStackLayout Spacing="5">
-                                            <Label Text="{Binding Scale.Name}" FontAttributes="Bold" FontSize="Medium" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                                            <Border StrokeShape="RoundRectangle 4" BackgroundColor="{DynamicResource Primary}" Padding="5,0" VerticalOptions="Center">
-                                                <Label Text="Báscula" FontSize="10" TextColor="White" FontAttributes="Bold" />
-                                            </Border>
-                                            <Border StrokeShape="RoundRectangle 4" Stroke="{StaticResource Gray400}" Padding="5,0" VerticalOptions="Center">
-                                                <Label Text="{Binding Scale.PortName}" FontSize="10" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
-                                            </Border>
-                                        </HorizontalStackLayout>
-                                        
-                                        <!-- ID y Especificaciones Técnicas -->
-                                        <HorizontalStackLayout Spacing="5">
-                                            <Label Text="ID: " TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" FontAttributes="Bold" />
-                                            <Label Text="{Binding Scale.Id}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
-                                            <Label Text="|" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
-                                            <Label Text="{Binding Scale.BaudRate}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
-                                            <Label Text="bps," TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
-                                            <Label Text="{Binding Scale.DataBits}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
-                                            <Label Text="bits" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
-                                        </HorizontalStackLayout>
+                            <!-- Gestos Puntero (C#) y Clic -->
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=EditScaleCommand}" CommandParameter="{Binding .}" />
+                                <PointerGestureRecognizer PointerEntered="OnCardPointerEntered" PointerExited="OnCardPointerExited" />
+                            </Border.GestureRecognizers>
 
-                                        <Label Text="{Binding Status}" TextColor="{Binding StatusColor}" FontSize="Small" />
-                                        <Label Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullConverter}}" TextColor="Red" FontSize="10" LineBreakMode="WordWrap" />
-                                    </VerticalStackLayout>
-
-                                    <ImageButton Grid.Column="2" Source="icono_eliminar_balanza.png"
-                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=DeleteScaleCommand}"
-                                                 CommandParameter="{Binding .}"
-                                                 HeightRequest="30" WidthRequest="30"
-                                                 VerticalOptions="Center" HorizontalOptions="End"
-                                                 BackgroundColor="Transparent" />
+                            <!-- Grid Interno de la Tarjeta (Icono + Info) -->
+                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                
+                                <!-- Sección Izquierda: Icono Principal con Badge de Estado Flotante -->
+                                <Grid Grid.Column="0" Margin="0,0,15,0" VerticalOptions="Center">
+                                    <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryTintBgLight}, Dark={StaticResource PrimaryTintBgDark}}" Padding="12">
+                                        <Image Source="icono_balanza.png" HeightRequest="40" WidthRequest="40" VerticalOptions="Center" HorizontalOptions="Center">
+                                            <Image.Behaviors>
+                                                <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
+                                            </Image.Behaviors>
+                                        </Image>
+                                    </Border>
+                                    
+                                    <!-- Punto de Estado Flotante -->
+                                    <Border StrokeShape="RoundRectangle 8" StrokeThickness="2" Stroke="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" BackgroundColor="{Binding StatusColor}" 
+                                            HeightRequest="16" WidthRequest="16" HorizontalOptions="End" VerticalOptions="End" TranslationX="5" TranslationY="5" />
                                 </Grid>
-                            </Border>
-                        </SwipeView>
+
+                                <!-- Sección Central: Información de la Báscula -->
+                                <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center" Margin="0,0,0,10"> <!-- Margen inferior para no solapar iconos -->
+                                    
+                                    <!-- Nombre y Tags -->
+                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                        <Label Text="{Binding Scale.Name}" FontAttributes="Bold" FontSize="18" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" VerticalOptions="Center" />
+                                        
+                                        <!-- Puerto Tag -->
+                                        <Border StrokeShape="RoundRectangle 6" BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryTintBgLight}, Dark={StaticResource PrimaryTintBgDark}}" StrokeThickness="0" Padding="8,4" VerticalOptions="Center">
+                                            <Label Text="{Binding Scale.PortName}" FontSize="11" TextColor="{DynamicResource Primary}" FontAttributes="Bold" />
+                                        </Border>
+                                    </HorizontalStackLayout>
+                                    
+                                    <!-- ID -->
+                                    <Label Text="{Binding Scale.Id}" FontSize="12" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" LineBreakMode="CharacterWrap" />
+                                    
+                                    <!-- Especificaciones Técnicas Básicas -->
+                                    <HorizontalStackLayout Spacing="4" Margin="0,2,0,0">
+                                        <Label Text="{Binding Scale.BaudRate}" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" FontSize="12" />
+                                        <Label Text="bps •" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+                                        <Label Text="{Binding Scale.DataBits}" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" FontSize="12" />
+                                        <Label Text="bits" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="12" />
+                                    </HorizontalStackLayout>
+                                    
+                                    <!-- Status / Estado de Conexión Lógico -->
+                                    <Label Text="{Binding Status}" TextColor="{Binding StatusColor}" FontSize="12" FontAttributes="Bold" Margin="0,2,0,0" />
+
+                                    <!-- Mensajes de Error (Si aplican) -->
+                                    <Label Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullConverter}}" TextColor="Red" FontSize="11" FontAttributes="Italic" LineBreakMode="WordWrap" Margin="0,4,0,0" />
+                                </VerticalStackLayout>
+
+                                <!-- Sección Derecha: Iconos de Acción Híbridos -->
+                                <HorizontalStackLayout Grid.Column="2" x:Name="ActionIcons" Spacing="6" 
+                                                       VerticalOptions="{OnPlatform Android=End, Default=Center}" 
+                                                       HorizontalOptions="End"
+                                                       IsVisible="{OnPlatform Android=True, Default=False}" 
+                                                       Opacity="{OnPlatform Android=1, Default=0}">
+                                    
+                                    <!-- Editar -->
+                                    <ImageButton x:Name="EditBtn" BackgroundColor="Transparent" CornerRadius="8" WidthRequest="36" HeightRequest="36" Padding="8"
+                                                 Source="{OnPlatform Android='icono_edit.png', Default='icono_edit_gray.png'}"
+                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=EditScaleCommand}"
+                                                 CommandParameter="{Binding .}">
+                                        <ImageButton.GestureRecognizers>
+                                            <PointerGestureRecognizer PointerEntered="OnEditPointerEntered" PointerExited="OnEditPointerExited" />
+                                        </ImageButton.GestureRecognizers>
+                                    </ImageButton>
+
+                                    <!-- Eliminar -->
+                                    <ImageButton x:Name="DeleteBtn" BackgroundColor="Transparent" CornerRadius="8" WidthRequest="36" HeightRequest="36" Padding="8"
+                                                 Source="{OnPlatform Android='icono_delete.png', Default='icono_delete_gray.png'}"
+                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ScalesViewModel}}, Path=DeleteScaleCommand}"
+                                                 CommandParameter="{Binding .}">
+                                        <ImageButton.GestureRecognizers>
+                                            <PointerGestureRecognizer PointerEntered="OnDeletePointerEntered" PointerExited="OnDeletePointerExited" />
+                                        </ImageButton.GestureRecognizers>
+                                    </ImageButton>
+
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
+            <!-- Overlay de Carga -->
             <ActivityIndicator Grid.RowSpan="2" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
-                               VerticalOptions="Center" HorizontalOptions="Center" Color="{StaticResource Primary}" />
+                               VerticalOptions="Center" HorizontalOptions="Center" Color="{DynamicResource Primary}" />
         </Grid>
     </ContentPage.Content>
 </ContentPage>

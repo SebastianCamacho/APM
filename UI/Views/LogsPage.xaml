@@ -1,12 +1,341 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:UI.ViewModels"
+             xmlns:models="clr-namespace:AppsielPrintManager.Core.Interfaces;assembly=Core"
              x:Class="UI.Views.LogsPage"
-             Title="Logs">
-    <VerticalStackLayout>
-        <Label 
-            Text="Visualizador de Logs"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             Title="Registros del Sistema"
+             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1E1E2E}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="RowBGLight">#FFFFFF</Color>
+            <Color x:Key="RowBGDark">#27273A</Color>
+            
+            <Color x:Key="TextLightPrimary">#2D3748</Color>
+            <Color x:Key="TextDarkPrimary">#E2E8F0</Color>
+
+            <Color x:Key="TextLightSecondary">#718096</Color>
+            <Color x:Key="TextDarkSecondary">#A0AEC0</Color>
+
+            <Style x:Key="LabelHeader" TargetType="Label">
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" />
+                <Setter Property="FontSize" Value="{OnPlatform Android=10, Default=11}" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="CharacterSpacing" Value="1" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+
+            <!-- Estilo base para el Label del Badge de Nivel -->
+            <Style x:Key="BadgeLabelStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+
+            <!-- Estilo base para el Frame del Badge de Nivel -->
+            <Style x:Key="BadgeFrameStyle" TargetType="Frame">
+                <Setter Property="Padding" Value="8,2" />
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="HeightRequest" Value="24" />
+                <Setter Property="HorizontalOptions" Value="Start" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- Header Principal (Barra Morada Appsiel) -->
+        <Border Grid.Row="0" BackgroundColor="{StaticResource Primary}" Padding="15,10" StrokeThickness="0">
+            <VerticalStackLayout Spacing="10">
+                <!-- Fila 1: Filtros principales (Buscar y Refrescar) - Diseño Responsivo -->
+                <OnPlatform x:TypeArguments="View">
+                    <!-- Diseño para PC (Buscar y botones en la misma fila) -->
+                    <On Platform="WinUI, MacCatalyst">
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="15">
+                            <!-- Barra de búsqueda -->
+                            <Frame Grid.Column="0" BackgroundColor="#20FFFFFF" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="36" BorderColor="Transparent">
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <Label Grid.Column="0" Text="🔍" TextColor="White" VerticalOptions="Center" Margin="0,0,10,0" />
+                                    <Entry Grid.Column="1" Text="{Binding SearchText}" Placeholder="Buscar logs..." PlaceholderColor="#AAAAAA" TextColor="White" BackgroundColor="Transparent" FontSize="13" VerticalOptions="Center" />
+                                </Grid>
+                            </Frame>
+
+                            <!-- Auto Refresh Toggle y Botones -->
+                            <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalOptions="Center">
+                                <StackLayout Orientation="Horizontal" Spacing="5" VerticalOptions="Center">
+                                    <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Color="White" VerticalOptions="Center" />
+                                    <Label Text="Auto" TextColor="White" VerticalOptions="Center" FontSize="12" FontAttributes="Bold" />
+                                </StackLayout>
+
+                                <Button Text="↻ Refrescar"
+                                        Command="{Binding RefreshLogsCommand}"
+                                        BackgroundColor="#40000000"
+                                        TextColor="White"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        CornerRadius="4"
+                                        HeightRequest="36"
+                                        Padding="15,0"
+                                        VerticalOptions="Center" />
+
+                                <Button Text="🗑️ Limpiar"
+                                        Command="{Binding ClearLogsCommand}"
+                                        BackgroundColor="#60DC2626"
+                                        TextColor="White"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        CornerRadius="4"
+                                        HeightRequest="36"
+                                        Padding="15,0"
+                                        VerticalOptions="Center" />
+                            </StackLayout>
+                        </Grid>
+                    </On>
+
+                    <!-- Diseño para Móviles (Buscar arriba, botones abajo) -->
+                    <On Platform="Android, iOS">
+                        <VerticalStackLayout Spacing="10">
+                            <!-- Barra de búsqueda ocupa toda la fila -->
+                            <Frame BackgroundColor="#20FFFFFF" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="40" BorderColor="Transparent">
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <Label Grid.Column="0" Text="🔍" TextColor="White" VerticalOptions="Center" Margin="0,0,10,0" />
+                                    <Entry Grid.Column="1" Text="{Binding SearchText}" Placeholder="Buscar logs..." PlaceholderColor="#AAAAAA" TextColor="White" BackgroundColor="Transparent" FontSize="14" VerticalOptions="Center" />
+                                </Grid>
+                            </Frame>
+
+                            <!-- Botones en otra fila, distribuidos horizontalmente -->
+                            <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Start">
+                                <StackLayout Orientation="Horizontal" Spacing="5" VerticalOptions="Center">
+                                    <CheckBox IsChecked="{Binding IsAutoRefreshEnabled}" Color="White" VerticalOptions="Center" />
+                                    <Label Text="Auto" TextColor="White" VerticalOptions="Center" FontSize="13" FontAttributes="Bold" />
+                                </StackLayout>
+
+                                <Button Text="↻ Refrescar"
+                                        Command="{Binding RefreshLogsCommand}"
+                                        BackgroundColor="#40000000"
+                                        TextColor="White"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        CornerRadius="4"
+                                        HeightRequest="40"
+                                        Padding="15,0"
+                                        VerticalOptions="Center" />
+
+                                <Button Text="🗑️ Limpiar"
+                                        Command="{Binding ClearLogsCommand}"
+                                        BackgroundColor="#60DC2626"
+                                        TextColor="White"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        CornerRadius="4"
+                                        HeightRequest="40"
+                                        Padding="15,0"
+                                        VerticalOptions="Center" />
+                            </StackLayout>
+                        </VerticalStackLayout>
+                    </On>
+                </OnPlatform>
+
+                <!-- Fila 2: Sub Filtros (Nivel, Cantidad, Fechas) -->
+                <FlexLayout Wrap="Wrap" JustifyContent="Start" AlignItems="Center">
+                    <!-- Dropdown Niveles -->
+                    <HorizontalStackLayout Spacing="5" Margin="0,0,10,5">
+                        <Label Text="Nivel:" TextColor="White" FontSize="12" VerticalOptions="Center" FontAttributes="Bold" />
+                        <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="{OnPlatform Android='5,0', Default='10,0'}" HeightRequest="{OnPlatform Android=40, Default=36}">
+                            <Picker ItemsSource="{Binding AvailableLevels}" SelectedItem="{Binding SelectedLevel}" TextColor="White" FontSize="13" BackgroundColor="Transparent" />
+                        </Frame>
+                    </HorizontalStackLayout>
+
+                    <!-- Dropdown Cantidad -->
+                    <HorizontalStackLayout Spacing="5" Margin="0,0,10,5">
+                        <Label Text="Límite:" TextColor="White" FontSize="12" VerticalOptions="Center" FontAttributes="Bold" />
+                        <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="{OnPlatform Android='5,0', Default='10,0'}" HeightRequest="{OnPlatform Android=40, Default=36}">
+                            <Picker ItemsSource="{Binding AvailableCounts}" SelectedItem="{Binding SelectedLogCount}" TextColor="White" FontSize="13" BackgroundColor="Transparent" />
+                        </Frame>
+                    </HorizontalStackLayout>
+                    
+                    <!-- Fecha Inicio -->
+                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="36" Margin="0,0,10,5">
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="Desde:" TextColor="White" FontSize="12" VerticalOptions="Center" FontAttributes="Bold" />
+                            <DatePicker Date="{Binding StartDate}" TextColor="White" FontSize="13" BackgroundColor="Transparent" />
+                        </HorizontalStackLayout>
+                    </Frame>
+
+                    <!-- Fecha Fin -->
+                    <Frame BackgroundColor="#20FFFFFF" BorderColor="Transparent" CornerRadius="4" HasShadow="False" Padding="10,0" HeightRequest="36" Margin="0,0,0,5">
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="Hasta:" TextColor="White" FontSize="12" VerticalOptions="Center" FontAttributes="Bold" />
+                            <DatePicker Date="{Binding EndDate}" TextColor="White" FontSize="13" BackgroundColor="Transparent" />
+                        </HorizontalStackLayout>
+                    </Frame>
+                </FlexLayout>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Contenedor Principal de Logs (Sin anidar ScrollView externo en MAUI) -->
+        <Grid Grid.Row="1" RowDefinitions="Auto, *">
+                
+            <!-- Cabecera de la Tabla (Oculta en móviles para el diseño de tarjetas/consola) -->
+            <Grid Grid.Row="0" ColumnDefinitions="160, 90, 160, 500" Padding="20,15" BackgroundColor="{AppThemeBinding Light={StaticResource RowBGLight}, Dark={StaticResource RowBGDark}}"
+                  IsVisible="{OnPlatform Android=False, iOS=False, Default=True}">
+                <Label Grid.Column="0" Text="TIMESTAMP" Style="{StaticResource LabelHeader}" />
+                <Label Grid.Column="1" Text="NIVEL" Style="{StaticResource LabelHeader}" />
+                <Label Grid.Column="2" Text="SERVICIO" Style="{StaticResource LabelHeader}" />
+                <Label Grid.Column="3" Text="MENSAJE" Style="{StaticResource LabelHeader}" />
+            </Grid>
+            
+            <BoxView Grid.Row="0" HeightRequest="1" Color="{AppThemeBinding Light=#E2E8F0, Dark=#3F3F5A}" VerticalOptions="End" IsVisible="{OnPlatform Android=False, iOS=False, Default=True}" />
+
+            <!-- Colección Virtualizada -->
+            <CollectionView Grid.Row="1"
+                            ItemsSource="{Binding Logs}"
+                            SelectionMode="None"
+                            EmptyView="No hay actividad registrada"
+                            Margin="0">
+                <CollectionView.ItemTemplate>
+                    <OnPlatform x:TypeArguments="DataTemplate">
+                        <!-- PLATAFORMAS DE ESCRITORIO (WINUI) -->
+                        <On Platform="WinUI, MacCatalyst">
+                            <DataTemplate x:DataType="models:LogMessage">
+                                <!-- Se añade un ScrollView Horizontal localmente por registro SOLO para PC para no reprimir MAUI Android -->
+                                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Default">
+                                    <Grid ColumnDefinitions="160, 90, 160, 500" Padding="20,12" BackgroundColor="{AppThemeBinding Light={StaticResource RowBGLight}, Dark={StaticResource RowBGDark}}">
+                                        
+                                        <!-- Columna: Timestamp -->
+                                        <Label Grid.Column="0" 
+                                               Text="{Binding Timestamp, StringFormat='{0:yyyy-MM-dd HH:mm:ss.fff}'}" 
+                                               FontSize="12" 
+                                               TextColor="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" 
+                                               VerticalOptions="Center" />
+                                        
+                                        <!-- Columna: Nivel (Badge Dinámico) -->
+                                        <Frame Grid.Column="1" Style="{StaticResource BadgeFrameStyle}">
+                                            <Frame.Triggers>
+                                                <DataTrigger TargetType="Frame" Binding="{Binding Level}" Value="Debug">
+                                                    <Setter Property="BackgroundColor" Value="#F3F4F6"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Frame" Binding="{Binding Level}" Value="Info">
+                                                    <Setter Property="BackgroundColor" Value="#DBEAFE"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Frame" Binding="{Binding Level}" Value="Warning">
+                                                    <Setter Property="BackgroundColor" Value="#FEF3C7"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Frame" Binding="{Binding Level}" Value="Error">
+                                                    <Setter Property="BackgroundColor" Value="#FEE2E2"/>
+                                                </DataTrigger>
+                                            </Frame.Triggers>
+                                            <Label Text="{Binding Level}" Style="{StaticResource BadgeLabelStyle}">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Debug">
+                                                        <Setter Property="TextColor" Value="#4B5563"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Info">
+                                                        <Setter Property="TextColor" Value="#2563EB"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Warning">
+                                                        <Setter Property="TextColor" Value="#D97706"/>
+                                                        <Setter Property="Text" Value="WARN"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Error">
+                                                        <Setter Property="TextColor" Value="#DC2626"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Frame>
+
+                                        <!-- Columna: Servicio -->
+                                        <Label Grid.Column="2" 
+                                               Text="{Binding Service}" 
+                                               FontSize="13" 
+                                               TextColor="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" 
+                                               VerticalOptions="Center" />
+
+                                        <!-- Columna: Mensaje -->
+                                        <Label Grid.Column="3" 
+                                               Text="{Binding Message}" 
+                                               FontSize="13" 
+                                               TextColor="{AppThemeBinding Light={StaticResource TextLightPrimary}, Dark={StaticResource TextDarkPrimary}}" 
+                                               LineBreakMode="WordWrap"
+                                               VerticalOptions="Center">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Error">
+                                                    <Setter Property="TextColor" Value="#E53E3E"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Warning">
+                                                    <Setter Property="TextColor" Value="{AppThemeBinding Light=#B45309, Dark=#FCD34D}"/>
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+
+                                        <!-- Línea separadora -->
+                                        <BoxView Grid.Row="0" Grid.ColumnSpan="4" HeightRequest="1" Color="{AppThemeBinding Light=#EDF2F7, Dark=#3F3F5A}" VerticalOptions="End" />
+                                    </Grid>
+                                </ScrollView>
+                            </DataTemplate>
+                        </On>
+
+                        <!-- PLATAFORMAS MOVILES (ANDROID/IOS) - DISEÑO ATRACTIVO OPTIMIZADO -->
+                        <On Platform="Android, iOS">
+                            <DataTemplate x:DataType="models:LogMessage">
+                                <VerticalStackLayout Padding="10,8" Spacing="2" BackgroundColor="{AppThemeBinding Light={StaticResource RowBGLight}, Dark={StaticResource RowBGDark}}">
+                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                        <!-- Nivel -->
+                                        <Label Text="{Binding Level}" FontSize="12" FontAttributes="Bold">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Debug">
+                                                    <Setter Property="TextColor" Value="#6B7280"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Info">
+                                                    <Setter Property="TextColor" Value="#3B82F6"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Warning">
+                                                    <Setter Property="TextColor" Value="#D97706"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Error">
+                                                    <Setter Property="TextColor" Value="#EF4444"/>
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+
+                                        <Label Text="•" FontSize="11" TextColor="Gray" VerticalOptions="Center" />
+
+                                        <!-- Servicio -->
+                                        <Label Text="{Binding Service}" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" VerticalOptions="Center" />
+                                        
+                                        <Label Text="•" FontSize="11" TextColor="Gray" VerticalOptions="Center" />
+
+                                        <!-- Fecha -->
+                                        <Label Text="{Binding Timestamp, StringFormat='{0:HH:mm:ss.fff}'}" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource TextLightSecondary}, Dark={StaticResource TextDarkSecondary}}" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+
+                                    <!-- Mensaje -->
+                                    <Label Text="{Binding Message}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource TextLightPrimary}, Dark={StaticResource TextDarkPrimary}}" LineBreakMode="WordWrap" Margin="0,2,0,4">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Error">
+                                                <Setter Property="TextColor" Value="#EF4444"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Level}" Value="Warning">
+                                                <Setter Property="TextColor" Value="{AppThemeBinding Light=#B45309, Dark=#FCD34D}"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+
+                                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#F3F4F6, Dark=#3F3F5A}" />
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </On>
+                    </OnPlatform>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+        
+        <!-- Indicador de Carga sobre la Pantalla -->
+        <Grid Grid.Row="1" IsVisible="{Binding IsLoading}" BackgroundColor="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}">
+            <ActivityIndicator IsRunning="{Binding IsLoading}" Color="{StaticResource Primary}" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="50" HeightRequest="50" />
+        </Grid>
+    </Grid>
 </ContentPage>

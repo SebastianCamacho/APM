@@ -4,6 +4,7 @@ using AppsielPrintManager.Core.Models;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace UI.ViewModels
 {
@@ -61,11 +62,14 @@ namespace UI.ViewModels
         [ObservableProperty]
         private bool isExpanded;
 
+        [ObservableProperty]
+        private bool isBusy;
+
         partial void OnIsExpandedChanged(bool value)
         {
             if (value && !_isLoaded)
             {
-                LoadElements();
+                _ = LoadElementsAsync();
             }
         }
 
@@ -92,6 +96,9 @@ namespace UI.ViewModels
 
         [ObservableProperty]
         private bool isBold;
+
+        [ObservableProperty]
+        private int lineSpacing = 4; // Valor por defecto (Normal)
 
 
 
@@ -122,6 +129,7 @@ namespace UI.ViewModels
         public List<string> SectionTypes { get; } = new() { "Static", "Table", "Repeated" };
         public List<string> Alignments { get; } = new() { "Ninguno", "Left", "Center", "Right" };
         public List<string> Sizes { get; } = new() { "Ninguno", "Tamaño 1", "Tamaño 2", "Tamaño 3", "Tamaño 4", "Tamaño 5", "Tamaño 6" };
+        public List<int> LineSpacingOptions { get; } = Enumerable.Range(1, 10).ToList();
         public List<string> DataSourceSuggestions => AppsielPrintManager.Core.Services.TemplateCatalogService.GetDataSourceSuggestions(DocumentType);
 
         public List<string> DisplayDataSourceSuggestions
@@ -160,38 +168,51 @@ namespace UI.ViewModels
             // Si es una sección nueva (sin elementos) o pedimos expandir, cargamos ya.
             if (startExpanded || _model.Elements == null || _model.Elements.Count == 0)
             {
-                LoadElements();
+                _ = LoadElementsAsync();
             }
 
             ParseFormat(model.Format);
+            LineSpacing = model.LineSpacing ?? 4;
         }
 
-        private void LoadElements()
+        private async Task LoadElementsAsync()
         {
-            if (_isLoaded || _model.Elements == null) return;
+            if (_isLoaded || IsBusy) return;
 
-            var newElements = _model.Elements.Select(e => new TemplateElementViewModel(e, DocumentType)
+            IsBusy = true;
+            try
             {
-                IsTableSection = IsTableSection,
-                IsRepeatedSection = Type == "Repeated"
-            }).ToList();
+                // Simulamos un pequeño retraso para que el usuario vea el feedback visual (spinner)
+                // En una app real, esto podría ser una carga desde base de datos o servicio.
+                await Task.Delay(400);
 
-            foreach (var element in newElements)
-            {
-                Elements.Add(element);
+                if (_model.Elements != null)
+                {
+                    var newElements = _model.Elements.Select(e => new TemplateElementViewModel(e, DocumentType)
+                    {
+                        IsTableSection = IsTableSection,
+                        IsRepeatedSection = Type == "Repeated"
+                    }).ToList();
+
+                    foreach (var element in newElements)
+                    {
+                        Elements.Add(element);
+                    }
+                }
+
+                _isLoaded = true;
             }
-
-            _isLoaded = true;
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         [RelayCommand]
         private void ToggleExpanded()
         {
             IsExpanded = !IsExpanded;
-            if (IsExpanded && !_isLoaded)
-            {
-                LoadElements();
-            }
+            // OnIsExpandedChanged se encargará de disparar la carga si es necesario.
         }
 
         private void ParseFormat(string format)
@@ -256,7 +277,7 @@ namespace UI.ViewModels
         [RelayCommand]
         private void AddElement()
         {
-            if (!_isLoaded) LoadElements();
+            if (!_isLoaded) _ = LoadElementsAsync();
             IsExpanded = true;
 
             Elements.Add(new TemplateElementViewModel(new TemplateElement { Type = "Text", Align = "Left" }, DocumentType)
@@ -317,6 +338,7 @@ namespace UI.ViewModels
             _model.DataSource = string.IsNullOrEmpty(DataSource) ? null : DataSource;
             _model.Align = (Align == "Ninguno") ? null : Align;
             _model.Order = Order;
+            _model.LineSpacing = LineSpacing;
             _model.Format = UpdateFormat();
 
             if (_isLoaded)

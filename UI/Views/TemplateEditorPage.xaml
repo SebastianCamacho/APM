@@ -16,16 +16,32 @@
                 <Setter Property="Margin" Value="2" />
             </Style>
             <Style TargetType="Entry">
-                <Setter Property="FontSize" Value="12" />
-                <Setter Property="TextColor" Value="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
-                <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray300}}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
                 <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
             </Style>
             <Style TargetType="Picker">
-                <Setter Property="FontSize" Value="12" />
-                <Setter Property="TitleColor" Value="{DynamicResource Gray500}" />
-                <Setter Property="TextColor" Value="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+                <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
                 <Setter Property="BackgroundColor" Value="Transparent" />
+            </Style>
+
+            <!-- Estilo Premium para Contenedores de Input -->
+            <Style x:Key="InputContainerStyle" TargetType="Border">
+                <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+                <Setter Property="StrokeThickness" Value="1" />
+                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource NeutralTintBgLight}, Dark={StaticResource NeutralTintBgDark}}" />
+                <Setter Property="HeightRequest" Value="38" />
+            </Style>
+
+            <!-- Estilo para Labels de Campo -->
+            <Style x:Key="FieldLabelStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
             </Style>
 
             <Style x:Key="ButtonOutline" TargetType="Button">
@@ -46,20 +62,42 @@
             <ColumnDefinition Width="0" />
         </Grid.ColumnDefinitions>
 
-        <!-- Header -->
-        <!-- SAFE MODE: Padding hardcoded to Phone default '10,12' -->
-        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Padding="10,12" BackgroundColor="{DynamicResource Primary}" StrokeThickness="0">
-            <!-- SAFE MODE: MaxWidth removed or static -->
-            <Grid ColumnDefinitions="*, Auto">
-                <VerticalStackLayout Grid.Column="0" Spacing="2">
-                    <!-- SAFE MODE: FontSize 16 -->
-                    <Label Text="Editor de Plantilla" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource White}" />
-                    <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="#22FFFFFF" HeightRequest="38">
-                        <!-- SAFE MODE: FontSize 12 -->
-                        <Entry Text="{Binding TemplateName}" Placeholder="Nombre de la Plantilla" TextColor="{DynamicResource White}" FontSize="12" BackgroundColor="Transparent" VerticalOptions="Center" />
+        <!-- Header Premium con Color Primario -->
+        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" 
+                Padding="{OnPlatform Android='15,12', Default='20,15'}" 
+                BackgroundColor="{DynamicResource Primary}" 
+                StrokeThickness="0">
+            
+            <Grid ColumnDefinitions="*, Auto" MaximumWidthRequest="1000">
+                <VerticalStackLayout Grid.Column="0" Spacing="5">
+                    <Label Text="Editor de Plantilla" FontSize="18" FontAttributes="Bold" 
+                           TextColor="White" />
+                    
+                    <!-- Contenedor de Entry con efecto translúcido (Glassmorphism) -->
+                    <Border StrokeShape="RoundRectangle 8" StrokeThickness="1" 
+                            Stroke="{StaticResource GlassStroke}" 
+                            BackgroundColor="{StaticResource GlassBg}" 
+                            HeightRequest="40">
+                        <Entry Text="{Binding TemplateName}" Placeholder="Nombre de la Plantilla" 
+                               TextColor="White" PlaceholderColor="{StaticResource GlassPlaceholder}"
+                               FontSize="13" BackgroundColor="Transparent" VerticalOptions="Center" Margin="10,0" />
                     </Border>
                 </VerticalStackLayout>
-                <Button Grid.Column="1" Text="+ Sección" Command="{Binding AddSectionCommand}" VerticalOptions="Center" Style="{StaticResource ButtonOutline}" TextColor="{DynamicResource White}" BorderColor="{DynamicResource White}" HeightRequest="38" Padding="15,0" />
+                
+                <Button Grid.Column="1" Text="+ Sección" 
+                        Command="{Binding AddSectionCommand}" 
+                        VerticalOptions="End"
+                        BackgroundColor="White" 
+                        TextColor="{DynamicResource Primary}" 
+                        FontAttributes="Bold"
+                        CornerRadius="8"
+                        HeightRequest="40" 
+                        Padding="20,0"
+                        Margin="15,0,0,0">
+                    <Button.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="5" Opacity="0.2" />
+                    </Button.Shadow>
+                </Button>
             </Grid>
         </Border>
 
@@ -78,57 +116,131 @@
                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sections}" Spacing="10" Padding="0,5">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewmodels:TemplateSectionViewModel">
-                        <!-- SAFE MODE: Padding 10 -->
-                        <Border StrokeShape="RoundRectangle 12" Padding="10" StrokeThickness="1" Stroke="{DynamicResource Gray200}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" Margin="0,0,0,10">
-                            <VerticalStackLayout Spacing="8">
-                                <Grid ColumnDefinitions="Auto, *, Auto, Auto, Auto, Auto" ColumnSpacing="6">
-                                    <Button Grid.Column="0" 
-                                            Text="{Binding IsExpanded, Converter={StaticResource ExpandedIconConverter}}" 
-                                            Command="{Binding ToggleExpandedCommand}"
-                                            WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16"
-                                            BackgroundColor="Transparent" TextColor="{DynamicResource Primary}"
-                                            FontSize="14" FontAttributes="Bold" />
+                        <!-- Tarjeta de Sección Premium -->
+                        <Border StrokeShape="RoundRectangle 12" StrokeThickness="1" 
+                                Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" 
+                                BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" 
+                                Margin="0,0,0,15" Padding="0">
+                            
+                            <VerticalStackLayout Spacing="0">
+                                <!-- Encabezado de Sección con fondo sutil si está expandido -->
+                                <Border StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource NeutralTintBgLight}, Dark={StaticResource NeutralTintBgDark}}" Padding="12,6,8,6">
+                                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12">
+                                        
+                                        <!-- Toggle Expandir -->
+                                        <Button Grid.Column="0" 
+                                                Text="{Binding IsExpanded, Converter={StaticResource ExpandedIconConverter}}" 
+                                                Command="{Binding ToggleExpandedCommand}"
+                                                WidthRequest="32" HeightRequest="32" Padding="0"
+                                                BackgroundColor="Transparent" TextColor="{DynamicResource Primary}"
+                                                FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
 
-                                    <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" HeightRequest="40">
-                                        <!-- SAFE MODE: FontSize 14 -->
-                                        <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="14" Placeholder="Nombre Sección" BackgroundColor="Transparent" VerticalOptions="Center" Margin="5,0" TextColor="{AppThemeBinding Light={DynamicResource Black}, Dark={DynamicResource White}}" />
+                                        <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" 
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" 
+                                                HeightRequest="42" VerticalOptions="Center">
+                                            <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="14" 
+                                                   Placeholder="Nombre Sección" BackgroundColor="Transparent" 
+                                                   VerticalOptions="Center" Margin="8,0" 
+                                                   TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                        </Border>
+                                        
+                                        <!-- Grupo de Botones de Acción UNIFICADO -->
+                                        <Border Grid.Column="2" StrokeShape="RoundRectangle 8" StrokeThickness="1" 
+                                                Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" 
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PageBgDark}}" 
+                                                HeightRequest="42" Padding="0" VerticalOptions="Center">
+                                            
+                                            <Grid ColumnDefinitions="42, 1, 42, 1, 42, 1, 42" ColumnSpacing="0">
+                                            
+                                            <!-- Subir -->
+                                            <ImageButton Grid.Column="0" Source="icono_up.png" 
+                                                         Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" 
+                                                         CommandParameter="{Binding .}" Padding="9" 
+                                                         BackgroundColor="Transparent" Aspect="AspectFit">
+                                                <ImageButton.Behaviors>
+                                                    <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
+                                                </ImageButton.Behaviors>
+                                            </ImageButton>
+
+                                            <BoxView Grid.Column="1" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
+
+                                            <!-- Bajar -->
+                                            <ImageButton Grid.Column="2" Source="icono_down.png" 
+                                                         Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveDownCommand}" 
+                                                         CommandParameter="{Binding .}" Padding="9" 
+                                                         BackgroundColor="Transparent" Aspect="AspectFit">
+                                                <ImageButton.Behaviors>
+                                                    <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
+                                                </ImageButton.Behaviors>
+                                            </ImageButton>
+
+                                            <BoxView Grid.Column="3" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
+
+                                            <!-- Añadir Elemento -->
+                                            <ImageButton Grid.Column="4" Source="icono_anadir.png" 
+                                                         Command="{Binding AddElementCommand}" 
+                                                         Padding="9" BackgroundColor="Transparent" Aspect="AspectFit">
+                                                <ImageButton.Behaviors>
+                                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource SuccessIcon}" />
+                                                </ImageButton.Behaviors>
+                                            </ImageButton>
+
+                                            <BoxView Grid.Column="5" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
+
+                                            <!-- Eliminar Sección -->
+                                            <ImageButton Grid.Column="6" Source="icono_delete.png" 
+                                                         Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=RemoveSectionCommand}" 
+                                                         CommandParameter="{Binding .}" Padding="9" 
+                                                         BackgroundColor="Transparent" Aspect="AspectFit">
+                                                <ImageButton.Behaviors>
+                                                    <toolkit:IconTintColorBehavior TintColor="{StaticResource DangerIcon}" />
+                                                </ImageButton.Behaviors>
+                                            </ImageButton>
+
+                                        </Grid>
                                     </Border>
-                                    
-                                    <Button Grid.Column="2" Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" CommandParameter="{Binding .}" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" BackgroundColor="{DynamicResource Primary}" />
-                                    <Button Grid.Column="3" Text="↓" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveDownCommand}" CommandParameter="{Binding .}" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" BackgroundColor="{DynamicResource Primary}" />
-                                    <Button Grid.Column="4" Text="+" Command="{Binding AddElementCommand}" BackgroundColor="#2E7D32" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
-                                    <Button Grid.Column="5" Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=RemoveSectionCommand}" CommandParameter="{Binding .}" BackgroundColor="#C62828" WidthRequest="32" HeightRequest="32" Padding="0" CornerRadius="16" FontSize="12" />
-                                </Grid>
+                                    </Grid>
+                                </Border>
 
-                                <VerticalStackLayout Spacing="8" IsVisible="{Binding IsExpanded}">
+                                <VerticalStackLayout Spacing="12" Padding="15" IsVisible="{Binding IsExpanded}">
+                                    <!-- Spinner de Carga -->
+                                    <ActivityIndicator IsRunning="{Binding IsBusy}" 
+                                                       IsVisible="{Binding IsBusy}" 
+                                                       VerticalOptions="Center" HorizontalOptions="Center"
+                                                       HeightRequest="40" Margin="0,10" />
                                     <!-- SAFE MODE: ColumnSpacing 5 -->
                                     <Grid ColumnDefinitions="Auto, *, Auto, *, Auto, 1.5*" ColumnSpacing="5">
-                                        <Label Grid.Column="0" Text="Tipo:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
-                                        <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="36">
-                                            <Picker ItemsSource="{Binding SectionTypes}" SelectedItem="{Binding Type}" BackgroundColor="Transparent" />
+                                        <Label Grid.Column="0" Text="Tipo:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                        <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}">
+                                            <Picker ItemsSource="{Binding SectionTypes}" SelectedItem="{Binding Type}" />
                                         </Border>
                                         
-                                        <Label Grid.Column="2" Text="Alinea:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
-                                        <Border Grid.Column="3" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="36">
-                                            <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" BackgroundColor="Transparent" />
+                                        <Label Grid.Column="2" Text="Alinea:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                        <Border Grid.Column="3" Style="{StaticResource InputContainerStyle}">
+                                            <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" />
                                         </Border>
                                         
-                                        <Label Grid.Column="4" Text="Orig:" VerticalOptions="Center" FontSize="10" TextColor="Gray" IsVisible="{Binding IsDataSourceVisible}" />
-                                        <Border Grid.Column="5" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="36" IsVisible="{Binding IsDataSourceVisible}">
-                                            <Picker ItemsSource="{Binding DisplayDataSourceSuggestions}" SelectedItem="{Binding DataSource}" HorizontalOptions="Fill" BackgroundColor="Transparent" />
+                                        <Label Grid.Column="4" Text="Orig:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" IsVisible="{Binding IsDataSourceVisible}" />
+                                        <Border Grid.Column="5" Style="{StaticResource InputContainerStyle}" IsVisible="{Binding IsDataSourceVisible}">
+                                            <Picker ItemsSource="{Binding DisplayDataSourceSuggestions}" SelectedItem="{Binding DataSource}" HorizontalOptions="Fill" />
                                         </Border>
                                     </Grid>
     
                                     <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                                        <Label Text="Formato:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
-                                        <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="32">
-                                            <!-- SAFE MODE: WidthRequest 120 -->
-                                            <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" WidthRequest="120" BackgroundColor="Transparent" />
+                                        <Label Text="Formato:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                        <Border Style="{StaticResource InputContainerStyle}" WidthRequest="120">
+                                            <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" />
                                         </Border>
-                                        <HorizontalStackLayout VerticalOptions="Center" Spacing="0">
+
+                                        <Label Text="Interlin:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                        <Border Style="{StaticResource InputContainerStyle}" WidthRequest="60">
+                                            <Picker ItemsSource="{Binding LineSpacingOptions}" SelectedItem="{Binding LineSpacing}" />
+                                        </Border>
+
+                                        <HorizontalStackLayout VerticalOptions="Center" Spacing="0" Margin="0,0,10,0">
                                             <!-- SAFE MODE: Scale 0.9 -->
                                             <CheckBox IsChecked="{Binding IsBold}" Scale="0.9" />
-                                            <Label Text="N" VerticalOptions="Center" FontAttributes="Bold" Margin="-2,0,8,0" FontSize="11" />
+                                            <Label Text="N" VerticalOptions="Center" FontAttributes="Bold" Margin="-2,0,0,0" FontSize="11" />
                                         </HorizontalStackLayout>
                                     </HorizontalStackLayout>
     
@@ -145,16 +257,52 @@
                                                               RowDefinitions="Auto, Auto"
                                                               ColumnSpacing="4" RowSpacing="6">
                                                             
-                                                            <Label Grid.Row="0" Grid.Column="0" Text="Tipo:" VerticalOptions="Center" FontSize="11" FontAttributes="Bold" />
-                                                            <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="38">
-                                                                <Picker ItemsSource="{Binding ElementTypes}" SelectedItem="{Binding Type}" BackgroundColor="Transparent" />
+                                                            <Label Grid.Row="0" Grid.Column="0" Text="Tipo:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                            <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource InputContainerStyle}">
+                                                                <Picker ItemsSource="{Binding ElementTypes}" SelectedItem="{Binding Type}" />
                                                             </Border>
                                                             
-                                                            <HorizontalStackLayout Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3" Spacing="4" HorizontalOptions="End">
-                                                                <Button Text="↑" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=MoveElementUpCommand}" CommandParameter="{Binding .}" WidthRequest="24" HeightRequest="24" Padding="0" CornerRadius="12" FontSize="10" BackgroundColor="{DynamicResource Primary}" />
-                                                                <Button Text="↓" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=MoveElementDownCommand}" CommandParameter="{Binding .}" WidthRequest="24" HeightRequest="24" Padding="0" CornerRadius="12" FontSize="10" BackgroundColor="{DynamicResource Primary}" />
-                                                                <Button Text="✕" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=RemoveElementCommand}" CommandParameter="{Binding .}" BackgroundColor="#C62828" WidthRequest="24" HeightRequest="24" Padding="0" CornerRadius="12" FontSize="10" />
-                                                            </HorizontalStackLayout>
+                                                            <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3" HorizontalOptions="End"
+                                                                    StrokeShape="RoundRectangle 8" StrokeThickness="1" 
+                                                                    Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" 
+                                                                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PageBgDark}}" 
+                                                                    HeightRequest="42" Padding="0">
+                                                                <Grid ColumnDefinitions="42, 1, 42, 1, 42" ColumnSpacing="0">
+                                                                    <!-- Subir Elemento -->
+                                                                    <ImageButton Grid.Column="0" Source="icono_up.png" 
+                                                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=MoveElementUpCommand}" 
+                                                                                 CommandParameter="{Binding .}" Padding="9" 
+                                                                                 BackgroundColor="Transparent" Aspect="AspectFit">
+                                                                        <ImageButton.Behaviors>
+                                                                            <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
+                                                                        </ImageButton.Behaviors>
+                                                                    </ImageButton>
+                                                                    
+                                                                    <BoxView Grid.Column="1" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
+                                                                    
+                                                                    <!-- Bajar Elemento -->
+                                                                    <ImageButton Grid.Column="2" Source="icono_down.png" 
+                                                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=MoveElementDownCommand}" 
+                                                                                 CommandParameter="{Binding .}" Padding="9" 
+                                                                                 BackgroundColor="Transparent" Aspect="AspectFit">
+                                                                        <ImageButton.Behaviors>
+                                                                            <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
+                                                                        </ImageButton.Behaviors>
+                                                                    </ImageButton>
+                                                                    
+                                                                    <BoxView Grid.Column="3" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" VerticalOptions="Fill" />
+                                                                    
+                                                                    <!-- Eliminar Elemento -->
+                                                                    <ImageButton Grid.Column="4" Source="icono_delete.png" 
+                                                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateSectionViewModel}}, Path=RemoveElementCommand}" 
+                                                                                 CommandParameter="{Binding .}" Padding="9" 
+                                                                                 BackgroundColor="Transparent" Aspect="AspectFit">
+                                                                        <ImageButton.Behaviors>
+                                                                            <toolkit:IconTintColorBehavior TintColor="{StaticResource DangerIcon}" />
+                                                                        </ImageButton.Behaviors>
+                                                                    </ImageButton>
+                                                                </Grid>
+                                                            </Border>
     
                                                             <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="4" VerticalOptions="Center" IsVisible="{Binding ShowStaticToggle}">
                                                                 <Label Text="Fijo:" VerticalOptions="Center" FontSize="10" />
@@ -162,119 +310,123 @@
                                                             </HorizontalStackLayout>
     
                                                             <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" ColumnDefinitions="Auto, *" ColumnSpacing="4">
-                                                                <Label Grid.Column="0" Text="Etiqueta:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" IsVisible="{Binding ShowLabelEntry}" />
-                                                                <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="36" HorizontalOptions="Fill" IsVisible="{Binding ShowLabelEntry}">
-                                                                    <Entry Text="{Binding Label}" Placeholder="Ej: Cant." FontSize="11" BackgroundColor="Transparent" />
+                                                                <Label Grid.Column="0" Text="Etiqueta:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" IsVisible="{Binding ShowLabelEntry}" />
+                                                                <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}" HorizontalOptions="Fill" IsVisible="{Binding ShowLabelEntry}">
+                                                                    <Entry Text="{Binding Label}" Placeholder="Ej: Cant." />
                                                                 </Border>
     
-                                                                <Label Grid.Column="0" Text="Valor:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" IsVisible="{Binding ShowStaticValueInput}" />
-                                                                <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="36" HorizontalOptions="Fill" IsVisible="{Binding ShowStaticValueInput}">
-                                                                    <Entry Text="{Binding StaticValue}" Placeholder="Texto fijo..." FontSize="11" BackgroundColor="Transparent" />
+                                                                <Label Grid.Column="0" Text="Valor:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" IsVisible="{Binding ShowStaticValueInput}" />
+                                                                <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}" HorizontalOptions="Fill" IsVisible="{Binding ShowStaticValueInput}">
+                                                                    <Entry Text="{Binding StaticValue}" Placeholder="Texto fijo..." />
                                                                 </Border>
                                                             </Grid>
                                                         </Grid>
     
                                                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="8" IsVisible="{Binding ShowGenericSourcePicker}">
-                                                            <Label Grid.Column="0" Text="Fuente:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" />
-                                                            <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="38" HorizontalOptions="Fill">
-                                                                <Picker ItemsSource="{Binding DisplaySuggestions}" SelectedItem="{Binding Source}" BackgroundColor="Transparent" />
+                                                            <Label Grid.Column="0" Text="Fuente:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                            <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}" HorizontalOptions="Fill">
+                                                                <Picker ItemsSource="{Binding DisplaySuggestions}" SelectedItem="{Binding Source}" />
                                                             </Border>
                                                         </Grid>
     
-                                                        <Grid ColumnDefinitions="Auto, *, Auto, 120, Auto, Auto" ColumnSpacing="6" VerticalOptions="Center" IsVisible="{Binding ShowTextFormatting}">
-                                                            <Label Grid.Column="0" Text="Alineación:" VerticalOptions="Center" FontSize="10" />
-                                                            <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="34">
-                                                                <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" BackgroundColor="Transparent" />
+                                                        <Grid ColumnDefinitions="Auto, *, Auto, *, Auto" ColumnSpacing="6" VerticalOptions="Center" IsVisible="{Binding ShowTextFormatting}">
+                                                            <Label Grid.Column="0" Text="Ali:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                            <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}">
+                                                                <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" />
                                                             </Border>
                                                             
-                                                            <Label Grid.Column="2" Text="Tamaño:" VerticalOptions="Center" FontSize="10" />
-                                                            <Border Grid.Column="3" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="36">
-                                                                <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" BackgroundColor="Transparent" />
+                                                            <Label Grid.Column="2" Text="Tam:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                            <Border Grid.Column="3" Style="{StaticResource InputContainerStyle}">
+                                                                <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedSizeIdx}" />
                                                             </Border>
                                                             
-                                                            <CheckBox Grid.Column="4" IsChecked="{Binding IsBold}" Scale="0.9" />
-                                                            <Label Grid.Column="5" Text="N" VerticalOptions="Center" FontAttributes="Bold" Margin="-5,0,0,0" FontSize="10" />
+                                                            <HorizontalStackLayout Grid.Column="4" VerticalOptions="Center" Spacing="0" Margin="0,0,5,0">
+                                                                <CheckBox IsChecked="{Binding IsBold}" Scale="0.9" />
+                                                                <Label Text="N" VerticalOptions="Center" FontAttributes="Bold" Margin="-8,0,0,0" FontSize="10" />
+                                                            </HorizontalStackLayout>
                                                         </Grid>
     
                                                         <VerticalStackLayout Spacing="6" IsVisible="{Binding ShowBarcodeProperties}">
                                                             <Grid ColumnDefinitions="Auto, *, Auto, 60" ColumnSpacing="6">
-                                                                <Label Grid.Column="0" Text="Fuente:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" />
-                                                                <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="38" HorizontalOptions="Fill">
-                                                                    <Picker ItemsSource="{Binding DisplaySuggestions}" SelectedItem="{Binding Source, Mode=TwoWay}" BackgroundColor="Transparent" />
+                                                                <Label Grid.Column="0" Text="Fuente:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                                <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}" HorizontalOptions="Fill">
+                                                                    <Picker ItemsSource="{Binding DisplaySuggestions}" SelectedItem="{Binding Source, Mode=TwoWay}" />
                                                                 </Border>
                                                                 
-                                                                <Label Grid.Column="2" Text="Cols:" VerticalOptions="Center" FontSize="10" />
-                                                                <Border Grid.Column="3" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="34">
-                                                                    <Picker ItemsSource="{Binding ColumnOptions}" SelectedItem="{Binding Columns, Mode=TwoWay}" BackgroundColor="Transparent" />
+                                                                <Label Grid.Column="2" Text="Cols:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                                <Border Grid.Column="3" Style="{StaticResource InputContainerStyle}">
+                                                                    <Picker ItemsSource="{Binding ColumnOptions}" SelectedItem="{Binding Columns, Mode=TwoWay}" />
                                                                 </Border>
                                                             </Grid>
     
                                                             <Grid ColumnDefinitions="Auto, *, Auto, 70, Auto, 65" ColumnSpacing="6">
-                                                                <Label Grid.Column="0" Text="Ali:" VerticalOptions="Center" FontSize="10" />
-                                                                <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="34">
-                                                                    <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" BackgroundColor="Transparent" />
+                                                                <Label Grid.Column="0" Text="Ali:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                                <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}">
+                                                                    <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" />
                                                                 </Border>
     
-                                                                <Label Grid.Column="2" Text="Alto:" VerticalOptions="Center" FontSize="10" />
-                                                                <Border Grid.Column="3" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="34">
-                                                                    <Entry Text="{Binding Height}" Placeholder="20-255" Keyboard="Numeric" FontSize="11" BackgroundColor="Transparent" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                                                                <Label Grid.Column="2" Text="Alt:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                                <Border Grid.Column="3" Style="{StaticResource InputContainerStyle}">
+                                                                    <Entry Text="{Binding Height}" Placeholder="20-255" Keyboard="Numeric" HorizontalTextAlignment="Center" />
                                                                 </Border>
     
-                                                                <Label Grid.Column="4" Text="Ancho:" VerticalOptions="Center" FontSize="10" IsVisible="{Binding ShowBarWidth}" />
-                                                                <Border Grid.Column="5" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="34" IsVisible="{Binding ShowBarWidth}">
-                                                                    <Entry Text="{Binding BarWidth}" Placeholder="1-5" Keyboard="Numeric" FontSize="11" BackgroundColor="Transparent" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                                                                <Label Grid.Column="4" Text="Anc:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" IsVisible="{Binding ShowBarWidth}" />
+                                                                <Border Grid.Column="5" Style="{StaticResource InputContainerStyle}" IsVisible="{Binding ShowBarWidth}">
+                                                                    <Entry Text="{Binding BarWidth}" Placeholder="1-5" Keyboard="Numeric" HorizontalTextAlignment="Center" />
                                                                 </Border>
                                                             </Grid>
                                                         </VerticalStackLayout>
     
                                                         <VerticalStackLayout Spacing="6" IsVisible="{Binding ShowQRProperties}">
                                                             <Grid ColumnDefinitions="Auto, *" ColumnSpacing="8">
-                                                                <Label Grid.Column="0" Text="Fuente:" VerticalOptions="Center" FontSize="10" FontAttributes="Bold" />
-                                                                <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="38" HorizontalOptions="Fill">
-                                                                    <Picker ItemsSource="{Binding DisplaySuggestions}" SelectedItem="{Binding Source}" BackgroundColor="Transparent" />
+                                                                <Label Grid.Column="0" Text="Fuente:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                                <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}" HorizontalOptions="Fill">
+                                                                    <Picker ItemsSource="{Binding DisplaySuggestions}" SelectedItem="{Binding Source}" />
                                                                 </Border>
                                                             </Grid>
     
                                                             <Grid ColumnDefinitions="Auto, 70, Auto, *" ColumnSpacing="6">
-                                                                <Label Grid.Column="0" Text="Tamaño:" VerticalOptions="Center" FontSize="10" />
-                                                                <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="34">
-                                                                    <Entry Text="{Binding Size}" Placeholder="1-16" Keyboard="Numeric" FontSize="11" BackgroundColor="Transparent" HorizontalTextAlignment="Center"/>
+                                                                <Label Grid.Column="0" Text="Tam:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                                <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}">
+                                                                    <Entry Text="{Binding Size}" Placeholder="1-16" Keyboard="Numeric" HorizontalTextAlignment="Center"/>
                                                                 </Border>
     
-                                                                <Label Grid.Column="2" Text="Alineación:" VerticalOptions="Center" FontSize="10" />
-                                                                <Border Grid.Column="3" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="34">
-                                                                    <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" BackgroundColor="Transparent" />
+                                                                <Label Grid.Column="2" Text="Ali:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                                <Border Grid.Column="3" Style="{StaticResource InputContainerStyle}">
+                                                                    <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" />
                                                                 </Border>
                                                             </Grid>
                                                         </VerticalStackLayout>
     
                                                         <VerticalStackLayout Spacing="6" IsVisible="{Binding ShowImageProperties}">
                                                             <Grid ColumnDefinitions="Auto, 60, Auto, *" ColumnSpacing="8" VerticalOptions="Center">
-                                                                <Label Grid.Column="0" Text="Alto:" VerticalOptions="Center" FontSize="10" />
-                                                                <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="34">
-                                                                    <Entry Text="{Binding Height}" Placeholder="H" Keyboard="Numeric" FontSize="11" BackgroundColor="Transparent" HorizontalTextAlignment="Center"/>
+                                                                <Label Grid.Column="0" Text="Alt:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                                <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}">
+                                                                    <Entry Text="{Binding Height}" Placeholder="H" Keyboard="Numeric" HorizontalTextAlignment="Center"/>
                                                                 </Border>
     
-                                                                <Label Grid.Column="2" Text="Alineación:" VerticalOptions="Center" FontSize="10" />
-                                                                <Border Grid.Column="3" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="34">
-                                                                    <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" BackgroundColor="Transparent" />
+                                                                <Label Grid.Column="2" Text="Ali:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                                <Border Grid.Column="3" Style="{StaticResource InputContainerStyle}">
+                                                                    <Picker ItemsSource="{Binding Alignments}" SelectedItem="{Binding Align}" />
                                                                 </Border>
                                                             </Grid>
                                                         </VerticalStackLayout>
     
-                                                        <Grid ColumnDefinitions="Auto, 60, Auto, *, Auto, Auto" ColumnSpacing="4" VerticalOptions="Center" IsVisible="{Binding ShowTableProperties}">
-                                                            <Label Grid.Column="0" Text="Ancho%:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
-                                                            <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="32">
-                                                                <Entry Text="{Binding WidthPercentage}" Keyboard="Numeric" Placeholder="0-100" FontSize="11" BackgroundColor="Transparent" />
+                                                        <Grid ColumnDefinitions="Auto, 60, Auto, *, Auto" ColumnSpacing="4" VerticalOptions="Center" IsVisible="{Binding ShowTableProperties}">
+                                                            <Label Grid.Column="0" Text="Anc%:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                            <Border Grid.Column="1" Style="{StaticResource InputContainerStyle}">
+                                                                <Entry Text="{Binding WidthPercentage}" Keyboard="Numeric" Placeholder="0-100" />
                                                             </Border>
                                                             
-                                                            <Label Grid.Column="2" Text="Enca:" VerticalOptions="Center" FontSize="10" TextColor="Gray" />
-                                                            <Border Grid.Column="3" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" HeightRequest="32">
-                                                                <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedHeaderSizeIdx}" BackgroundColor="Transparent" />
+                                                            <Label Grid.Column="2" Text="Enc:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
+                                                            <Border Grid.Column="3" Style="{StaticResource InputContainerStyle}">
+                                                                <Picker ItemsSource="{Binding Sizes}" SelectedIndex="{Binding SelectedHeaderSizeIdx}" />
                                                             </Border>
                                                             
-                                                            <CheckBox Grid.Column="4" IsChecked="{Binding IsHeaderBold}" Scale="0.9" />
-                                                            <Label Grid.Column="5" Text="N" VerticalOptions="Center" FontAttributes="Bold" FontSize="9" Margin="-5,0,0,0" />
+                                                            <HorizontalStackLayout Grid.Column="4" VerticalOptions="Center" Spacing="0" Margin="0,0,5,0">
+                                                                <CheckBox IsChecked="{Binding IsHeaderBold}" Scale="0.9" />
+                                                                <Label Text="N" VerticalOptions="Center" FontAttributes="Bold" FontSize="9" Margin="-8,0,0,0" />
+                                                            </HorizontalStackLayout>
                                                         </Grid>
                                                     </VerticalStackLayout>
                                                 </Border>

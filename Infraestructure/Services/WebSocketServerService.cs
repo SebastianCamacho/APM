@@ -104,7 +104,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         {
             if (IsRunning)
             {
-                _logger.LogWarning("El servidor WebSocket ya está en ejecución.");
+                _logger.LogWarning("El servidor WebSocket ya está en ejecución.", "WebSocketServerService");
                 return;
             }
 
@@ -115,7 +115,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             try
             {
                 _httpListener.Start();
-                _logger.LogInfo($"Servidor WebSocket iniciado y escuchando en puerto {port} en http://localhost:{port}/websocket/");
+                _logger.LogInfo($"Servidor WebSocket iniciado y escuchando en puerto {port} en http://localhost:{port}/websocket/", "WebSocketServerService");
 
                 // Inicializar servicio de básculas
                 await _scaleService.InitializeAsync();
@@ -125,7 +125,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al iniciar el servidor WebSocket: {ex.Message}", ex);
+                _logger.LogError($"Error al iniciar el servidor WebSocket: {ex.Message}", ex, "WebSocketServerService");
                 await StopServerAsync();
             }
         }
@@ -137,7 +137,7 @@ namespace AppsielPrintManager.Infraestructure.Services
         {
             if (!IsRunning && _httpListener == null)
             {
-                _logger.LogWarning("El servidor WebSocket no está en ejecución.");
+                _logger.LogWarning("El servidor WebSocket no está en ejecución.", "WebSocketServerService");
                 return;
             }
 
@@ -152,7 +152,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error al detener HttpListener: {ex.Message}", ex);
+                    _logger.LogError($"Error al detener HttpListener: {ex.Message}", ex, "WebSocketServerService");
                 }
             }
 
@@ -184,11 +184,11 @@ namespace AppsielPrintManager.Infraestructure.Services
                     try { await _messageProcessingTask; }
                     catch (OperationCanceledException) { }
                 }
-                _logger.LogInfo("Servidor WebSocket detenido.");
+                _logger.LogInfo("Servidor WebSocket detenido.", "WebSocketServerService");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al detener las tareas del servidor WebSocket: {ex.Message}", ex);
+                _logger.LogError($"Error al detener las tareas del servidor WebSocket: {ex.Message}", ex, "WebSocketServerService");
             }
             finally
             {
@@ -225,12 +225,12 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
                 else
                 {
-                    _logger.LogWarning($"El socket del cliente {clientId} no está abierto.");
+                    _logger.LogWarning($"El socket del cliente {clientId} no está abierto.", "WebSocketServerService");
                 }
             }
             else
             {
-                _logger.LogWarning($"Cliente {clientId} no encontrado para enviar respuesta Unicast.");
+                _logger.LogWarning($"Cliente {clientId} no encontrado para enviar respuesta Unicast.", "WebSocketServerService");
             }
         }
 
@@ -247,12 +247,12 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
                 else
                 {
-                    _logger.LogWarning($"El socket del cliente {clientId} no está abierto.");
+                    _logger.LogWarning($"El socket del cliente {clientId} no está abierto.", "WebSocketServerService");
                 }
             }
             else
             {
-                _logger.LogWarning($"Cliente {clientId} no encontrado para enviar resultado de actualización.");
+                _logger.LogWarning($"Cliente {clientId} no encontrado para enviar resultado de actualización.", "WebSocketServerService");
             }
         }
 
@@ -333,7 +333,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error aceptando conexión HTTP: {ex.Message}", ex);
+                    _logger.LogError($"Error aceptando conexión HTTP: {ex.Message}", ex, "WebSocketServerService");
                 }
             }
         }
@@ -349,14 +349,14 @@ namespace AppsielPrintManager.Infraestructure.Services
                 webSocket = wsContext.WebSocket;
 
                 _connectedClients.TryAdd(clientId, webSocket);
-                _logger.LogInfo($"Cliente conectado: {clientId}. Total: {CurrentClientCount}");
+                _logger.LogInfo($"Cliente conectado: {clientId}. Total: {CurrentClientCount}", "WebSocketServerService");
                 OnClientConnected?.Invoke(this, clientId).Forget();
 
                 await ReceiveMessagesAsync(webSocket, clientId, cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error manejando conexión WebSocket para {clientId}: {ex.Message}", ex);
+                _logger.LogError($"Error manejando conexión WebSocket para {clientId}: {ex.Message}", ex, "WebSocketServerService");
             }
             finally
             {
@@ -369,7 +369,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                         _scaleService.StopListening(scaleId);
                     }
 
-                    _logger.LogInfo($"Cliente desconectado: {clientId}. Total: {CurrentClientCount}");
+                    _logger.LogInfo($"Cliente desconectado: {clientId}. Total: {CurrentClientCount}", "WebSocketServerService");
                     OnClientDisconnected?.Invoke(this, clientId).Forget();
                     webSocket.Dispose();
                 }
@@ -416,7 +416,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                _logger.LogError($"Error recibiendo mensajes de {clientId}: {ex.Message}", ex);
+                _logger.LogError($"Error recibiendo mensajes de {clientId}: {ex.Message}", ex, "WebSocketServerService");
             }
         }
 
@@ -465,7 +465,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                                         var updateReq = JsonSerializer.Deserialize<UpdateTemplateRequest>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                                         if (updateReq?.Template != null)
                                         {
-                                            _logger.LogInfo($"Solicitud de actualización de plantilla recibida de {clientId} para: {updateReq.Template.DocumentType}");
+                                            _logger.LogInfo($"Solicitud de actualización de plantilla recibida de {clientId} para: {updateReq.Template.DocumentType}", "WebSocketServerService");
                                             var eventArgs = new WebSocketMessageReceivedEventArgs<PrintTemplate>(clientId, updateReq.Template);
                                             OnTemplateUpdateReceived?.Invoke(this, eventArgs).Forget();
                                         }
@@ -478,15 +478,15 @@ namespace AppsielPrintManager.Infraestructure.Services
                         var request = JsonSerializer.Deserialize<PrintJobRequest>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                         if (request != null && !string.IsNullOrEmpty(request.JobId))
                         {
-                            _logger.LogInfo($"PrintJobRequest deserializado para JobId: {request.JobId} de {clientId}. Iniciando procesamiento.");
+                            _logger.LogInfo($"PrintJobRequest deserializado para JobId: {request.JobId} de {clientId}. Iniciando procesamiento.", "WebSocketServerService");
 
                             // 1. Procesar el trabajo de impresión
                             PrintJobResult printResult = await _printService.ProcessPrintJobAsync(request);
-                            _logger.LogInfo($"Procesamiento de PrintJobRequest para JobId: {request.JobId} completado con estado: {printResult.Status}.");
+                            _logger.LogInfo($"Procesamiento de PrintJobRequest para JobId: {request.JobId} completado con estado: {printResult.Status}.", "WebSocketServerService");
 
                             // 2. Enviar resultado SOLO al cliente solicitante (Unicast)
                             await SendPrintJobResultToClientAsync(clientId, printResult);
-                            _logger.LogInfo($"Resultado enviado a {clientId}.");
+                            _logger.LogInfo($"Resultado enviado a {clientId}.", "WebSocketServerService");
 
                             // 3. Disparar evento para notificación externa
                             var eventArgs = new WebSocketMessageReceivedEventArgs<PrintJobRequest>(clientId, request);
@@ -495,11 +495,11 @@ namespace AppsielPrintManager.Infraestructure.Services
                     }
                     catch (JsonException jex)
                     {
-                        _logger.LogError($"Error de deserialización JSON: {jex.Message}. Mensaje: '{message}'", jex);
+                        _logger.LogError($"Error de deserialización JSON: {jex.Message}. Mensaje: '{message}'", jex, "WebSocketServerService");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Error al procesar mensaje de {clientId}: {ex.Message}", ex);
+                        _logger.LogError($"Error al procesar mensaje de {clientId}: {ex.Message}", ex, "WebSocketServerService");
                     }
                 }
                 else
@@ -507,7 +507,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                     await Task.Delay(100, cancellationToken);
                 }
             }
-            _logger.LogInfo("Procesamiento de mensajes en cola detenido.");
+            _logger.LogInfo("Procesamiento de mensajes en cola detenido.", "WebSocketServerService");
         }
 
         private async Task SendMessageAsync(WebSocket webSocket, string message)
@@ -520,7 +520,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             catch (Exception ex)
             {
                 // Silently swallow disconnected errors
-                _logger.LogWarning($"No se pudo enviar mensaje a cliente: {ex.Message}");
+                _logger.LogWarning($"No se pudo enviar mensaje a cliente: {ex.Message}", "WebSocketServerService");
             }
         }
     }

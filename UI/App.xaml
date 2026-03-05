@@ -15,6 +15,9 @@
             <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
             <converters:LogLevelToColorConverter x:Key="LogLevelToColorConverter" />
             <converters:NumericToStringConverter x:Key="NumericToStringConverter" />
+            <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+            <converters:BoolToImageConverter x:Key="BoolToImageConverter" />
+            <converters:BoolToStringConverter x:Key="BoolToStringConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -30,7 +30,9 @@ namespace UI
 #endif
 
             builder.Services.AddSingleton<ILoggingService, Logger>();
+            builder.Services.AddSingleton<ILoggerProvider>(sp => new AppsielLoggerProvider(sp.GetRequiredService<ILoggingService>()));
             builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
+            builder.Services.AddSingleton<IAppConfigRepository, AppConfigRepository>();
             builder.Services.AddSingleton<ITemplateRepository, TemplateRepository>();
             builder.Services.AddSingleton<ITicketRenderer, TicketRendererService>();
             builder.Services.AddSingleton<IEscPosGenerator, EscPosGeneratorService>();
@@ -70,9 +72,11 @@ namespace UI
             builder.Services.AddTransient<PrinterDetailViewModel>();
             builder.Services.AddTransient<ScalesViewModel>(); // Added
             builder.Services.AddTransient<ScaleDetailViewModel>(); // Added
-            builder.Services.AddTransient<LogsViewModel>();
+            builder.Services.AddSingleton<LogsViewModel>();
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<TemplateEditorViewModel>();
+            builder.Services.AddTransient<AboutViewModel>();
+            builder.Services.AddTransient<LoginViewModel>();
 
             builder.Services.AddTransient<LoginView>();
             builder.Services.AddSingleton<AppShell>();
@@ -80,8 +84,10 @@ namespace UI
             builder.Services.AddTransient<PrintersPage>();
             builder.Services.AddTransient<ScalesPage>();
             builder.Services.AddTransient<ScaleDetailPage>(); // Added
+            builder.Services.AddSingleton<LogsPage>();
             builder.Services.AddTransient<SettingsPage>();
             builder.Services.AddTransient<TemplateEditorPage>();
+            builder.Services.AddTransient<AboutPage>();
 
             builder.Services.AddSingleton<InverseBoolConverter>();
             builder.Services.AddSingleton<NumericToStringConverter>();

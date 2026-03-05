@@ -24,6 +24,7 @@ namespace AppsielPrintManager.Core.Models
         public string? DataSource { get; set; } // Ruta al objeto de datos
         public string? Format { get; set; } // Formato global para la sección
         public string? Align { get; set; } // Alineación global para la sección
+        public int? LineSpacing { get; set; } // Interlineado (Escala 1-10, donde 4 es aprox 30 puntos normal)
         public int? Order { get; set; } // Orden de impresión de la sección
         public List<TemplateElement> Elements { get; set; } = new List<TemplateElement>();
     }

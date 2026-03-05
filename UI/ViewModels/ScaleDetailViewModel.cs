@@ -130,7 +130,7 @@ namespace UI.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error enumerating ports: {ex.Message}");
+                _logger.LogError($"Error enumerating ports: {ex.Message}", null, "ScaleDetailViewModel");
             }
         }
 
@@ -183,7 +183,7 @@ namespace UI.ViewModels
                 }
                 catch (Exception reloadEx)
                 {
-                    _logger.LogWarning($"No se pudo notificar recarga al WorkerService: {reloadEx.Message}");
+                    _logger.LogWarning($"No se pudo notificar recarga al WorkerService: {reloadEx.Message}", "ScaleDetailViewModel");
                 }
 
                 await Shell.Current.GoToAsync("..");

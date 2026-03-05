@@ -75,7 +75,12 @@ namespace AppsielPrintManager.Infraestructure.Services
 
         private async Task<RenderedSection?> ProcessSection(TemplateSection section, object data)
         {
-            var renderedSection = new RenderedSection { Name = section.Name, Type = section.Type ?? "Static" };
+            var renderedSection = new RenderedSection
+            {
+                Name = section.Name,
+                Type = section.Type ?? "Static",
+                LineSpacing = section.LineSpacing
+            };
 
             var orderedElements = section.Elements
                 .OrderBy(e => e.Order ?? 999)
@@ -106,7 +111,7 @@ namespace AppsielPrintManager.Infraestructure.Services
                             var row = orderedElements.Select(e => new RenderedElement
                             {
                                 Type = "Text",
-                                TextValue = GetValueFromPath(item, e.Source ?? string.Empty)?.ToString() ?? string.Empty,
+                                TextValue = FormatValue(GetValueFromPath(item, e.Source ?? string.Empty)),
                                 Align = e.Align ?? section.Align ?? "Left",
                                 Format = e.Format ?? section.Format,
                                 WidthPercentage = e.WidthPercentage
@@ -126,8 +131,8 @@ namespace AppsielPrintManager.Infraestructure.Services
                             {
                                 // Soporte para "." como origen (item actual en la lista)
                                 var val = !string.IsNullOrEmpty(element.Source) && element.Source != "."
-                                    ? GetValueFromPath(item, element.Source!)?.ToString()
-                                    : (element.Source == "." ? item?.ToString() : element.StaticValue);
+                                    ? FormatValue(GetValueFromPath(item, element.Source!))
+                                    : (element.Source == "." ? FormatValue(item) : element.StaticValue?.TrimStart());
 
                                 string rawType = element.Type ?? "Text";
                                 string normalizedType = _knownTypes.TryGetValue(rawType, out var known) ? known : rawType;
@@ -168,8 +173,8 @@ namespace AppsielPrintManager.Infraestructure.Services
                     foreach (var element in orderedElements)
                     {
                         var val = !string.IsNullOrEmpty(element.Source)
-                            ? GetValueFromPath(data, element.Source!)?.ToString()
-                            : element.StaticValue;
+                            ? FormatValue(GetValueFromPath(data, element.Source!))
+                            : element.StaticValue?.TrimStart();
 
                         var textValue = $"{(element.Label ?? string.Empty)}{val}";
 
@@ -221,17 +226,17 @@ namespace AppsielPrintManager.Infraestructure.Services
         private void PopulateBarcodeProperties(TemplateElement element, RenderedElement rendered, object? item)
         {
             rendered.BarcodeValue = !string.IsNullOrEmpty(element.Source) && element.Source != "."
-                ? GetValueFromPath(item, element.Source)?.ToString()
-                : (element.Source == "." ? item?.ToString() : element.StaticValue);
+                ? FormatValue(GetValueFromPath(item, element.Source))
+                : (element.Source == "." ? FormatValue(item) : element.StaticValue?.TrimStart());
 
             // 1. Mapeo de campos de texto (Nombre, ID, Precio)
             string nameField = (element.Properties != null && element.Properties.ContainsKey("NameSource")) ? element.Properties["NameSource"] : "Name";
             string idField = (element.Properties != null && element.Properties.ContainsKey("ItemIdSource")) ? element.Properties["ItemIdSource"] : "ItemId";
             string priceField = (element.Properties != null && element.Properties.ContainsKey("PriceSource")) ? element.Properties["PriceSource"] : "Price";
 
-            rendered.ProductName = GetValueFromPath(item, nameField)?.ToString();
-            rendered.ItemId = GetValueFromPath(item, idField)?.ToString();
-            rendered.ProductPrice = GetValueFromPath(item, priceField)?.ToString();
+            rendered.ProductName = FormatValue(GetValueFromPath(item, nameField));
+            rendered.ItemId = FormatValue(GetValueFromPath(item, idField));
+            rendered.ProductPrice = FormatValue(GetValueFromPath(item, priceField));
 
             // 2. PRIORIDAD DE PROPIEDADES (Template Root > Template Properties > Data)
             var props = element.Properties != null ? new Dictionary<string, string>(element.Properties, StringComparer.OrdinalIgnoreCase) : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -293,6 +298,19 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
             }
             return current;
+        }
+
+        private string FormatValue(object? value)
+        {
+            if (value == null) return string.Empty;
+
+            if (value is DateTime dt)
+            {
+                // Formato solicitado: DD/MM/YYYY hh:mm:ss tt
+                return dt.ToString("dd/MM/yyyy hh:mm:ss tt");
+            }
+
+            return value.ToString()?.TrimStart() ?? string.Empty;
         }
 
         private TicketContent CreateErrorTicket(string jobId, string message)

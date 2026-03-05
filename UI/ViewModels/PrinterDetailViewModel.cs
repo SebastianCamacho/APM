@@ -223,7 +223,7 @@ namespace UI.ViewModels
             }
             catch (System.Exception ex)
             {
-                _logger.LogError($"Error al cargar la impresora '{id}': {ex.Message}", ex);
+                _logger.LogError($"Error al cargar la impresora '{id}': {ex.Message}", ex, "PrinterDetailViewModel");
                 await Shell.Current.DisplayAlertAsync("Error", "No se pudo cargar la configuración de la impresora.", "OK");
             }
             finally
@@ -245,6 +245,10 @@ namespace UI.ViewModels
                     IsBusy = false;
                     return;
                 }
+
+                // Asegurar que el tipo y conexión coincidan con la UI antes de evaluar sus propiedades
+                Printer.PrinterType = SelectedPrinterType;
+                Printer.ConnectionType = SelectedConnectionType;
 
                 // 2. Validar y combinar segmentos IP (solo si es TCP)
                 if (SelectedConnectionType == "TCP")
@@ -296,10 +300,6 @@ namespace UI.ViewModels
                     Printer.LocalPrinterName = null;
                 }
 
-                // Asegurar que el tipo y conexión coincidan con la UI antes de guardar
-                Printer.PrinterType = SelectedPrinterType;
-                Printer.ConnectionType = SelectedConnectionType;
-
                 // 5. Generar URI de conexión universal
                 if (SelectedConnectionType == "TCP")
                 {
@@ -332,18 +332,24 @@ namespace UI.ViewModels
                 }
 
                 await _printService.ConfigurePrinterAsync(Printer);
-                _logger.LogInfo($"Impresora '{Printer.PrinterId}' guardada exitosamente.");
+                _logger.LogInfo($"Impresora '{Printer.PrinterId}' guardada exitosamente.", "PrinterDetailViewModel");
                 await Shell.Current.GoToAsync(".."); // Volver a la página anterior
             }
             catch (System.Exception ex)
             {
-                _logger.LogError($"Error al guardar impresora '{Printer?.PrinterId}': {ex.Message}", ex);
+                _logger.LogError($"Error al guardar impresora '{Printer?.PrinterId}': {ex.Message}", ex, "PrinterDetailViewModel");
                 await Shell.Current.DisplayAlertAsync("Error", $"No se pudo guardar la impresora: {ex.Message}", "OK");
             }
             finally
             {
                 IsBusy = false;
             }
+        }
+
+        [RelayCommand]
+        public async Task Cancel()
+        {
+            await Shell.Current.GoToAsync("..");
         }
     }
 }

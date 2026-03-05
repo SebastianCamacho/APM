@@ -3,141 +3,227 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:UI.ViewModels"
              xmlns:model="clr-namespace:AppsielPrintManager.Core.Models;assembly=Core"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="UI.Views.PrintersPage"
              Title="Impresoras"
              x:DataType="viewmodels:PrintersViewModel">
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Añadir Impresora" Command="{Binding AddPrinterCommand}" IconImageSource="icono_anadir_impresora.svg" />
-    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- Efecto Hover Dinámico para Ocultar/Mostrar Iconos en Windows -->
+            <Style x:Key="ActionIconStyle" TargetType="ImageButton">
+                <!-- Por defecto en Android siempre es visible, en Windows los ocultamos para el Hover -->
+                <Setter Property="IsVisible" Value="{OnPlatform Android=True, Default=False}" />
+                <Setter Property="Opacity" Value="0.6" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="Opacity" Value="1.0" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
 
-    <ContentPage.Content>
-        <Grid RowDefinitions="Auto, *" RowSpacing="10">
-            <Label Grid.Row="0" Text="Gestión de Impresoras" 
-                   Style="{StaticResource SubHeadline}"
-                   HorizontalOptions="Center" VerticalOptions="Center"
-                   Margin="0,10,0,10" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
-            <CollectionView Grid.Row="1" ItemsSource="{Binding Printers}" SelectionMode="None"
-                            Margin="10,0,10,0"> <!-- Margen horizontal para toda la lista -->
-                <CollectionView.EmptyView>
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
-                                         Padding="20">
-                        <Label Text="No hay impresoras configuradas." FontSize="Medium" TextColor="Gray" />
-                        <Button Text="Añadir la primera impresora" Command="{Binding AddPrinterCommand}" Margin="10" />
-                    </VerticalStackLayout>
-                </CollectionView.EmptyView>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="model:PrinterSettings">
-                        <SwipeView Margin="0,5,0,5"> <!-- Margen vertical entre ítems -->
-                            <SwipeView.RightItems>
-                                <SwipeItems Mode="Reveal">
-                                    <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PrintersViewModel}}, Path=EditPrinterCommand}"
-                                                   CommandParameter="{Binding .}">
-                                        <Grid BackgroundColor="LightBlue">
-                                            <Label Text="Editar"
-                                                   TextColor="White"
-                                                   FontAttributes="Bold"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center" />
-                                        </Grid>
-                                    </SwipeItemView>
-                                    <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PrintersViewModel}}, Path=DeletePrinterCommand}"
-                                                   CommandParameter="{Binding .}">
-                                        <Grid BackgroundColor="Red">
-                                            <Label Text="Eliminar"
-                                                   TextColor="White"
-                                                   FontAttributes="Bold"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center" />
-                                        </Grid>
-                                    </SwipeItemView>
-                                </SwipeItems>
-                            </SwipeView.RightItems>
-                            <Border StrokeShape="RoundRectangle 10" StrokeThickness="1"
-                                    Stroke="{StaticResource Gray300}"
-                                    BackgroundColor="{AppThemeBinding Light=White, Dark=DarkGray}">
+    <Grid BackgroundColor="{AppThemeBinding Light={StaticResource PageBgLight}, Dark={StaticResource PageBgDark}}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header Toolbar Falso -->
+        <Border Grid.Row="0" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}" Padding="30,15" Margin="0,0,0,5">
+            <Border.Shadow>
+                <Shadow Brush="#000000" Offset="0,2" Radius="5" Opacity="0.05" />
+            </Border.Shadow>
+            <Grid ColumnDefinitions="*, Auto">
+                <Label Grid.Column="0" Text="Impresoras" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" VerticalOptions="Center" />
+                <!-- Status Indicator with Pulses (Omitido por ahora si no está en VM, usar hardcoded o bindings reales) -->
+                <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                        <Grid WidthRequest="12" HeightRequest="12" VerticalOptions="Center">
+                            <BoxView x:Name="StatusAura" WidthRequest="12" HeightRequest="12" CornerRadius="6" 
+                                     BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" Scale="1" Opacity="0.6" />
+                            <BoxView x:Name="StatusDot" WidthRequest="8" HeightRequest="8" CornerRadius="4" 
+                                     BackgroundColor="{Binding IsServiceRunning, Converter={StaticResource BoolToColorConverter}, ConverterParameter='Running|Stopped'}" VerticalOptions="Center" HorizontalOptions="Center" />
+                        </Grid>
+                        <Label Text="{Binding ServiceStatusTitle}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource HeaderTextPageLight}, Dark={StaticResource HeaderTextPageDark}}" FontAttributes="Bold" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="30,20" Spacing="25">
+                
+                <!-- Título y Botón Añadir -->
+                <Grid ColumnDefinitions="*, Auto">
+                    <Label Grid.Column="0" Text="Impresoras" FontSize="26" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" VerticalOptions="Center" />
+                    
+                    <Button Grid.Column="1" 
+                            Text="+ Añadir" 
+                            Command="{Binding AddPrinterCommand}" 
+                            BackgroundColor="{DynamicResource Primary}" 
+                            TextColor="White" 
+                            FontAttributes="Bold" 
+                            CornerRadius="8" 
+                            Padding="20,10"
+                            HeightRequest="42" />
+                </Grid>
+
+                <!-- Vista Vacía -->
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                     Padding="40" Spacing="15" IsVisible="{Binding HasNoPrinters}">
+                    <Image Source="icono_impresora.png" HeightRequest="60" WidthRequest="60" HorizontalOptions="Center" Opacity="0.3" />
+                    <Label Text="No hay impresoras configuradas aún." FontSize="16" TextColor="Gray" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- Lista Responsiva (Grid Windows, Block Android) -->
+                <CollectionView ItemsSource="{Binding Printers}" SelectionMode="None"
+                                IsVisible="{Binding HasNoPrinters, Converter={StaticResource InverseBoolConverter}}">
+                    
+                    <!-- Magia FlexLayout para Responsive Design -->
+                    <CollectionView.ItemsLayout>
+                        <!-- En Windows se comportará como un CSS Flex Wrap al indicarle ItemSpacing -->
+                        <GridItemsLayout Orientation="Vertical" Span="{OnPlatform Android=1, Default=2}" HorizontalItemSpacing="20" VerticalItemSpacing="20" />
+                    </CollectionView.ItemsLayout>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:PrinterSettings">
+                            <Border StrokeShape="RoundRectangle 12" StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource CardBgLight}, Dark={StaticResource CardBgDark}}"
+                                    Padding="20"
+                                    VerticalOptions="Fill">
+                                    
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup Name="CommonStates">
+                                        <VisualState Name="Normal" />
+                                        <VisualState Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+                                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource NeutralTintBgLight}, Dark={StaticResource NeutralTintBgDark}}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PrintersViewModel}}, Path=EditPrinterCommand}"
                                                           CommandParameter="{Binding .}" />
+                                    <PointerGestureRecognizer PointerEntered="OnCardPointerEntered" PointerExited="OnCardPointerExited" />
                                 </Border.GestureRecognizers>
-                                <Grid ColumnDefinitions="Auto, *, Auto" Padding="15">
-                                    <Image Grid.Column="0" Source="icono_impresora.png"
-                                           HeightRequest="40" WidthRequest="40"
-                                           VerticalOptions="Center" HorizontalOptions="Center"
-                                           Margin="0,0,10,0" />
-                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                        <HorizontalStackLayout Spacing="5">
-                                            <Label Text="{Binding PrinterId}" FontAttributes="Bold" FontSize="Medium" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                                            <Border StrokeShape="RoundRectangle 4" BackgroundColor="{DynamicResource Primary}" Padding="5,0" VerticalOptions="Center">
-                                                <Label Text="{Binding PrinterType}" FontSize="10" TextColor="White" FontAttributes="Bold" />
-                                            </Border>
-                                            <Border StrokeShape="RoundRectangle 4" Stroke="{StaticResource Gray400}" Padding="5,0" VerticalOptions="Center">
-                                                <Label Text="{Binding ConnectionType}" FontSize="10" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
-                                            </Border>
-                                        </HorizontalStackLayout>
+                                <Grid ColumnDefinitions="{OnPlatform Android='Auto, *', Default='Auto, *, 85'}" ColumnSpacing="12">
                                         
-                                        <!-- Detalles de Conexión Dinámicos -->
-                                        <HorizontalStackLayout Spacing="5">
-                                            <Label Text="Conexión:" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" />
-                                            <Label Text="{Binding IpAddress}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small">
+                                        <!-- Col 0: Cajita Lila del Ícono -->
+                                        <Border Grid.Column="0" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryTintBgLight}, Dark={StaticResource PrimaryTintBgDark}}" StrokeShape="RoundRectangle 12" WidthRequest="55" HeightRequest="55" VerticalOptions="Start">
+                                            <Image Source="icono_impresora.png" HeightRequest="28" WidthRequest="28" HorizontalOptions="Center" VerticalOptions="Center">
+                                                <Image.Behaviors>
+                                                    <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
+                                                </Image.Behaviors>
+                                            </Image>
+                                        </Border>
+
+                                        <!-- Col 1: Información Central (Todo el ancho en Android) -->
+                                        <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center"
+                                                             Margin="{OnPlatform Android='0,0,0,15', Default='0'}">
+                                            <FlexLayout Direction="Row" Wrap="Wrap" AlignItems="Center" AlignContent="Start">
+                                                <Label Text="{Binding PrinterId}" FontAttributes="Bold" FontSize="18" 
+                                                       TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" 
+                                                       LineBreakMode="CharacterWrap" Margin="0,0,8,0" />
+                                                
+                                                <HorizontalStackLayout Spacing="5">
+                                                    <Border StrokeShape="RoundRectangle 6" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryTintBgLight}, Dark={StaticResource PrimaryTintBgDark}}" Padding="6,2" VerticalOptions="Center">
+                                                        <Label Text="{Binding PrinterType}" FontSize="10" TextColor="{DynamicResource Primary}" FontAttributes="Bold" />
+                                                    </Border>
+                                                    <Border StrokeShape="RoundRectangle 6" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource NeutralTintBgLight}, Dark={StaticResource NeutralTintBgDark}}" Padding="6,2" VerticalOptions="Center">
+                                                        <Label Text="{Binding ConnectionType}" FontSize="10" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" FontAttributes="Bold" />
+                                                    </Border>
+                                                </HorizontalStackLayout>
+                                            </FlexLayout>
+                                            
+                                            <FlexLayout Direction="Row" Wrap="Wrap">
+                                                <Label Text="{Binding IpAddress}" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" FontSize="13" Margin="0,0,5,0">
+                                                    <Label.Triggers>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="USB">
+                                                            <Setter Property="IsVisible" Value="False" />
+                                                        </DataTrigger>
+                                                    </Label.Triggers>
+                                                </Label>
+                                                <Label Text="{Binding Port, StringFormat=':{0}'}" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" FontSize="13" Margin="0,0,5,0">
+                                                    <Label.Triggers>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="USB">
+                                                            <Setter Property="IsVisible" Value="False" />
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="IPP">
+                                                            <Setter Property="IsVisible" Value="False" />
+                                                        </DataTrigger>
+                                                    </Label.Triggers>
+                                                </Label>
+                                                <Label Text="{Binding LocalPrinterName}" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" FontSize="13" IsVisible="False" Margin="0,0,5,0">
+                                                    <Label.Triggers>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="USB">
+                                                            <Setter Property="IsVisible" Value="True" />
+                                                        </DataTrigger>
+                                                    </Label.Triggers>
+                                                </Label>
+                                                <Label Text="{Binding Uri}" TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" FontSize="13" IsVisible="False" LineBreakMode="CharacterWrap">
+                                                    <Label.Triggers>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="IPP">
+                                                            <Setter Property="IsVisible" Value="True" />
+                                                        </DataTrigger>
+                                                    </Label.Triggers>
+                                                </Label>
+                                            </FlexLayout>
+
+                                            <Label Text="{Binding PaperWidthMm, StringFormat='Ancho: {0}mm'}" TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" FontSize="13" Opacity="0">
                                                 <Label.Triggers>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="USB">
-                                                        <Setter Property="IsVisible" Value="False" />
+                                                    <DataTrigger TargetType="Label" Binding="{Binding PrinterType}" Value="Térmica">
+                                                        <Setter Property="Opacity" Value="1" />
                                                     </DataTrigger>
                                                 </Label.Triggers>
                                             </Label>
-                                            <Label Text="{Binding Port, StringFormat=':{0}'}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small">
-                                                <Label.Triggers>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="USB">
-                                                        <Setter Property="IsVisible" Value="False" />
-                                                    </DataTrigger>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="IPP">
-                                                        <Setter Property="IsVisible" Value="False" />
-                                                    </DataTrigger>
-                                                </Label.Triggers>
-                                            </Label>
-                                            <Label Text="{Binding LocalPrinterName}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" IsVisible="False">
-                                                <Label.Triggers>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="USB">
-                                                        <Setter Property="IsVisible" Value="True" />
-                                                    </DataTrigger>
-                                                </Label.Triggers>
-                                            </Label>
-                                            <Label Text="{Binding Uri}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" IsVisible="False">
-                                                <Label.Triggers>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding ConnectionType}" Value="IPP">
-                                                        <Setter Property="IsVisible" Value="True" />
-                                                    </DataTrigger>
-                                                </Label.Triggers>
-                                            </Label>
+                                        </VerticalStackLayout>
+                                        
+                                        <!-- Actions: Col 2 en Windows, Col 1 al final en Android -->
+                                        <HorizontalStackLayout Grid.Column="{OnPlatform Android=1, Default=2}" x:Name="ActionIcons" Spacing="6" 
+                                                               VerticalOptions="{OnPlatform Android=End, Default=Center}" 
+                                                               HorizontalOptions="End"
+                                                               IsVisible="{OnPlatform Android=True, Default=False}" 
+                                                               Opacity="{OnPlatform Android=1, Default=0}">
+                                            <ImageButton x:Name="EditBtn" BackgroundColor="Transparent" CornerRadius="8" WidthRequest="36" HeightRequest="36" Padding="8"
+                                                         Source="{OnPlatform Android='icono_edit.png', Default='icono_edit_gray.png'}"
+                                                         Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PrintersViewModel}}, Path=EditPrinterCommand}"
+                                                         CommandParameter="{Binding .}">
+                                                <ImageButton.GestureRecognizers>
+                                                    <PointerGestureRecognizer PointerEntered="OnEditPointerEntered" PointerExited="OnEditPointerExited" />
+                                                </ImageButton.GestureRecognizers>
+                                            </ImageButton>
+
+                                            <ImageButton x:Name="DeleteBtn" BackgroundColor="Transparent" CornerRadius="8" WidthRequest="36" HeightRequest="36" Padding="8"
+                                                         Source="{OnPlatform Android='icono_delete.png', Default='icono_delete_gray.png'}"
+                                                         Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PrintersViewModel}}, Path=DeletePrinterCommand}"
+                                                         CommandParameter="{Binding .}">
+                                                <ImageButton.GestureRecognizers>
+                                                    <PointerGestureRecognizer PointerEntered="OnDeletePointerEntered" PointerExited="OnDeletePointerExited" />
+                                                </ImageButton.GestureRecognizers>
+                                            </ImageButton>
                                         </HorizontalStackLayout>
+                                    </Grid>
+                                </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
 
-                                        <!-- Ancho de Papel (Solo Térmica) -->
-                                        <Label Text="{Binding PaperWidthMm, StringFormat='Ancho: {0}mm'}" TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" FontSize="Small" IsVisible="False">
-                                            <Label.Triggers>
-                                                <DataTrigger TargetType="Label" Binding="{Binding PrinterType}" Value="Térmica">
-                                                    <Setter Property="IsVisible" Value="True" />
-                                                </DataTrigger>
-                                            </Label.Triggers>
-                                        </Label>
-                                    </VerticalStackLayout>
-                                    <ImageButton Grid.Column="2" Source="icono_eliminar_impresora.png"
-                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:PrintersViewModel}}, Path=DeletePrinterCommand}"
-                                                 CommandParameter="{Binding .}"
-                                                 HeightRequest="30" WidthRequest="30"
-                                                 VerticalOptions="Center" HorizontalOptions="End"
-                                                 BackgroundColor="Transparent" />
-                                </Grid>
-                            </Border>
-                        </SwipeView>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-
-            <ActivityIndicator Grid.Row="2" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
-                               VerticalOptions="Center" HorizontalOptions="Center"
-                               Color="{StaticResource Primary}" />
-        </Grid>
-    </ContentPage.Content>
+            </VerticalStackLayout>
+        </ScrollView>
+        <ActivityIndicator Grid.Row="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" Color="{DynamicResource Primary}" />
+    </Grid>
 </ContentPage>

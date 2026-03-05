@@ -43,7 +43,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             }
 
             _filePath = Path.Combine(appSpecificDirectory, SettingsFileName);
-            _logger.LogInfo($"[SettingsRepository] Ruta de persistencia de impresoras (Windows={OperatingSystem.IsWindows()}): {_filePath}");
+            _logger.LogInfo($"Ruta de persistencia de impresoras (Windows={OperatingSystem.IsWindows()}): {_filePath}", "SettingsRepository");
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace AppsielPrintManager.Infraestructure.Repositories
         {
             if (string.IsNullOrWhiteSpace(settings.PrinterId))
             {
-                _logger.LogError("No se puede guardar la configuración de la impresora: PrinterId es nulo o vacío.");
+                _logger.LogError("No se puede guardar la configuración de la impresora: PrinterId es nulo o vacío.", null, "SettingsRepository");
                 throw new ArgumentException("PrinterId no puede ser nulo o vacío.", nameof(settings.PrinterId));
             }
 
@@ -68,13 +68,13 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                 // Actualizar la configuración existente
                 allSettings.Remove(existingSetting);
                 allSettings.Add(settings);
-                _logger.LogInfo($"Configuración de impresora actualizada para PrinterId: {settings.PrinterId}");
+                _logger.LogInfo($"Configuración de impresora actualizada para PrinterId: {settings.PrinterId}", "SettingsRepository");
             }
             else
             {
                 // Añadir nueva configuración
                 allSettings.Add(settings);
-                _logger.LogInfo($"Nueva configuración de impresora guardada para PrinterId: {settings.PrinterId}");
+                _logger.LogInfo($"Nueva configuración de impresora guardada para PrinterId: {settings.PrinterId}", "SettingsRepository");
             }
 
             await WriteAllSettingsAsync(allSettings);
@@ -113,11 +113,11 @@ namespace AppsielPrintManager.Infraestructure.Repositories
             if (removedCount > 0)
             {
                 await WriteAllSettingsAsync(allSettings);
-                _logger.LogInfo($"Configuración de impresora eliminada para PrinterId: {printerId}");
+                _logger.LogInfo($"Configuración de impresora eliminada para PrinterId: {printerId}", "SettingsRepository");
                 return true;
             }
 
-            _logger.LogWarning($"No se encontró configuración de impresora para eliminar con PrinterId: {printerId}");
+            _logger.LogWarning($"No se encontró configuración de impresora para eliminar con PrinterId: {printerId}", "SettingsRepository");
             return false;
         }
 
@@ -153,14 +153,14 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                     // Si el archivo está bloqueado, esperar y reintentar
                     if (i == maxRetries - 1)
                     {
-                        _logger.LogError($"Error IO al cargar configuraciones tras {maxRetries} intentos: {ioEx.Message}", ioEx);
+                        _logger.LogError($"Error IO al cargar configuraciones tras {maxRetries} intentos: {ioEx.Message}", ioEx, "SettingsRepository");
                         return new List<PrinterSettings>();
                     }
                     await Task.Delay(delayMs);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error general al cargar configuraciones de impresora desde {_filePath}: {ex.Message}", ex);
+                    _logger.LogError($"Error general al cargar configuraciones de impresora desde {_filePath}: {ex.Message}", ex, "SettingsRepository");
                     return new List<PrinterSettings>();
                 }
             }
@@ -197,15 +197,15 @@ namespace AppsielPrintManager.Infraestructure.Repositories
                 {
                     if (i == maxRetries - 1)
                     {
-                        _logger.LogError($"Fallo crítico al escribir configuraciones tras {maxRetries} intentos: {ioEx.Message}", ioEx);
+                        _logger.LogError($"Fallo crítico al escribir configuraciones tras {maxRetries} intentos: {ioEx.Message}", ioEx, "SettingsRepository");
                         throw; // Dejar que la UI se entere del error
                     }
-                    _logger.LogWarning($"Archivo de configuración bloqueado, reintentando ({i + 1}/{maxRetries})...");
+                    _logger.LogWarning($"Archivo de configuración bloqueado, reintentando ({i + 1}/{maxRetries})...", "SettingsRepository");
                     await Task.Delay(delayMs);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error inesperado al guardar configuraciones de impresora en {_filePath}: {ex.Message}", ex);
+                    _logger.LogError($"Error inesperado al guardar configuraciones de impresora en {_filePath}: {ex.Message}", ex, "SettingsRepository");
                     throw;
                 }
             }
