@@ -124,7 +124,7 @@
                             
                             <VerticalStackLayout Spacing="0">
                                 <!-- Encabezado de Sección con fondo sutil si está expandido -->
-                                <Border StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource NeutralTintBgLight}, Dark={StaticResource NeutralTintBgDark}}" Padding="12,8">
+                                <Border StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource NeutralTintBgLight}, Dark={StaticResource NeutralTintBgDark}}" Padding="12,6,8,6">
                                     <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12">
                                         
                                         <!-- Toggle Expandir -->
@@ -137,7 +137,7 @@
 
                                         <Border Grid.Column="1" StrokeShape="RoundRectangle 8" StrokeThickness="0" 
                                                 BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={DynamicResource Gray600}}" 
-                                                HeightRequest="36" VerticalOptions="Center">
+                                                HeightRequest="42" VerticalOptions="Center">
                                             <Entry Text="{Binding Name}" FontAttributes="Bold" FontSize="14" 
                                                    Placeholder="Nombre Sección" BackgroundColor="Transparent" 
                                                    VerticalOptions="Center" Margin="8,0" 
@@ -148,14 +148,14 @@
                                         <Border Grid.Column="2" StrokeShape="RoundRectangle 8" StrokeThickness="1" 
                                                 Stroke="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" 
                                                 BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PageBgDark}}" 
-                                                HeightRequest="36" Padding="0" VerticalOptions="Center">
+                                                HeightRequest="42" Padding="0" VerticalOptions="Center">
                                             
-                                            <Grid ColumnDefinitions="36, 1, 36, 1, 36, 1, 36" ColumnSpacing="0">
+                                            <Grid ColumnDefinitions="42, 1, 42, 1, 42, 1, 42" ColumnSpacing="0">
                                             
                                             <!-- Subir -->
                                             <ImageButton Grid.Column="0" Source="icono_up.png" 
                                                          Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveUpCommand}" 
-                                                         CommandParameter="{Binding .}" Padding="8" 
+                                                         CommandParameter="{Binding .}" Padding="9" 
                                                          BackgroundColor="Transparent" Aspect="AspectFit">
                                                 <ImageButton.Behaviors>
                                                     <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
@@ -167,7 +167,7 @@
                                             <!-- Bajar -->
                                             <ImageButton Grid.Column="2" Source="icono_down.png" 
                                                          Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=MoveDownCommand}" 
-                                                         CommandParameter="{Binding .}" Padding="8" 
+                                                         CommandParameter="{Binding .}" Padding="9" 
                                                          BackgroundColor="Transparent" Aspect="AspectFit">
                                                 <ImageButton.Behaviors>
                                                     <toolkit:IconTintColorBehavior TintColor="{DynamicResource Primary}" />
@@ -179,7 +179,7 @@
                                             <!-- Añadir Elemento -->
                                             <ImageButton Grid.Column="4" Source="icono_anadir.png" 
                                                          Command="{Binding AddElementCommand}" 
-                                                         Padding="8" BackgroundColor="Transparent" Aspect="AspectFit">
+                                                         Padding="9" BackgroundColor="Transparent" Aspect="AspectFit">
                                                 <ImageButton.Behaviors>
                                                     <toolkit:IconTintColorBehavior TintColor="{StaticResource SuccessIcon}" />
                                                 </ImageButton.Behaviors>
@@ -190,7 +190,7 @@
                                             <!-- Eliminar Sección -->
                                             <ImageButton Grid.Column="6" Source="icono_delete.png" 
                                                          Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TemplateEditorViewModel}}, Path=RemoveSectionCommand}" 
-                                                         CommandParameter="{Binding .}" Padding="8" 
+                                                         CommandParameter="{Binding .}" Padding="9" 
                                                          BackgroundColor="Transparent" Aspect="AspectFit">
                                                 <ImageButton.Behaviors>
                                                     <toolkit:IconTintColorBehavior TintColor="{StaticResource DangerIcon}" />
@@ -203,6 +203,11 @@
                                 </Border>
 
                                 <VerticalStackLayout Spacing="12" Padding="15" IsVisible="{Binding IsExpanded}">
+                                    <!-- Spinner de Carga -->
+                                    <ActivityIndicator IsRunning="{Binding IsBusy}" 
+                                                       IsVisible="{Binding IsBusy}" 
+                                                       VerticalOptions="Center" HorizontalOptions="Center"
+                                                       HeightRequest="40" Margin="0,10" />
                                     <!-- SAFE MODE: ColumnSpacing 5 -->
                                     <Grid ColumnDefinitions="Auto, *, Auto, *, Auto, 1.5*" ColumnSpacing="5">
                                         <Label Grid.Column="0" Text="Tipo:" VerticalOptions="Center" Style="{StaticResource FieldLabelStyle}" />
