@@ -1,0 +1,333 @@
+@page "/printer-detail"
+@page "/printer-detail/{PrinterId}"
+@using AppsielPrintManager.Core.Interfaces
+@using AppsielPrintManager.Core.Models
+@inject IPrintService PrintService
+@inject ILoggingService Logger
+@inject NavigationManager NavigationManager
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4">
+        <button class="btn btn-link p-0 me-3 text-secondary" @onclick="NavigateBack">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </button>
+        <h2 class="fw-bold mb-0">@(string.IsNullOrEmpty(PrinterId) ? "Nueva Impresora" : "Configuración de Impresora")</h2>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow-sm p-4 p-md-5">
+                <div class="row g-4">
+                    <!-- ID de Impresora -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">ID de Impresora</label>
+                        <input type="text" class="form-control premium-input" @bind="Printer.PrinterId" placeholder="Ej: ImpresoraCocina" readonly="@(!string.IsNullOrEmpty(PrinterId))">
+                    </div>
+
+                    <!-- Tipo de Impresora -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Tipo de Impresora</label>
+                        <select class="form-select premium-input" @bind="SelectedPrinterType">
+                            <option value="Térmica">Térmica</option>
+                            <option value="Matricial">Matricial</option>
+                        </select>
+                    </div>
+
+                    <!-- Tipo de Conexión -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Tipo de Conexión</label>
+                        <select class="form-select premium-input" @bind="SelectedConnectionType">
+                            @foreach (var type in AllowedConnectionTypes)
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- TCP/IP Specific Fields -->
+                    @if (SelectedConnectionType == "TCP/IP")
+                    {
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Dirección IP</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="text" class="form-control premium-input text-center p-1" @bind="IpSegment1" style="width: 60px" maxlength="3">
+                                <span class="fw-bold">.</span>
+                                <input type="text" class="form-control premium-input text-center p-1" @bind="IpSegment2" style="width: 60px" maxlength="3">
+                                <span class="fw-bold">.</span>
+                                <input type="text" class="form-control premium-input text-center p-1" @bind="IpSegment3" style="width: 60px" maxlength="3">
+                                <span class="fw-bold">.</span>
+                                <input type="text" class="form-control premium-input text-center p-1" @bind="IpSegment4" style="width: 60px" maxlength="3">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Puerto</label>
+                            <input type="number" class="form-control premium-input" @bind="Printer.Port">
+                        </div>
+                    }
+
+                    <!-- USB Specific Fields -->
+                    @if (SelectedConnectionType == "USB")
+                    {
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Nombre Impresora Local (Windows)</label>
+                            <input type="text" class="form-control premium-input" @bind="Printer.LocalPrinterName" placeholder="Ej: EPSON LX-300+ II">
+                        </div>
+                    }
+
+                    <!-- IPP Specific Fields -->
+                    @if (SelectedConnectionType == "IPP")
+                    {
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">URI de Impresión (IPP/HTTP)</label>
+                            <input type="text" class="form-control premium-input" @bind="ManualUri" placeholder="Ej: ipp://192.168.1.50/ipp/print">
+                        </div>
+                    }
+
+                    <!-- Thermal Specific Fields -->
+                    @if (SelectedPrinterType == "Térmica")
+                    {
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Ancho Papel (mm)</label>
+                            <select class="form-select premium-input" @bind="Printer.PaperWidthMm">
+                                <option value="80">80 mm</option>
+                                <option value="58">58 mm</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 pt-2">
+                            <hr class="my-3 opacity-10">
+                            <div class="d-flex flex-column gap-3">
+                                <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
+                                    <label class="form-check-label fw-bold">Beep al imprimir</label>
+                                    <input class="form-check-input ms-0" type="checkbox" @bind="Printer.BeepOnPrint">
+                                </div>
+                                <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
+                                    <label class="form-check-label fw-bold">Abrir cajón al final</label>
+                                    <input class="form-check-input ms-0" type="checkbox" @bind="Printer.OpenCashDrawerAfterPrint">
+                                </div>
+                                <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
+                                    <label class="form-check-label fw-bold">Abrir cajón sin imprimir</label>
+                                    <input class="form-check-input ms-0" type="checkbox" @bind="Printer.OpenCashDrawerWithoutPrint">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="d-flex justify-content-end gap-3 mt-5">
+                    <button class="btn btn-link text-secondary fw-bold text-decoration-none" @onclick="NavigateBack">Cancelar</button>
+                    <button class="btn btn-primary px-5 fw-bold" @onclick="SavePrinter" disabled="@IsBusy">
+                        @if (IsBusy)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        }
+                        Guardar Impresora
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .premium-input {
+        background-color: var(--neutral-tint-bg);
+        border: 1px solid var(--card-stroke);
+        border-radius: 8px;
+        padding: 10px 15px;
+        font-size: 14px;
+        color: var(--text-primary);
+        transition: all 0.2s ease;
+    }
+
+    .premium-input:focus {
+        background-color: var(--card-bg);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-tint-bg);
+    }
+
+    .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+</style>
+
+@code {
+    [Parameter] public string? PrinterId { get; set; }
+
+    private PrinterSettings Printer { get; set; } = new();
+    private bool IsBusy { get; set; }
+    private string ManualUri { get; set; } = "";
+    
+    // IP Segments
+    private string IpSegment1 { get; set; } = "192";
+    private string IpSegment2 { get; set; } = "168";
+    private string IpSegment3 { get; set; } = "1";
+    private string IpSegment4 { get; set; } = "1";
+
+    private string _selectedPrinterType = "Térmica";
+    private string SelectedPrinterType
+    {
+        get => _selectedPrinterType;
+        set
+        {
+            if (_selectedPrinterType != value)
+            {
+                _selectedPrinterType = value;
+                Printer.PrinterType = value;
+                UpdateAllowedConnections();
+            }
+        }
+    }
+
+    private string _selectedConnectionType = "TCP/IP";
+    private string SelectedConnectionType
+    {
+        get => _selectedConnectionType;
+        set
+        {
+            if (_selectedConnectionType != value)
+            {
+                _selectedConnectionType = value;
+                Printer.ConnectionType = value;
+            }
+        }
+    }
+
+    private List<string> AllowedConnectionTypes { get; set; } = new() { "TCP/IP" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(PrinterId))
+        {
+            await LoadPrinter();
+        }
+        else
+        {
+            InitializeNewPrinter();
+        }
+    }
+
+    private void InitializeNewPrinter()
+    {
+        Printer = new PrinterSettings 
+        { 
+            Port = 9100, 
+            PaperWidthMm = 80,
+            PrinterType = "Térmica",
+            ConnectionType = "TCP/IP"
+        };
+        UpdateAllowedConnections();
+    }
+
+    private async Task LoadPrinter()
+    {
+        IsBusy = true;
+        try
+        {
+            var p = await PrintService.GetPrinterSettingsAsync(PrinterId!);
+            if (p != null)
+            {
+                Printer = p;
+                _selectedPrinterType = p.PrinterType ?? "Térmica";
+                
+                // Map "TCP" from old model to "TCP/IP" used in UI
+                _selectedConnectionType = (p.ConnectionType == "TCP" || string.IsNullOrEmpty(p.ConnectionType)) ? "TCP/IP" : p.ConnectionType;
+                
+                ManualUri = p.Uri ?? "";
+                
+                if (_selectedConnectionType == "TCP/IP" && !string.IsNullOrEmpty(p.IpAddress))
+                {
+                    var parts = p.IpAddress.Split('.');
+                    if (parts.Length == 4)
+                    {
+                        IpSegment1 = parts[0]; IpSegment2 = parts[1];
+                        IpSegment3 = parts[2]; IpSegment4 = parts[3];
+                    }
+                }
+                UpdateAllowedConnections();
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/impresoras");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error loading printer detail: {ex.Message}", ex, "PrinterDetail");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void UpdateAllowedConnections()
+    {
+        if (SelectedPrinterType == "Térmica")
+        {
+            AllowedConnectionTypes = new List<string> { "TCP/IP" };
+            SelectedConnectionType = "TCP/IP";
+        }
+        else
+        {
+            AllowedConnectionTypes = new List<string> { "TCP/IP", "USB", "IPP" };
+        }
+    }
+
+    private async Task SavePrinter()
+    {
+        if (string.IsNullOrWhiteSpace(Printer.PrinterId)) return;
+        
+        IsBusy = true;
+        try
+        {
+            // Sync UI state to model
+            Printer.PrinterType = SelectedPrinterType;
+            
+            // Convert back "TCP/IP" UI value to "TCP" model value
+            Printer.ConnectionType = SelectedConnectionType == "TCP/IP" ? "TCP" : SelectedConnectionType;
+
+            if (SelectedConnectionType == "TCP/IP")
+            {
+                Printer.IpAddress = $"{IpSegment1}.{IpSegment2}.{IpSegment3}.{IpSegment4}";
+                Printer.Uri = $"tcp://{Printer.IpAddress}:{Printer.Port}";
+            }
+            else if (SelectedConnectionType == "USB")
+            {
+                Printer.IpAddress = "";
+                Printer.Uri = $"usb://{Printer.LocalPrinterName}";
+            }
+            else if (SelectedConnectionType == "IPP")
+            {
+                Printer.IpAddress = "";
+                Printer.Uri = ManualUri;
+            }
+
+            await PrintService.ConfigurePrinterAsync(Printer);
+            Logger.LogInfo($"Printer {Printer.PrinterId} saved.", "PrinterDetail");
+            NavigateBack();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error saving printer: {ex.Message}", ex, "PrinterDetail");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/impresoras");
+    }
+}

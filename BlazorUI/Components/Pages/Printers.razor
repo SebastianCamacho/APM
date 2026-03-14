@@ -1,0 +1,211 @@
+@page "/impresoras"
+@using AppsielPrintManager.Core.Interfaces
+@using AppsielPrintManager.Core.Models
+@implements IDisposable
+@inject IPrintService PrintService
+@inject IPlatformService PlatformService
+@inject ILoggingService Logger
+@inject NavigationManager NavigationManager
+
+<div class="container-fluid py-4">
+    <!-- Header Toolbar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">Impresoras</h2>
+            <p class="text-secondary mb-0">Administra tus dispositivos de salida</p>
+        </div>
+        <div class="d-flex align-items-center bg-white rounded-pill px-3 py-2 shadow-sm border" style="border-color: var(--card-stroke) !important">
+            <div class="status-dot @(IsServiceRunning ? "active" : "")"></div>
+            <span class="ms-2 fw-bold small @(IsServiceRunning ? "text-success" : "text-danger")">
+                @(IsServiceRunning ? "SERVICIO ACTIVO" : "SERVICIO INACTIVO")
+            </span>
+        </div>
+    </div>
+
+    <!-- Actions Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fs-4 fw-bold mb-0">Mis Dispositivos</h3>
+        <button class="btn btn-primary px-4 fw-bold d-flex align-items-center" @onclick="NavigateToAddPrinter">
+            <svg class="me-2" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Añadir
+        </button>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="d-flex justify-content-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else if (PrinterList == null || !PrinterList.Any())
+    {
+        <div class="empty-state card border-0 shadow-sm py-5">
+            <div class="empty-state-icon">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            </div>
+            <h4 class="fw-bold text-secondary">No hay impresoras configuradas aún.</h4>
+            <p class="text-muted">Haz clic en el botón "Añadir" para comenzar.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var printer in PrinterList)
+            {
+                <div class="col-12 col-lg-6">
+                    <div class="card printer-card h-100 shadow-sm p-4 border-0" @onclick="() => NavigateToEditPrinter(printer.PrinterId)">
+                        <div class="d-flex gap-3 align-items-start">
+                            <!-- Icon Box -->
+                            <div class="icon-box">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h5 class="fw-bold mb-0">@printer.PrinterId</h5>
+                                    <span class="badge-tag badge-primary">@printer.PrinterType</span>
+                                    <span class="badge-tag badge-secondary">@printer.ConnectionType</span>
+                                </div>
+
+                                <div class="text-secondary small">
+                                    @if (printer.ConnectionType == "USB")
+                                    {
+                                        <div><strong>Nombre:</strong> @printer.LocalPrinterName</div>
+                                    }
+                                    else if (printer.ConnectionType == "TCP")
+                                    {
+                                        <div><strong>Host:</strong> @printer.IpAddress:@printer.Port</div>
+                                    }
+                                    else if (printer.ConnectionType == "IPP")
+                                    {
+                                        <div class="text-truncate" style="max-width: 300px;"><strong>URI:</strong> @printer.Uri</div>
+                                    }
+
+                                    @if (printer.PrinterType == "Térmica")
+                                    {
+                                        <div class="mt-1">
+                                            <span class="text-muted">Ancho: @printer.PaperWidthMm mm</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons (Hover managed in CSS) -->
+                            <div class="action-buttons d-flex gap-2" @onclick:stopPropagation="true">
+                                <button class="btn-action btn-edit" title="Editar" @onclick="() => NavigateToEditPrinter(printer.PrinterId)">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                                <button class="btn-action btn-delete" title="Eliminar" @onclick="() => DeletePrinter(printer)">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<PrinterSettings> PrinterList { get; set; } = new();
+    private bool IsLoading { get; set; } = true;
+    private bool IsServiceRunning { get; set; }
+    private bool IsBusy { get; set; }
+
+    private bool _isDisposed;
+    private PeriodicTimer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        UpdateServiceStatus();
+        await LoadPrinters();
+        _ = StartMonitoringAsync();
+    }
+
+    private void UpdateServiceStatus()
+    {
+        IsServiceRunning = PlatformService.IsBackgroundServiceRunning;
+    }
+
+    private async Task LoadPrinters()
+    {
+        IsLoading = true;
+        try
+        {
+            var loaded = await PrintService.GetAllPrinterSettingsAsync();
+            PrinterList = loaded.OrderBy(p => p.PrinterId).ToList();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error loading printers: {ex.Message}", ex, "PrintersPage");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task StartMonitoringAsync()
+    {
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        try
+        {
+            while (await _timer.WaitForNextTickAsync() && !_isDisposed)
+            {
+                var currentStatus = PlatformService.IsBackgroundServiceRunning;
+                if (currentStatus != IsServiceRunning)
+                {
+                    IsServiceRunning = currentStatus;
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private void NavigateToAddPrinter()
+    {
+        NavigationManager.NavigateTo("/printer-detail");
+    }
+
+    private void NavigateToEditPrinter(string printerId)
+    {
+        NavigationManager.NavigateTo($"/printer-detail/{printerId}");
+    }
+
+    private async Task DeletePrinter(PrinterSettings printer)
+    {
+        if (IsBusy) return;
+
+        // Note: In a real MAUI context, we might want a native dialog, 
+        // but for now we'll use a simple confirmation or just log.
+        // The old UI used Shell.Current.DisplayAlert.
+        
+        IsBusy = true;
+        try
+        {
+            // We'll perform the deletion directly as per the UI logic
+            await PrintService.DeletePrinterSettingsAsync(printer.PrinterId);
+            PrinterList.Remove(printer);
+            Logger.LogInfo($"Printer '{printer.PrinterId}' deleted.", "PrintersPage");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error deleting printer: {ex.Message}", ex, "PrintersPage");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _isDisposed = true;
+        _timer?.Dispose();
+    }
+}
