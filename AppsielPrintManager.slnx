@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="AppsielPrintManager.BlazorUI/AppsielPrintManager.BlazorUI.csproj" Id="b6f53199-9732-4974-8787-c96f4c42d48a">
+  <Project Path="BlazorUI/BlazorUI.csproj" Id="b6f53199-9732-4974-8787-c96f4c42d48a">
     <Deploy Solution="Debug|*" />
   </Project>
   <Project Path="ConsoleApp/ConsoleApp.csproj" />
