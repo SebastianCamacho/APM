@@ -1,0 +1,39 @@
+@page "/login"
+@using BlazorUI.Components.Layout
+@layout EmptyLayout
+
+<div class="d-flex align-items-center justify-content-center" style="min-height: 100vh; background-color: var(--page-bg);">
+    <div class="card shadow-lg border-0" style="width: 100%; max-width: 450px; padding: 40px; border-radius: 16px;">
+        <div class="text-center mb-4">
+            <div class="brand-logo mx-auto mb-3" style="width: 60px; height: 60px; font-size: 24px;">
+                A
+            </div>
+            <h2 class="fw-bold text-primary">Iniciar Sesión</h2>
+            <p class="text-secondary">Accede a Appsiel Print Manager</p>
+        </div>
+
+        <form>
+            <div class="mb-3">
+                <label class="form-label text-secondary fw-semibold small">Usuario</label>
+                <input type="text" class="form-control form-control-lg bg-inner-card border-secondary text-primary" placeholder="ej. admin" required />
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label text-secondary fw-semibold small">Contraseña</label>
+                <input type="password" class="form-control form-control-lg bg-inner-card border-secondary text-primary" placeholder="••••••••" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold" style="background-color: var(--primary); border-color: var(--primary);">
+                Ingresar
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="text-muted small">Versión 1.0.0</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    // Aquí implementaremos la lógica real de chequeo y navegación en el futuro.
+}

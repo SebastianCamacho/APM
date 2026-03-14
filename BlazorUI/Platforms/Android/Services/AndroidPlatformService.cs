@@ -34,13 +34,23 @@ namespace BlazorUI.Platforms.Android.Services
             }
         }
 
-        public Task StartBackgroundServiceAsync()
+        public async Task StartBackgroundServiceAsync()
         {
             _logger.LogInfo("AndroidPlatformService: Requesting to start foreground service.");
+            
+            // Solicitar permisos en tiempo de ejecución para Android 13+ (Notificaciones)
+            if (OperatingSystem.IsAndroidVersionAtLeast(33))
+            {
+                var nsStatus = await Permissions.CheckStatusAsync<Permissions.PostNotifications>();
+                if (nsStatus != PermissionStatus.Granted)
+                {
+                    await Permissions.RequestAsync<Permissions.PostNotifications>();
+                }
+            }
+
             var intent = new Intent(MauiApplication.Current.ApplicationContext, typeof(AppsielPrintManagerForegroundService));
             // StartForegroundService is required for Android O (API 26) and above
             MauiApplication.Current.ApplicationContext.StartForegroundService(intent);
-            return Task.CompletedTask;
         }
 
         public Task StopBackgroundServiceAsync()
