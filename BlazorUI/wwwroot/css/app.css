@@ -145,6 +145,10 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
 }
 
+.card-title {
+    color: var(--text-primary) !important;
+}
+
 /* Base Utility Classes */
 .card {
     background-color: var(--card-bg);
@@ -156,15 +160,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .text-primary {
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
 }
 
 .text-secondary {
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
 }
 
 .text-muted {
-    color: var(--text-muted);
+    color: var(--text-muted) !important;
 }
 
 /* ==========================================================================

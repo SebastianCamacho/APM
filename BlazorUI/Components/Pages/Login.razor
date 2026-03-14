@@ -1,39 +1,145 @@
 @page "/login"
 @using BlazorUI.Components.Layout
+@using BlazorUI.Services
+@using AppsielPrintManager.Core.Interfaces
+@using System.Security.Cryptography
+@using System.Text
+@inject IAppConfigRepository AppConfigRepository
+@inject AuthState AuthState
+@inject NavigationManager NavigationManager
+@inject IPlatformService PlatformService
 @layout EmptyLayout
 
-<div class="d-flex align-items-center justify-content-center" style="min-height: 100vh; background-color: var(--page-bg);">
-    <div class="card shadow-lg border-0" style="width: 100%; max-width: 450px; padding: 40px; border-radius: 16px;">
-        <div class="text-center mb-4">
-            <div class="brand-logo mx-auto mb-3" style="width: 60px; height: 60px; font-size: 24px;">
+<div class="d-flex align-items-center justify-content-center" style="height: 100vh; width: 100vw; background-color: var(--page-bg); overflow: hidden; position: fixed; top: 0; left: 0;">
+    <div class="card shadow-lg border-0" style="width: 100%; max-width: 380px; padding: 25px; border-radius: 16px; height: fit-content; margin: 0 15px;">
+        <div class="text-center mb-3">
+            <div class="brand-logo mx-auto mb-2" style="width: 50px; height: 50px; font-size: 20px;">
                 A
             </div>
-            <h2 class="fw-bold text-primary">Iniciar Sesión</h2>
-            <p class="text-secondary">Accede a Appsiel Print Manager</p>
+            <h3 class="fw-bold text-primary">Iniciar Sesión</h3>
+            <p class="text-secondary small">Accede a Appsiel Print Manager</p>
         </div>
 
-        <form>
-            <div class="mb-3">
-                <label class="form-label text-secondary fw-semibold small">Usuario</label>
-                <input type="text" class="form-control form-control-lg bg-inner-card border-secondary text-primary" placeholder="ej. admin" required />
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger p-2 mb-3 text-center small rounded fw-semibold border-0" style="background-color: var(--danger-tint-bg); color: var(--danger-icon);" role="alert">
+                @ErrorMessage
             </div>
-            
+        }
+
+        <form @onsubmit="HandleLogin">
             <div class="mb-4">
                 <label class="form-label text-secondary fw-semibold small">Contraseña</label>
-                <input type="password" class="form-control form-control-lg bg-inner-card border-secondary text-primary" placeholder="••••••••" required />
+                <input type="password" @bind="Password" class="form-control form-control-lg bg-inner-card border-secondary text-primary" placeholder="••••••••" required />
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold" style="background-color: var(--primary); border-color: var(--primary);">
-                Ingresar
+            <button type="submit" disabled="@IsBusy" class="btn btn-primary w-100 btn-lg fw-bold" style="background-color: var(--primary); border-color: var(--primary);">
+                @(IsBusy ? "Verificando..." : "Ingresar")
             </button>
         </form>
 
-        <div class="text-center mt-4">
-            <p class="text-muted small">Versión 1.0.0</p>
+        <div class="text-center mt-3">
+            <p class="text-muted small mb-0">Versión 1.0.0</p>
         </div>
+    </div>
+
+    <!-- Botón Detener Servicio (Fuera de la card, subido un poco) -->
+    <div class="position-fixed" style="bottom: 80px; right: 20px; z-index: 1000;">
+        <button class="btn btn-link p-0 text-decoration-none" @onclick="StopService" disabled="@IsStopping" title="Detener Servicio de Impresión">
+            <div class="d-flex flex-column align-items-center">
+                <img src="images/icono_stop.png" alt="Detener" style="width: 40px; height: 40px;" />
+                <span class="text-secondary mt-1" style="font-size: 10px;">Detener</span>
+            </div>
+        </button>
     </div>
 </div>
 
 @code {
-    // Aquí implementaremos la lógica real de chequeo y navegación en el futuro.
+    private string Password { get; set; } = "AppsielAPM123*";
+    private string ErrorMessage { get; set; } = "";
+    private bool IsBusy { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Init default password on first load if it doesn't exist just like in old code
+        var config = await AppConfigRepository.GetConfigAsync();
+        if (string.IsNullOrEmpty(config.AdminPasswordHash))
+        {
+            config.AdminPasswordHash = ComputeSha256Hash("AppsielAPM123*");
+            await AppConfigRepository.SaveConfigAsync(config);
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        ErrorMessage = "";
+        IsBusy = true;
+        
+        try
+        {
+            var config = await AppConfigRepository.GetConfigAsync();
+            string inputHash = ComputeSha256Hash(Password ?? "");
+
+            if (inputHash == config.AdminPasswordHash)
+            {
+                AuthState.EnsureAuthenticated();
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                ErrorMessage = "Contraseña incorrecta.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Error interno: " + ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private string ComputeSha256Hash(string rawData)
+    {
+        using (SHA256 sha256Hash = SHA256.Create())
+        {
+            byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                builder.Append(bytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
+    }
+
+    private bool IsStopping { get; set; } = false;
+
+    private async Task StopService()
+    {
+        if (IsStopping) return;
+        IsStopping = true;
+        
+        try
+        {
+            if (PlatformService.IsBackgroundServiceRunning)
+            {
+                await PlatformService.StopBackgroundServiceAsync();
+                ErrorMessage = "Servicio de fondo detenido.";
+            }
+            else
+            {
+                ErrorMessage = "El servicio de fondo no estaba en ejecución.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Error al detener el servicio: " + ex.Message;
+        }
+        finally
+        {
+            IsStopping = false;
+        }
+    }
 }
