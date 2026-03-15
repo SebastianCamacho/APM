@@ -14,8 +14,8 @@ namespace UI.Services
     {
         private readonly ILoggingService _logger;
         private Process _workerProcess;
-        private const string WorkerServiceName = "WorkerService"; // Nombre del proceso/servicio
-        private const string WorkerExeName = "WorkerService.exe"; // Nombre del ejecutable
+        private const string WorkerServiceName = "AppsielPrintManagerWorker"; // Nombre del proceso/servicio (AssemblyName del WorkerService.csproj)
+        private const string WorkerExeName = "AppsielPrintManagerWorker.exe"; // Nombre del ejecutable generado por el AssemblyName
 
         public WindowsWorkerServiceManager(ILoggingService logger)
         {
@@ -46,7 +46,7 @@ namespace UI.Services
 
                 // 2. Si no, buscamos procesos de forma más amplia (case-insensitive y contains)
                 var allProcesses = Process.GetProcesses();
-                var serviceProcess = allProcesses.FirstOrDefault(p => p.ProcessName.Contains("WorkerService", StringComparison.OrdinalIgnoreCase));
+                var serviceProcess = allProcesses.FirstOrDefault(p => p.ProcessName.Contains("AppsielPrintManagerWorker", StringComparison.OrdinalIgnoreCase));
 
                 if (serviceProcess != null)
                 {

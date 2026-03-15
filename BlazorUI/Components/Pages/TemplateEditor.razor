@@ -1,0 +1,673 @@
+@page "/editor-plantilla/{Id}"
+@using AppsielPrintManager.Core.Interfaces
+@using AppsielPrintManager.Core.Models
+@using AppsielPrintManager.Core.Services
+@implements IDisposable
+@inject ITemplateRepository TemplateRepository
+@inject ILoggingService Logger
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<div class=" py-4 pb-5 px-0 px-sm-3">
+    <!-- Sticky Header -->
+    <div class="sticky-top bg-light pt-2 pb-3 mb-4 border-bottom shadow-sm" style="z-index: 50; margin-top: -1.5rem;">
+        <div class="container-fluid d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mt-3 px-2 px-sm-3">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-link link-secondary p-0 me-3" @onclick="Cancel">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <div>
+                    <h2 class="fw-bold mb-0 fs-5 fs-sm-4">Editor de Plantilla</h2>
+                    @if (Template != null)
+                    {
+                        <span class="badge bg-primary-tint text-primary small">@Template.DocumentType</span>
+                    }
+                </div>
+            </div>
+            <div class="d-flex gap-2 w-100 w-sm-auto justify-content-end">
+                <button class="btn btn-outline-secondary fw-bold px-3" @onclick="Cancel">Cancelar</button>
+                <button class="btn btn-primary fw-bold d-flex align-items-center px-3" @onclick="Save" disabled="@IsBusy">
+                    @if (IsBusy) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                    <svg class="me-2" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (Template == null)
+    {
+        <div class="d-flex flex-column align-items-center justify-content-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <p class="text-secondary">Cargando plantilla...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row ">
+            <!-- Sidebar / Settings -->
+            <div class="col-12 col-lg-4 ">
+                <div class="card border-0 shadow-sm p-4 mb-4">
+                    <h5 class="fw-bold mb-3">Información General</h5>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Nombre de la Plantilla</label>
+                        <input type="text" class="form-control" @bind="Template.Name" />
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label small fw-bold text-secondary">Tipo de Documento</label>
+                        <input type="text" class="form-control bg-light" value="@Template.DocumentType" readonly />
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm p-4 text-center bg-primary-tint border-primary-subtle">
+                    <p class="small text-primary mb-3 fw-bold">¿Necesitas una sección adicional?</p>
+                    <button class="btn btn-primary w-100 fw-bold" @onclick="AddSection">
+                        <svg class="me-2" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Añadir Nueva Sección
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Editor Area -->
+            <div class="col-12 col-lg-8 mt-5 mt-lg-0 px-0 px-sm-3">
+                <div class="sections-container ">
+                    @foreach (var tmplSection in Template.Sections.OrderBy(s => s.Order))
+                    {
+                        <div class="card border-0 shadow-sm mb-4 px-2 px-sm-3 section-card @(IsExpanded(tmplSection) ? "is-expanded" : "")">
+                            <!-- Section Header -->
+                            <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center cursor-pointer" @onclick="() => ToggleSection(tmplSection)">
+                                <div class="d-flex align-items-center">
+                                    <div class="order-badge me-3">@tmplSection.Order</div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">@tmplSection.Name</h6>
+                                        <span class="small text-muted">@tmplSection.Type • @(tmplSection.Elements?.Count ?? 0) elementos</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-sm btn-light border circular-btn" title="Subir" @onclick:stopPropagation @onclick="() => MoveSection(tmplSection, -1)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                                    </button>
+                                    <button class="btn btn-sm btn-light border circular-btn" title="Bajar" @onclick:stopPropagation @onclick="() => MoveSection(tmplSection, 1)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger circular-btn ms-2" title="Eliminar" @onclick:stopPropagation @onclick="() => RemoveSection(tmplSection)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    </button>
+                                    <svg class="ms-3 transition-rotate @(IsExpanded(tmplSection) ? "rotate-180" : "")" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </div>
+                            </div>
+
+                            <!-- Section Body -->
+                            @if (IsExpanded(tmplSection))
+                            {
+                                <div class="card-body px-0 px-sm-3 pb-4">
+                                    <div class="row g-3 mb-4 p-3 bg-light rounded-3 border">
+                                        <div class="col-12 col-xl-4">
+                                            <label class="form-label small fw-bold text-secondary">Nombre Sección</label>
+                                            <input type="text" class="form-control form-control-sm" @bind="tmplSection.Name" />
+                                        </div>
+                                        <div class="col-12 col-xl-3">
+                                            <label class="form-label small fw-bold text-secondary">Tipo</label>
+                                            <select class="form-select form-select-sm" value="@tmplSection.Type" @onchange="@(e => OnSectionTypeChanged(tmplSection, e.Value?.ToString() ?? ""))">
+                                                <option value="Static">Estática (Simple)</option>
+                                                <option value="Table">Tabla (Items)</option>
+                                                <option value="Repeated">Repetición (Lista)</option>
+                                            </select>
+                                        </div>
+                                        @if (tmplSection.Type == "Table" || tmplSection.Type == "Repeated")
+                                        {
+                                            <div class="col-12 col-xl-5">
+                                                <label class="form-label small fw-bold text-secondary">Origen de Datos (Data Source)</label>
+                                                <select class="form-select form-select-sm" @bind="tmplSection.DataSource">
+                                                    @foreach (var suggestion in GetSectionDataSourceSuggestions(tmplSection))
+                                                    {
+                                                        <option value="@suggestion">@suggestion</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        }
+                                        <div class="col-6 col-xl-2">
+                                            <label class="form-label small fw-bold text-secondary">Alineación</label>
+                                            <select class="form-select form-select-sm" @bind="tmplSection.Align">
+                                                <option value="Ninguno">Ninguno</option>
+                                                <option value="Left">Izquierda</option>
+                                                <option value="Center">Centro</option>
+                                                <option value="Right">Derecha</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-xl-2">
+                                            <label class="form-label small fw-bold text-secondary" title="Espaciado">Interlineado</label>
+                                            <select class="form-select form-select-sm" @bind="tmplSection.LineSpacing">
+                                                @for (int i = 1; i <= 10; i++)
+                                                {
+                                                    <option value="@i">@i</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-xl-3">
+                                            <label class="form-label small fw-bold text-secondary">Tamaño Fuente</label>
+                                            <select class="form-select form-select-sm" value="@GetFormatSize(tmplSection.Format)" @onchange="@(e => UpdateSectionFormatSize(tmplSection, e.Value?.ToString()))">
+                                                <option value="">Ninguno</option>
+                                                <option value="FontB Size1">Tamaño 1</option>
+                                                <option value="FontA Size1">Tamaño 2</option>
+                                                <option value="FontB Size2">Tamaño 3</option>
+                                                <option value="FontA Size2">Tamaño 4</option>
+                                                <option value="FontB Size3">Tamaño 5</option>
+                                                <option value="FontA Size3">Tamaño 6</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-xl-2 d-flex align-items-center mt-4">
+                                            <div class="form-check p-0 m-0 d-flex align-items-center">
+                                                <input class="form-check-input m-0 me-2" type="checkbox" checked="@(tmplSection.Format?.Contains("Bold") == true)" @onchange="@(e => UpdateSectionFormatBold(tmplSection, (e.Value is bool b && b)))" />
+                                                <label class="form-check-label small fw-bold text-secondary">Negrita</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Elements List -->
+                                    <div class="elements-list">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="fw-bold mb-0 text-primary">Elementos del Contenido</h6>
+                                            <button class="btn btn-sm btn-primary fw-bold px-3" @onclick="() => AddElement(tmplSection)">
+                                                + Añadir Elemento
+                                            </button>
+                                        </div>
+
+                                        @if (tmplSection.Elements == null || !tmplSection.Elements.Any())
+                                        {
+                                            <div class="text-center py-4 border border-dashed rounded-3 text-muted small">
+                                                No hay elementos en esta sección.
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var tmplElement in tmplSection.Elements.OrderBy(e => e.Order))
+                                            {
+                                                <div class="element-row border rounded-3 p-3 mb-2 bg-white shadow-xs position-relative overflow-hidden">
+                                                    <div class="element-type-strip @GetElementTypeClass(tmplElement.Type)"></div>
+                                                    <div class="row g-2 align-items-end">
+                                                        <div class="col-6 col-sm-4 col-xl-2">
+                                                            <label class="form-label xx-small fw-bold text-uppercase text-secondary">Tipo</label>
+                                                            <select class="form-select form-select-sm" value="@(tmplElement.Type ?? "Text")" @onchange="@(e => { tmplElement.Type = e.Value?.ToString(); StateHasChanged(); })" disabled="@(tmplSection.Type == "Table")">
+                                                                <option value="Text">Texto</option>
+                                                                @if (tmplSection.Type != "Table")
+                                                                {
+                                                                    <option value="Line">Línea</option>
+                                                                    <option value="Barcode">Código Barras</option>
+                                                                    <option value="QR">QR</option>
+                                                                    <option value="Image">Imagen</option>
+                                                                }
+                                                            </select>
+                                                        </div>
+
+                                                        @{ var currentType = tmplElement.Type ?? "Text"; }
+                                                        @if (currentType == "Text")
+                                                        {
+                                                            bool allowFixed = tmplSection.Type != "Table";
+                                                            bool isFixed = allowFixed && tmplElement.Properties.ContainsKey("IsFixed") && tmplElement.Properties["IsFixed"] == "true";
+                                                            
+                                                            @if (allowFixed)
+                                                            {
+                                                                <div class="col-6 col-sm-2 col-xl-1 d-flex align-items-center mb-1">
+                                                                    <div class="form-check form-switch p-0 m-0 d-flex flex-column align-items-start">
+                                                                        <label class="form-check-label xx-small fw-bold text-uppercase text-secondary mb-1">Fijo</label>
+                                                                        <input class="form-check-input ms-0 mt-0" type="checkbox" checked="@isFixed" @onchange="@(e => { if (e.Value is bool b && b) tmplElement.Properties["IsFixed"] = "true"; else tmplElement.Properties.Remove("IsFixed"); })" />
+                                                                    </div>
+                                                                </div>
+                                                            }
+
+                                                            if (isFixed)
+                                                            {
+                                                                <div class="col-12 col-sm-6 col-xl-3">
+                                                                    <label class="form-label xx-small fw-bold text-uppercase text-secondary">Valor Fijo</label>
+                                                                    <input type="text" class="form-control form-control-sm" @bind="tmplElement.StaticValue" placeholder="Texto manual..." />
+                                                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="col-12 col-sm-6 col-xl-2">
+                                                                    <label class="form-label xx-small fw-bold text-uppercase text-secondary">Etiqueta</label>
+                                                                    <input type="text" class="form-control form-control-sm" @bind="tmplElement.Label" placeholder="Ej: Total:" />
+                                                                </div>
+                                                                <div class="col-12 col-sm-6 col-xl-2">
+                                                                    <label class="form-label xx-small fw-bold text-uppercase text-secondary">Fuente</label>
+                                                                    <select class="form-select form-select-sm" @bind="tmplElement.Source">
+                                                                        @foreach (var s in GetSourceSuggestions(tmplElement))
+                                                                        {
+                                                                            <option value="@s">@s</option>
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            }
+
+                                                            <div class="col-6 col-sm-4 col-xl-2">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Tamaño</label>
+                                                                <select class="form-select form-select-sm" value="@GetFormatSize(tmplElement.Format)" @onchange="@(e => UpdateFormatSize(tmplElement, e.Value?.ToString(), false))">
+                                                                    <option value="">Ninguno</option>
+                                                                    <option value="FontB Size1">Tamaño 1</option>
+                                                                    <option value="FontA Size1">Tamaño 2</option>
+                                                                    <option value="FontB Size2">Tamaño 3</option>
+                                                                    <option value="FontA Size2">Tamaño 4</option>
+                                                                    <option value="FontB Size3">Tamaño 5</option>
+                                                                    <option value="FontA Size3">Tamaño 6</option>
+                                                                </select>
+                                                            </div>
+                                                            
+                                                            bool isBold = tmplElement.Format?.Contains("Bold") == true;
+                                                            <div class="col-6 col-sm-2 col-xl-1 d-flex align-items-center mb-1">
+                                                                <div class="form-check p-0 m-0 d-flex flex-column align-items-start">
+                                                                    <label class="form-check-label xx-small fw-bold text-uppercase text-secondary mb-1">Negrita</label>
+                                                                    <input class="form-check-input ms-0 mt-0" type="checkbox" checked="@isBold" @onchange="@(e => UpdateFormatBold(tmplElement, (e.Value is bool b && b), false))" />
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                        else if (currentType == "Barcode")
+                                                        {
+                                                            <div class="col-12 col-sm-6 col-xl-2">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Fuente</label>
+                                                                <select class="form-select form-select-sm" @bind="tmplElement.Source">
+                                                                    @foreach (var s in GetSourceSuggestions(tmplElement)) { <option value="@s">@s</option> }
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-6 col-sm-2 col-xl-1">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Col</label>
+                                                                <input type="number" class="form-control form-control-sm" @bind="tmplElement.Columns" min="1" max="2" />
+                                                            </div>
+                                                            <div class="col-6 col-sm-2 col-xl-1">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Alt(20-255)</label>
+                                                                <input type="number" class="form-control form-control-sm" @bind="tmplElement.Height" min="20" max="255" />
+                                                            </div>
+                                                            <div class="col-6 col-sm-2 col-xl-1">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Ancho(1-5)</label>
+                                                                <input type="number" class="form-control form-control-sm" @bind="tmplElement.BarWidth" min="1" max="5" />
+                                                            </div>
+                                                        }
+                                                        else if (currentType == "QR")
+                                                        {
+                                                            <div class="col-12 col-sm-8 col-xl-3">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Fuente</label>
+                                                                <select class="form-select form-select-sm" @bind="tmplElement.Source">
+                                                                    @foreach (var s in GetSourceSuggestions(tmplElement)) { <option value="@s">@s</option> }
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-12 col-sm-4 col-xl-2">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Tamaño(1-16)</label>
+                                                                <input type="number" class="form-control form-control-sm" @bind="tmplElement.Size" min="1" max="16" />
+                                                            </div>
+                                                        }
+                                                        else if (currentType == "Image")
+                                                        {
+                                                            <div class="col-12 col-sm-6 col-xl-3">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Fuente</label>
+                                                                <select class="form-select form-select-sm" @bind="tmplElement.Source">
+                                                                    @foreach (var s in GetSourceSuggestions(tmplElement)) { <option value="@s">@s</option> }
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-12 col-sm-6 col-xl-2">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Altura</label>
+                                                                <input type="number" class="form-control form-control-sm" @bind="tmplElement.Height" />
+                                                            </div>
+                                                        }
+
+                                                        @if (tmplSection.Type == "Table" && currentType != "Line")
+                                                        {
+                                                            <div class="col-6 col-sm-2 col-xl-1">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Anc%</label>
+                                                                <input type="number" class="form-control form-control-sm" @bind="tmplElement.WidthPercentage" min="0" max="100" />
+                                                            </div>
+                                                            <div class="col-6 col-sm-4 col-xl-2">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Tam. Enc</label>
+                                                                <select class="form-select form-select-sm" value="@GetFormatSize(tmplElement.HeaderFormat)" @onchange="@(e => UpdateFormatSize(tmplElement, e.Value?.ToString(), true))">
+                                                                    <option value="">Ninguno</option>
+                                                                    <option value="FontB Size1">Tamaño 1</option>
+                                                                    <option value="FontA Size1">Tamaño 2</option>
+                                                                    <option value="FontB Size2">Tamaño 3</option>
+                                                                    <option value="FontA Size2">Tamaño 4</option>
+                                                                    <option value="FontB Size3">Tamaño 5</option>
+                                                                    <option value="FontA Size3">Tamaño 6</option>
+                                                                </select>
+                                                            </div>
+                                                            bool isHBold = tmplElement.HeaderFormat?.Contains("Bold") == true;
+                                                            <div class="col-6 col-sm-2 col-xl-1 d-flex align-items-center mb-1">
+                                                                <div class="form-check p-0 m-0 d-flex flex-column align-items-start">
+                                                                    <label class="form-check-label xx-small fw-bold text-uppercase text-secondary mb-1" title="Encabezado en Negrita">Enc. Negrita</label>
+                                                                    <input class="form-check-input ms-0 mt-0" type="checkbox" checked="@isHBold" @onchange="@(e => UpdateFormatBold(tmplElement, (e.Value is bool b && b), true))" />
+                                                                </div>
+                                                            </div>
+                                                        }
+
+                                                        @if (currentType != "Line")
+                                                        {
+                                                            <div class="col-6 col-sm-4 col-xl-2">
+                                                                <label class="form-label xx-small fw-bold text-uppercase text-secondary">Alineación</label>
+                                                                <select class="form-select form-select-sm" @bind="tmplElement.Align">
+                                                                    <option value="Left">Izquierda</option>
+                                                                    <option value="Center">Centro</option>
+                                                                    <option value="Right">Derecha</option>
+                                                                </select>
+                                                            </div>
+                                                        }
+
+                                                        <div class="col-12 col-xl d-flex gap-1 justify-content-end align-items-end mb-1 mt-2 mt-xl-0">
+                                                            <button class="btn btn-sm btn-light border p-1" @onclick="() => MoveElement(tmplSection, tmplElement, -1)">
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-light border p-1" @onclick="() => MoveElement(tmplSection, tmplElement, 1)">
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-outline-danger p-1" @onclick="() => RemoveElement(tmplSection, tmplElement)">
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+
+@code {
+    [Parameter] public string? Id { get; set; }
+
+    private PrintTemplate? Template { get; set; }
+    private bool IsBusy { get; set; }
+    private HashSet<int> ExpandedSections { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(Id))
+        {
+            NavigationManager.NavigateTo("/configuracion");
+            return;
+        }
+
+        try
+        {
+            var templates = await TemplateRepository.GetAllTemplatesAsync();
+            Template = templates.FirstOrDefault(t => t.TemplateId == Id || t.DocumentType == Id);
+
+            if (Template == null)
+            {
+                NavigationManager.NavigateTo("/configuracion");
+                return;
+            }
+
+            // Expandir la primera sección por defecto
+            if (Template.Sections.Any())
+            {
+                ExpandedSections.Add(Template.Sections.First().Order ?? 0);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error loading template {Id}: {ex.Message}");
+            NavigationManager.NavigateTo("/configuracion");
+        }
+    }
+
+    private bool IsExpanded(TemplateSection section) => ExpandedSections.Contains(section.Order ?? 0);
+
+    private void ToggleSection(TemplateSection section)
+    {
+        var order = section.Order ?? 0;
+        if (ExpandedSections.Contains(order)) ExpandedSections.Remove(order);
+        else ExpandedSections.Add(order);
+    }
+
+    private void AddSection()
+    {
+        if (Template == null) return;
+        var nextOrder = (Template.Sections.Any() ? Template.Sections.Max(s => s.Order ?? 0) : 0) + 1;
+        var newSection = new TemplateSection 
+        { 
+            Name = "Nueva Sección", 
+            Order = nextOrder, 
+            Type = "Static",
+            Elements = new List<TemplateElement>()
+        };
+        Template.Sections.Add(newSection);
+        ExpandedSections.Add(nextOrder);
+    }
+
+    private async Task RemoveSection(TemplateSection section)
+    {
+        if (Template == null) return;
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"¿Eliminar la sección '{section.Name}'?");
+        if (confirm)
+        {
+            Template.Sections.Remove(section);
+            RenumberSections();
+        }
+    }
+
+    private void MoveSection(TemplateSection section, int direction)
+    {
+        if (Template == null) return;
+        var list = Template.Sections.OrderBy(s => s.Order).ToList();
+        var index = list.IndexOf(section);
+        var targetIndex = index + direction;
+
+        if (targetIndex >= 0 && targetIndex < list.Count)
+        {
+            var other = list[targetIndex];
+            var tempOrder = section.Order;
+            section.Order = other.Order;
+            other.Order = tempOrder;
+            
+            // Forzar actualización de UI refrescando el modelo si es necesario (el ordenado en el foreach ya ayuda)
+            StateHasChanged();
+        }
+    }
+
+    private void RenumberSections()
+    {
+        if (Template == null) return;
+        var ordered = Template.Sections.OrderBy(s => s.Order).ToList();
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            ordered[i].Order = i + 1;
+        }
+    }
+
+    private void AddElement(TemplateSection section)
+    {
+        if (section.Elements == null) section.Elements = new List<TemplateElement>();
+        var nextOrder = (section.Elements.Any() ? section.Elements.Max(e => e.Order ?? 0) : 0) + 1;
+        section.Elements.Add(new TemplateElement 
+        { 
+            Type = "Text", 
+            Order = nextOrder,
+            Align = "Left"
+        });
+    }
+
+    private void RemoveElement(TemplateSection section, TemplateElement element)
+    {
+        section.Elements?.Remove(element);
+        RenumberElements(section);
+    }
+
+    private void MoveElement(TemplateSection section, TemplateElement element, int direction)
+    {
+        if (section.Elements == null) return;
+        var list = section.Elements.OrderBy(e => e.Order).ToList();
+        var index = list.IndexOf(element);
+        var targetIndex = index + direction;
+
+        if (targetIndex >= 0 && targetIndex < list.Count)
+        {
+            var other = list[targetIndex];
+            var tempOrder = element.Order;
+            element.Order = other.Order;
+            other.Order = tempOrder;
+        }
+    }
+
+    private void RenumberElements(TemplateSection section)
+    {
+        if (section.Elements == null) return;
+        var ordered = section.Elements.OrderBy(e => e.Order).ToList();
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            ordered[i].Order = i + 1;
+        }
+    }
+
+    private async Task Save()
+    {
+        if (Template == null || IsBusy) return;
+
+        IsBusy = true;
+        try
+        {
+            // Limpia órdenes antes de guardar
+            RenumberSections();
+            foreach (var s in Template.Sections) RenumberElements(s);
+
+            await TemplateRepository.SaveTemplateAsync(Template);
+            await JS.InvokeVoidAsync("alert", "Plantilla guardada correctamente.");
+            NavigationManager.NavigateTo("/configuracion");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error saving template: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", $"Error al guardar: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/configuracion");
+    }
+
+    private string GetElementTypeClass(string? type) => (type ?? "Text").ToLower() switch
+    {
+        "text" => "bg-type-text",
+        "line" => "bg-type-line",
+        "barcode" => "bg-type-barcode",
+        "qr" => "bg-type-qr",
+        "image" => "bg-type-image",
+        _ => "bg-secondary"
+    };
+
+    private string GetFormatSize(string? format)
+    {
+        if (string.IsNullOrEmpty(format)) return "";
+        var parts = format.Split(' ').Where(p => p != "Bold");
+        return string.Join(" ", parts);
+    }
+
+    private void UpdateFormatSize(TemplateElement element, string? newSize, bool isHeader)
+    {
+        var existing = isHeader ? element.HeaderFormat : element.Format;
+        bool isBold = existing?.Contains("Bold") == true;
+        
+        var formats = new List<string>();
+        if (!string.IsNullOrEmpty(newSize)) formats.Add(newSize);
+        if (isBold) formats.Add("Bold");
+        
+        var finalValue = formats.Count > 0 ? string.Join(" ", formats) : null;
+        if (isHeader) element.HeaderFormat = finalValue;
+        else element.Format = finalValue;
+    }
+
+    private void UpdateFormatBold(TemplateElement element, bool isBold, bool isHeader)
+    {
+        var existing = isHeader ? element.HeaderFormat : element.Format;
+        var size = GetFormatSize(existing);
+        
+        var formats = new List<string>();
+        if (!string.IsNullOrEmpty(size)) formats.Add(size);
+        if (isBold) formats.Add("Bold");
+        
+        var finalValue = formats.Count > 0 ? string.Join(" ", formats) : null;
+        if (isHeader) element.HeaderFormat = finalValue;
+        else element.Format = finalValue;
+    }
+
+    private void UpdateSectionFormatSize(TemplateSection section, string? newSize)
+    {
+        bool isBold = section.Format?.Contains("Bold") == true;
+        var formats = new List<string>();
+        if (!string.IsNullOrEmpty(newSize)) formats.Add(newSize);
+        if (isBold) formats.Add("Bold");
+        section.Format = formats.Count > 0 ? string.Join(" ", formats) : null;
+    }
+
+    private void UpdateSectionFormatBold(TemplateSection section, bool isBold)
+    {
+        var size = GetFormatSize(section.Format);
+        var formats = new List<string>();
+        if (!string.IsNullOrEmpty(size)) formats.Add(size);
+        if (isBold) formats.Add("Bold");
+        section.Format = formats.Count > 0 ? string.Join(" ", formats) : null;
+    }
+
+    private void OnSectionTypeChanged(TemplateSection section, string newType)
+    {
+        section.Type = newType;
+        if (newType == "Table" && section.Elements != null)
+        {
+            foreach (var el in section.Elements)
+            {
+                el.Type = "Text"; // Restringimos a solo texto en tablas
+                if (el.Properties.ContainsKey("IsFixed")) el.Properties.Remove("IsFixed"); // Quitamos si era fijo
+            }
+        }
+        StateHasChanged();
+    }
+
+    private IEnumerable<string> GetSourceSuggestions(TemplateElement element)
+    {
+        var list = new List<string> { "." };
+        if (Template != null)
+        {
+            list.AddRange(TemplateCatalogService.GetGlobalSourceSuggestions(Template.DocumentType));
+            list.AddRange(TemplateCatalogService.GetItemSourceSuggestions(Template.DocumentType));
+        }
+        
+        list = list.Distinct().ToList();
+        
+        // Ensure the currently bound source is in the list, like the old UI did
+        if (!string.IsNullOrEmpty(element.Source) && !list.Contains(element.Source))
+        {
+            list.Insert(0, element.Source);
+        }
+        
+        return list;
+    }
+
+    private IEnumerable<string> GetSectionDataSourceSuggestions(TemplateSection section)
+    {
+        var list = new List<string>();
+        if (Template != null)
+        {
+            list.AddRange(TemplateCatalogService.GetDataSourceSuggestions(Template.DocumentType));
+        }
+        
+        list = list.Distinct().ToList();
+        
+        if (!string.IsNullOrEmpty(section.DataSource) && !list.Contains(section.DataSource))
+        {
+            list.Insert(0, section.DataSource);
+        }
+        
+        return list;
+    }
+
+    public void Dispose() { }
+}

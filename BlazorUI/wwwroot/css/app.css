@@ -100,6 +100,47 @@
     --neutral-tint-bg: #3A3F45;
     --danger-tint-bg: #3F282A;
     --card-hover-bg: #33313B;
+
+    /* Additional helps for legibility in dark mode */
+    --text-primary-contrast: #ffffff;
+    --text-secondary-contrast: #CBD5E1;
+}
+
+[data-theme="dark"] .text-secondary {
+    color: var(--text-secondary-contrast) !important;
+}
+
+[data-theme="dark"] .text-muted {
+    color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .bg-white, 
+[data-theme="dark"] .bg-light {
+    background-color: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .border {
+    border-color: var(--card-stroke) !important;
+}
+
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, 
+[data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6,
+[data-theme="dark"] .card-title, [data-theme="dark"] .fw-bold {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .form-control, 
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .input-group-text {
+    background-color: var(--neutral-tint-bg);
+    color: var(--text-primary);
+    border-color: var(--card-stroke);
+}
+
+[data-theme="dark"] .form-control:focus, 
+[data-theme="dark"] .form-select:focus {
+    background-color: var(--card-bg);
 }
 
 /* ==========================================================================
@@ -159,6 +200,10 @@ h1, h2, h3, h4, h5, h6 {
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
+h1, h2, h3, h4, h5, h6, .card-title, .fw-bold {
+    color: var(--text-primary);
+}
+
 .text-primary {
     color: var(--text-primary) !important;
 }
@@ -169,6 +214,49 @@ h1, h2, h3, h4, h5, h6 {
 
 .text-muted {
     color: var(--text-muted) !important;
+}
+
+/* ==========================================================================
+   BOOTSTRAP OVERRIDES (Forms & Buttons)
+   ========================================================================== */
+
+/* Forms & Inputs Overrides */
+.form-control, .form-select, .input-group-text {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--card-stroke);
+}
+.form-control:focus, .form-select:focus {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem var(--primary-tint-bg);
+}
+.form-control:disabled, .form-control[readonly],
+.form-select:disabled, .form-select[readonly] {
+    background-color: var(--neutral-tint-bg);
+    opacity: 1;
+}
+
+/* Button Overrides */
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+    background-color: var(--tertiary) !important;
+    border-color: var(--tertiary) !important;
+    color: #ffffff !important;
+}
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+    border-color: var(--primary) !important;
 }
 
 /* ==========================================================================
@@ -438,8 +526,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .printer-card:hover {
-    border-color: var(--text-muted);
+    border-color: var(--primary);
     background-color: var(--card-hover-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
 }
 
 .icon-box {
@@ -478,7 +568,8 @@ h1, h2, h3, h4, h5, h6 {
     transition: all 0.2s ease;
 }
 
-.printer-card:hover .action-buttons {
+.printer-card:hover .action-buttons,
+.scale-card:hover .action-buttons {
     opacity: 1;
     transform: translateX(0);
 }
@@ -517,3 +608,129 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0.3;
     margin-bottom: 15px;
 }
+
+/* ==========================================================================
+   SCALES PAGE STYLES
+   ========================================================================== */
+.scale-card {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--card-stroke);
+}
+
+.scale-card:hover {
+    border-color: var(--primary);
+    background-color: var(--card-hover-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+}
+
+.status-indicator-dot {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--card-bg);
+    border-radius: 50%;
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    z-index: 2;
+}
+
+.status-connected { background-color: var(--success); }
+.status-disconnected { background-color: var(--gray-400); }
+.status-error { background-color: var(--danger-icon); }
+
+.port-badge {
+    background-color: var(--primary-tint-bg);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+.scale-info-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.scale-status-text {
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   COMPONENT STYLES (Migrated from Razor specific <style> tags)
+   ========================================================================== */
+
+/* Logs Filter Bar */
+.filter-bar { background: var(--card-bg) !important; border-radius: 1rem !important; }
+.log-table-card { background-color: var(--card-bg) !important; }
+.table thead th { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; padding-top: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--card-stroke); background-color: var(--neutral-tint-bg); }
+.table tbody td { padding-top: 0.85rem; padding-bottom: 0.85rem; border-bottom: 1px solid var(--card-stroke); background-color: transparent !important; color: var(--text-secondary); }
+.log-badge { font-weight: 700; font-size: 0.7rem; padding: 0.35em 0.65em; border-radius: 0.375rem; display: inline-block; }
+
+.bg-info-tint { background-color: #e3f2fd; color: #0d6efd; }
+.bg-warning-tint { background-color: #fff3e0; color: #ef6c00; }
+.bg-danger-tint { background-color: #ffebee; color: #d32f2f; }
+.bg-debug-tint { background-color: #f5f5f5; color: #616161; }
+[data-theme="dark"] .bg-info-tint { background-color: #1e3a5f; color: #a5d8ff; }
+[data-theme="dark"] .bg-warning-tint { background-color: #43302b; color: #ffca28; }
+[data-theme="dark"] .bg-danger-tint { background-color: #4c1d1d; color: #ff8a80; }
+[data-theme="dark"] .bg-debug-tint { background-color: #374151; color: #d1d5db; }
+
+.text-error { color: #f87171 !important; }
+.text-warning { color: #facc15 !important; }
+.spinner { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.form-switch .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
+.table-responsive { border-radius: 0 0 1rem 1rem; }
+@media (max-width: 576px) { .container-fluid { padding-left: 0.75rem !important; padding-right: 0.75rem !important; } h2 { font-size: 1.5rem; } }
+
+/* Settings Accordion */
+.accordion-card { background-color: var(--card-bg); border: 1px solid var(--card-stroke); border-radius: 16px; overflow: hidden; transition: all 0.3s ease; }
+.accordion-header-custom { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+.accordion-header-custom:hover { background-color: var(--card-hover-bg); }
+.accordion-content-custom { padding: 0 24px 24px 24px; animation: slideDown 0.3s ease-out; }
+.chevron-icon { transition: transform 0.3s ease; color: var(--text-secondary); }
+.rotate-180 { transform: rotate(180deg); }
+.template-card:hover { background-color: var(--primary-tint-bg) !important; border-color: var(--primary) !important; transform: translateY(-2px); transition: all 0.2s; }
+.cursor-pointer { cursor: pointer; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Template Editor */
+.sticky-top { background-color: var(--page-bg) !important; backdrop-filter: blur(8px); }
+.section-card { background: var(--card-bg) !important; border-radius: 1rem !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.section-card.is-expanded { box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important; transform: scale(1.01); }
+.order-badge { width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; }
+.circular-btn { width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50% !important; }
+.transition-rotate { transition: transform 0.3s ease; }
+.element-row { transition: background-color 0.2s; }
+.element-row:hover { background-color: var(--card-hover-bg) !important; }
+[data-theme="dark"] .element-row:hover { background-color: var(--card-hover-bg) !important; }
+.element-type-strip { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.bg-type-text { background-color: #0d6efd; }
+.bg-type-line { background-color: #6c757d; }
+.bg-type-barcode { background-color: #ffc107; }
+.bg-type-qr { background-color: #198754; }
+.bg-type-image { background-color: #d63384; }
+.xx-small { font-size: 0.65rem; }
+.shadow-xs { box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.border-dashed { border-style: dashed !important; border-width: 2px !important; }
+
+/* About Page */
+.about-card { background: var(--card-bg) !important; border-radius: 1.25rem !important; }
+.logo-container { width: 100px; height: 100px; background-color: var(--primary-tint-bg); border-radius: 1.5rem; display: flex; align-items: center; justify-content: center; padding: 1.25rem; }
+.version-badge .badge { font-size: 0.85rem; background-color: var(--primary-tint-bg) !important; color: var(--primary) !important; border-color: var(--primary-tint-bg) !important; }
+.btn-outline-secondary { border-color: var(--card-stroke) !important; color: var(--text-secondary) !important; }
+.btn-outline-secondary:hover { background-color: var(--neutral-tint-bg) !important; color: var(--text-primary) !important; }
+
+/* Detail Inputs (Printer & Scale) */
+.premium-input { background-color: var(--neutral-tint-bg); border: 1px solid var(--card-stroke); border-radius: 8px; padding: 10px 15px; font-size: 14px; color: var(--text-primary); transition: all 0.2s ease; }
+.premium-input:focus { background-color: var(--card-bg); border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint-bg); outline: none; }
+.form-check-input { width: 3em; height: 1.5em; cursor: pointer; }
+.form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
+

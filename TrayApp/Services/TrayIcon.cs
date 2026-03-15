@@ -35,9 +35,9 @@ public class TrayIcon : IDisposable
     private Image _iconActionStop;
 
     // Nombre del servicio de Windows del WorkerService (el nombre registrado en Windows Services).
-    private const string WindowsServiceName = "WorkerService"; // Asumiendo que este es el nombre real del servicio
-    // Nombre del ejecutable del WorkerService (el archivo .exe que se lanza).
-    private const string WorkerExeName = "WorkerService"; // Sin .exe para GetProcessesByName, con .exe para File.Exists y Process.Start
+    private const string WindowsServiceName = "AppsielPrintManagerWorker"; // Nombre del servicio Windows (debe coincidir con AssemblyName del WorkerService.csproj)
+    // Nombre del ejecutable del WorkerService (el archivo .exe que se lanza). Sin .exe para GetProcessesByName, con .exe para File.Exists y Process.Start.
+    private const string WorkerExeName = "AppsielPrintManagerWorker"; // Coincide con el AssemblyName definido en WorkerService.csproj
     // Nombre del ejecutable de la interfaz de usuario Blazor Hybrid.
     private const string MauiUIExeName = "BlazorUI";
 

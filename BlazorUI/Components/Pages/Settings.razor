@@ -1,0 +1,303 @@
+@page "/configuracion"
+@using AppsielPrintManager.Core.Interfaces
+@using AppsielPrintManager.Core.Models
+@using System.Security.Cryptography
+@using System.Text
+@using System.Text.RegularExpressions
+@implements IDisposable
+@inject ITemplateRepository TemplateRepository
+@inject IAppConfigRepository AppConfigRepository
+@inject IPlatformService PlatformService
+@inject ILoggingService Logger
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">Configuración</h2>
+            <p class="text-secondary mb-0">Gestiona plantillas y seguridad del sistema</p>
+        </div>
+        <div class="d-flex align-items-center bg-card-dark rounded-pill px-3 py-2 shadow-sm border">
+            <div class="status-dot @(IsServiceRunning ? "active" : "")"></div>
+            <span class="ms-2 fw-bold small @(IsServiceRunning ? "text-success" : "text-danger")">
+                @(IsServiceRunning ? "SERVICIO ACTIVO" : "SERVICIO INACTIVO")
+            </span>
+        </div>
+    </div>
+
+    <!-- Custom Accordion with Blazor State -->
+    <div class="settings-accordion">
+        
+        <!-- Templates Section -->
+        <div class="accordion-card mb-3 @(ShowTemplates ? "is-expanded" : "")">
+            <div class="accordion-header-custom" @onclick="ToggleTemplates">
+                <div class="d-flex align-items-center">
+                    <svg class="me-3 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <h5 class="fw-bold mb-0">Plantillas de Impresión</h5>
+                </div>
+                <svg class="chevron-icon @(ShowTemplates ? "rotate-180" : "")" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            
+            @if (ShowTemplates)
+            {
+                <div class="accordion-content-custom">
+                    @if (IsLoadingTemplates)
+                    {
+                        <div class="d-flex justify-content-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+                            @foreach (var template in Templates)
+                            {
+                                <div class="col-12 col-md-6">
+                                    <div class="card p-3 border shadow-sm template-card cursor-pointer h-100" @onclick="() => EditTemplate(template)">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="fw-bold mb-1">@template.Name</h6>
+                                                <span class="text-secondary small">Documento: @template.DocumentType</span>
+                                            </div>
+                                            <svg class="text-primary opacity-50" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="d-flex justify-content-center mt-4 pt-2">
+                             <button class="btn btn-outline-primary btn-sm px-4 fw-bold d-flex align-items-center" @onclick="LoadTemplates" @onclick:stopPropagation>
+                                <svg class="me-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l5.64 5.64A9 9 0 0 0 20.49 15"></path></svg>
+                                Refrescar Plantillas
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Security Section -->
+        <div class="accordion-card mb-3 @(ShowSecurity ? "is-expanded" : "")">
+            <div class="accordion-header-custom" @onclick="ToggleSecurity">
+                <div class="d-flex align-items-center">
+                    <svg class="me-3 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <h5 class="fw-bold mb-0">Seguridad</h5>
+                </div>
+                <svg class="chevron-icon @(ShowSecurity ? "rotate-180" : "")" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            
+            @if (ShowSecurity)
+            {
+                <div class="accordion-content-custom">
+                    <div class="alert bg-inner-card border-0 small text-secondary mb-4 shadow-none">
+                        <svg class="me-2 text-warning" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        Cambia la contraseña maestra requerida para acceder a la configuración del administrador.
+                    </div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary">Contraseña Actual</label>
+                                <div class="input-group">
+                                    <input type="@(ShowPassword ? "text" : "password")" class="form-control" placeholder="********" @bind="CurrentPassword" />
+                                    <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            @if (ShowPassword) { <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line> }
+                                            else { <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle> }
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary">Nueva Contraseña</label>
+                                <div class="input-group">
+                                    <input type="@(ShowPassword ? "text" : "password")" class="form-control" placeholder="Nueva contraseña" @bind="NewPassword" />
+                                    <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            @if (ShowPassword) { <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line> }
+                                            else { <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle> }
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-secondary">Confirmar Nueva Contraseña</label>
+                                <div class="input-group">
+                                    <input type="@(ShowPassword ? "text" : "password")" class="form-control" placeholder="Repite la contraseña" @bind="ConfirmPassword" />
+                                    <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            @if (ShowPassword) { <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line> }
+                                            else { <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle> }
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(PasswordError))
+                            {
+                                <div class="alert alert-danger py-2 small mb-3">
+                                    @PasswordError
+                                </div>
+                            }
+
+                            <button class="btn btn-primary w-100 fw-bold py-2 @(IsSavingPassword ? "disabled" : "")" @onclick="ChangePassword">
+                                @if (IsSavingPassword) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                                Guardar Nueva Contraseña
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>
+
+
+
+@code {
+    private List<PrintTemplate> Templates { get; set; } = new();
+    private bool IsLoadingTemplates { get; set; } = true;
+    private bool IsServiceRunning { get; set; }
+    private bool _isDisposed;
+    private PeriodicTimer? _timer;
+
+    private bool ShowTemplates { get; set; } = true;
+    private bool ShowSecurity { get; set; } = false;
+
+    private string CurrentPassword { get; set; } = "";
+    private string NewPassword { get; set; } = "";
+    private string ConfirmPassword { get; set; } = "";
+    private string PasswordError { get; set; } = "";
+    private bool IsSavingPassword { get; set; }
+    private bool ShowPassword { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        UpdateServiceStatus();
+        await LoadTemplates();
+        _ = StartMonitoringAsync();
+    }
+
+    private void ToggleTemplates() => ShowTemplates = !ShowTemplates;
+    private void ToggleSecurity() => ShowSecurity = !ShowSecurity;
+
+    private void UpdateServiceStatus()
+    {
+        IsServiceRunning = PlatformService.IsBackgroundServiceRunning;
+    }
+
+    private async Task StartMonitoringAsync()
+    {
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        try
+        {
+            while (await _timer.WaitForNextTickAsync() && !_isDisposed)
+            {
+                UpdateServiceStatus();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private async Task LoadTemplates()
+    {
+        IsLoadingTemplates = true;
+        try
+        {
+            await TemplateRepository.EnsureDefaultTemplatesAsync();
+            var list = await TemplateRepository.GetAllTemplatesAsync();
+            Templates = list.ToList();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error loading templates: {ex.Message}", ex, "SettingsPage");
+        }
+        finally
+        {
+            IsLoadingTemplates = false;
+        }
+    }
+
+    private void TogglePasswordVisibility() => ShowPassword = !ShowPassword;
+
+    private async Task ChangePassword()
+    {
+        PasswordError = "";
+        
+        if (string.IsNullOrWhiteSpace(CurrentPassword) || string.IsNullOrWhiteSpace(NewPassword) || string.IsNullOrWhiteSpace(ConfirmPassword))
+        {
+            PasswordError = "Todos los campos son obligatorios.";
+            return;
+        }
+
+        if (NewPassword != ConfirmPassword)
+        {
+            PasswordError = "Las nuevas contraseñas no coinciden.";
+            return;
+        }
+
+        if (!Regex.IsMatch(NewPassword, @"^[a-zA-Z0-9*\-./]+$"))
+        {
+            PasswordError = "La contraseña solo puede contener letras, números y los caracteres * - . /";
+            return;
+        }
+
+        IsSavingPassword = true;
+        try
+        {
+            var config = await AppConfigRepository.GetConfigAsync();
+            string currentInputHash = ComputeSha256Hash(CurrentPassword);
+
+            if (currentInputHash != config.AdminPasswordHash)
+            {
+                PasswordError = "La contraseña actual es incorrecta.";
+                return;
+            }
+
+            config.AdminPasswordHash = ComputeSha256Hash(NewPassword);
+            await AppConfigRepository.SaveConfigAsync(config);
+
+            CurrentPassword = NewPassword = ConfirmPassword = "";
+            await JS.InvokeVoidAsync("alert", "Contraseña cambiada correctamente.");
+        }
+        catch (Exception ex)
+        {
+            PasswordError = $"Error al guardar: {ex.Message}";
+        }
+        finally
+        {
+            IsSavingPassword = false;
+        }
+    }
+
+    private string ComputeSha256Hash(string rawData)
+    {
+        using SHA256 sha256Hash = SHA256.Create();
+        byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            builder.Append(bytes[i].ToString("x2"));
+        }
+        return builder.ToString();
+    }
+
+    private void EditTemplate(PrintTemplate template)
+    {
+        var id = !string.IsNullOrEmpty(template.TemplateId) ? template.TemplateId : template.DocumentType;
+        NavigationManager.NavigateTo($"/editor-plantilla/{id}");
+    }
+
+    public void Dispose()
+    {
+        _isDisposed = true;
+        _timer?.Dispose();
+    }
+}

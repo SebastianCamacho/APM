@@ -25,13 +25,13 @@
              For individual files, you can override by setting Inflator metadata:
                <MauiXaml Update="MyPage.xaml" Inflator="Default" /> (reverts to defaults: Runtime for Debug, XamlC for Release)
                <MauiXaml Update="MyPage.xaml" Inflator="Runtime" /> (force runtime inflation) -->
-        <MauiXamlInflator>SourceGen</MauiXamlInflator>
+        <!-- <MauiXamlInflator>SourceGen</MauiXamlInflator> -->
 
         <!-- Display name -->
-        <ApplicationTitle>BlazorUI</ApplicationTitle>
+        <ApplicationTitle>APM</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.BlazorUI</ApplicationId>
+        <ApplicationId>com.appsiel.apm</ApplicationId>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>

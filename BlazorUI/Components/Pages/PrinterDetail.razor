@@ -131,34 +131,7 @@
     </div>
 </div>
 
-<style>
-    .premium-input {
-        background-color: var(--neutral-tint-bg);
-        border: 1px solid var(--card-stroke);
-        border-radius: 8px;
-        padding: 10px 15px;
-        font-size: 14px;
-        color: var(--text-primary);
-        transition: all 0.2s ease;
-    }
 
-    .premium-input:focus {
-        background-color: var(--card-bg);
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px var(--primary-tint-bg);
-    }
-
-    .form-check-input {
-        width: 3em;
-        height: 1.5em;
-        cursor: pointer;
-    }
-
-    .form-check-input:checked {
-        background-color: var(--primary);
-        border-color: var(--primary);
-    }
-</style>
 
 @code {
     [Parameter] public string? PrinterId { get; set; }

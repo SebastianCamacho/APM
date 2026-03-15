@@ -60,21 +60,48 @@ namespace AppsielPrintManager.Core.Services
             {
                 // Seller
                 list.AddRange(new[] {
-                    "Seller.Name", "Seller.Nit", "Seller.TaxRegime", "Seller.Address",
-                    "Seller.City", "Seller.Phone", "Seller.Email",
-                    "Seller.ResolutionNumber", "Seller.ResolutionText"
+                    "Seller.Name", 
+                    "Seller.Nit", 
+                    "Seller.TaxRegime", 
+                    "Seller.Address",
+                    "Seller.City", 
+                    "Seller.Phone", 
+                    "Seller.Email",
+                    "Seller.ResolutionNumber",
+                    "Seller.ResolutionDate",
+                    "Seller.ResolutionPrefix",
+                    "Seller.ResolutionFrom",
+                    "Seller.ResolutionTo",
+                    "Seller.ResolutionText"
                 });
+
+                
 
                 // Buyer
                 list.AddRange(new[] {
-                    "Buyer.Name", "Buyer.Nit", "Buyer.Address", "Buyer.Email", "Buyer.Phone"
+                    "Buyer.Name", "Buyer.Nit", "Buyer.Address", "Buyer.Email"
                 });
 
                 // Invoice
                 list.AddRange(new[] {
-                    "Invoice.Number", "Invoice.IssueDate", "Invoice.DueDate", "Invoice.PaymentMethod",
-                    "Invoice.PaymentMeans", "Invoice.Currency",
-                    "Invoice.Subtotal", "Invoice.Discount", "Invoice.Iva", "Invoice.Total"
+                    "Invoice.Number", 
+                    "Invoice.IssueDate", 
+                    "Invoice.DueDate", 
+                    "Invoice.PaymentMethod",
+                    "Invoice.PaymentMeans", 
+                    "Invoice.Currency",
+
+                    "Invoice.Subtotal", 
+                    "Invoice.Discount", 
+                    "Invoice.Iva", 
+                    "Invoice.Total"
+                });
+
+                list.AddRange(new[] {
+                    "Taxes.Name",
+                    "Taxes.Base",
+                    "Taxes.Rate",
+                    "Taxes.Amount",
                 });
 
                 // Other
@@ -107,25 +134,23 @@ namespace AppsielPrintManager.Core.Services
             }
 
             // Lista base para otros documentos
-            var list = new List<string> { "Quantity", "Description" };
+            var list = new List<string> {  };
 
             if (type == "comanda")
             {
                 list.Add("Notes");
                 list.Add("Name"); // Comandas usa Name
+                list.Add("Qty");
             }
             else if (type == "factura_electronica")
             {
-                list.AddRange(new[] { "UnitPrice", "IvaRate", "IvaAmount", "Total" });
+                list.AddRange(new[] { "Code", "Description", "Quantity", "UnitPrice", "Discount", "IvaRate", "IvaAmount", "Total" });
             }
             else
             {
                 // Ticket venta standard
                 list.AddRange(new[] { "Name", "Qty", "UnitPrice", "Total" });
-            }
-
-            // Sugerencias adicionales comunes (No agregar a stickers)
-            list.AddRange(new[] { "Code", "Price" });
+            }           
 
             return list;
         }
