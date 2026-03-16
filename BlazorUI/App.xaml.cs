@@ -33,6 +33,7 @@ namespace BlazorUI
                     using var scope = _serviceProvider.CreateScope();
                     
 #if WINDOWS
+                    // En Windows: iniciar el servicio de fondo y el TrayApp directamente.
                     var platformService = scope.ServiceProvider.GetService<IPlatformService>();
                     if (platformService != null && !platformService.IsBackgroundServiceRunning)
                     {
@@ -44,12 +45,9 @@ namespace BlazorUI
                     {
                         await trayAppService.StartTrayAppAsync();
                     }
-#elif ANDROID
-                    var platformService = scope.ServiceProvider.GetService<IPlatformService>();
-                    if (platformService != null && !platformService.IsBackgroundServiceRunning)
-                    {
-                        await platformService.StartBackgroundServiceAsync();
-                    }
+
+                    // NOTA Android: el servicio se inicia desde Login.razor (CheckPermissionsAsync)
+                    // DESPUÉS de que el usuario concede los permisos obligatorios de notificaciones y batería.
 #endif
                 }
                 catch (Exception ex)

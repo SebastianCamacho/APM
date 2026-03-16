@@ -29,6 +29,7 @@ namespace BlazorUI
             builder.Services.AddSingleton<ILoggingService, Logger>();
             builder.Services.AddSingleton<ILoggerProvider>(sp => new AppsielLoggerProvider(sp.GetRequiredService<ILoggingService>()));
             builder.Services.AddSingleton<AuthState>();
+            builder.Services.AddSingleton<IDialogService, MauiDialogService>(); // Servicio de diálogos desacoplado de MAUI
             builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
             builder.Services.AddSingleton<IAppConfigRepository, AppConfigRepository>();
             builder.Services.AddSingleton<ITemplateRepository, TemplateRepository>();
