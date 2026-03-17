@@ -14,8 +14,8 @@ namespace BlazorUI.Services
     {
         private readonly ILoggingService _logger;
         private Process _workerProcess;
-        private const string WorkerServiceName = "WorkerService"; // Nombre del proceso/servicio
-        private const string WorkerExeName = "WorkerService.exe"; // Nombre del ejecutable
+        private const string WorkerServiceName = "AppsielPrintManagerWorker"; // Nombre del proceso/servicio
+        private const string WorkerExeName = "AppsielPrintManagerWorker.exe"; // Nombre del ejecutable
 
         public WindowsWorkerServiceManager(ILoggingService logger)
         {
@@ -46,7 +46,7 @@ namespace BlazorUI.Services
 
                 // 2. Si no, buscamos procesos de forma más amplia (case-insensitive y contains)
                 var allProcesses = Process.GetProcesses();
-                var serviceProcess = allProcesses.FirstOrDefault(p => p.ProcessName.Contains("WorkerService", StringComparison.OrdinalIgnoreCase));
+                var serviceProcess = allProcesses.FirstOrDefault(p => p.ProcessName.Contains("AppsielPrintManagerWorker", StringComparison.OrdinalIgnoreCase));
 
                 if (serviceProcess != null)
                 {
@@ -78,7 +78,7 @@ namespace BlazorUI.Services
 
                 // 2. RUTAS DE DESARROLLO (Búsqueda robusta y dinámica)
                 string solutionRoot = GetDevelopmentSolutionRoot(appDirectory);
-                string workerProjectBase = solutionRoot != null ? Path.Combine(solutionRoot, WorkerServiceName) : string.Empty;
+                string workerProjectBase = solutionRoot != null ? Path.Combine(solutionRoot, "WorkerService") : string.Empty;
 
                 var possiblePaths = new List<string>();
 
@@ -167,7 +167,7 @@ namespace BlazorUI.Services
             while (current != null)
             {
                 // Buscamos la carpeta que contiene el proyecto WorkerService o el archivo SLN
-                if (Directory.Exists(Path.Combine(current.FullName, WorkerServiceName)) ||
+                if (Directory.Exists(Path.Combine(current.FullName, "WorkerService")) ||
                     File.Exists(Path.Combine(current.FullName, "AppsielPrintManager.slnx")))
                 {
                     return current.FullName;

@@ -4,12 +4,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-	      <AssemblyName>AppsielPrintWorker</AssemblyName>
-	  <AssemblyName>AppsielPrintWorker</AssemblyName>
-
+	  <AssemblyName>AppsielPrintManagerWorker</AssemblyName>
 	  <OutputType>Exe</OutputType>
-    <AssemblyName>AppsielPrintManagerWorker</AssemblyName>
-    <UserSecretsId>dotnet-WorkerService-bacb0c0e-ae24-4aba-9101-8154eeb8bdac</UserSecretsId>
+	  <UserSecretsId>dotnet-WorkerService-bacb0c0e-ae24-4aba-9101-8154eeb8bdac</UserSecretsId>
     <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
