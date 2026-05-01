@@ -470,6 +470,20 @@ namespace AppsielPrintManager.Infraestructure.Services
                                             OnTemplateUpdateReceived?.Invoke(this, eventArgs).Forget();
                                         }
                                     }
+                                    else if (string.Equals(action, "ExecuteCommand", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        if (doc.RootElement.TryGetProperty("PrinterId", out JsonElement pIdElem) &&
+                                            doc.RootElement.TryGetProperty("Command", out JsonElement cmdElem))
+                                        {
+                                            string? printerId = pIdElem.GetString();
+                                            string? command = cmdElem.GetString();
+                                            if (!string.IsNullOrEmpty(printerId) && !string.IsNullOrEmpty(command))
+                                            {
+                                                _logger.LogInfo($"Comando directo recibido de {clientId}: {command} para {printerId}", "WebSocketServerService");
+                                                _printService.ExecuteDirectCommandAsync(printerId, command).Forget();
+                                            }
+                                        }
+                                    }
                                 }
                                 continue; // Mensaje procesado
                             }

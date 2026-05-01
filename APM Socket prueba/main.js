@@ -544,6 +544,27 @@ window.sendUpdateTemplate = function(templateKey) {
     }
 };
 
+/**
+ * Envía un comando directo (Corte o Cajón) al APM vía WebSocket.
+ * @param {string} command - El tipo de comando ("Cut" o "Drawer").
+ */
+window.sendDirectCommand = function(command) {
+    const printerId = document.getElementById('directPrinterId').value;
+    if (!printerId) {
+        alert("Por favor ingrese un ID de impresora");
+        return;
+    }
+
+    const payload = {
+        Action: "ExecuteCommand",
+        PrinterId: printerId,
+        Command: command
+    };
+
+    logMessage(`Enviando comando directo: ${command} a la impresora ${printerId}`, 'info');
+    sendTestMessage(JSON.stringify(payload));
+};
+
 // Función global para cambiar de pestaña (llamada desde HTML)
 window.openTab = function(tabName) {
     // Actualizar botones

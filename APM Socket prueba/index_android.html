@@ -87,6 +87,24 @@
 
     <hr style="margin: 30px 0;">
 
+    <h2>Comandos Directos (ESC/POS)</h2>
+    <p>Envía comandos inmediatos a la impresora sin necesidad de imprimir un documento.</p>
+    <div style="background-color: #f0fdf4; padding: 15px; border-radius: 5px; border: 1px solid #bbf7d0;">
+        <label for="directPrinterId" style="font-weight: bold;">ID Impresora:</label>
+        <input type="text" id="directPrinterId" placeholder="Ej: printHambuger" value="printHambuger" style="padding: 5px; width: 100%; box-sizing: border-box; margin-top: 5px;">
+        
+        <div style="margin-top: 10px; display: flex; gap: 10px;">
+            <button onclick="sendDirectCommand('Cut')" style="flex: 1; padding: 12px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                Cortar Papel
+            </button>
+            <button onclick="sendDirectCommand('Drawer')" style="flex: 1; padding: 12px; background-color: #28a745; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                Abrir Cajón
+            </button>
+        </div>
+    </div>
+
+    <hr style="margin: 30px 0;">
+
     <h2>Simulación de Facturación</h2>
     <p>Ingrese códigos (Ej: 1001, 1002, 1003) y haga clic en Cantidad para leer de la báscula.</p>
     
@@ -504,6 +522,27 @@
         } else {
             logMessage('Error: No se encontró la plantilla: ' + templateKey, 'error');
         }
+    };
+
+    /**
+     * Envía un comando directo (Corte o Cajón) al APM vía WebSocket.
+     * @param {string} command - El tipo de comando ("Cut" o "Drawer").
+     */
+    window.sendDirectCommand = function(command) {
+        const printerId = document.getElementById('directPrinterId').value;
+        if (!printerId) {
+            alert("Por favor ingrese un ID de impresora");
+            return;
+        }
+
+        const payload = {
+            Action: "ExecuteCommand",
+            PrinterId: printerId,
+            Command: command
+        };
+
+        logMessage(`Enviando comando directo: ${command} a la impresora ${printerId}`, 'info');
+        sendTestMessage(JSON.stringify(payload));
     };
 
     window.openTab = function(tabName) {

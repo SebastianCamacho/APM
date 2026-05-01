@@ -574,6 +574,18 @@ h1, h2, h3, h4, h5, h6, .card-title, .fw-bold {
     transform: translateX(0);
 }
 
+/* Forzar visibilidad en dispositivos táctiles o pantallas pequeñas */
+@media (hover: none), (max-width: 991px) {
+    .action-buttons {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    
+    .printer-card {
+        padding-bottom: 1rem !important; /* Espacio extra para los botones en vertical */
+    }
+}
+
 .btn-action {
     width: 36px;
     height: 36px;
@@ -587,9 +599,15 @@ h1, h2, h3, h4, h5, h6, .card-title, .fw-bold {
     transition: all 0.2s ease;
 }
 
-.btn-edit:hover {
+.btn-edit:hover,
+.btn-cut:hover {
     background-color: var(--primary-tint-bg);
     color: var(--primary);
+}
+
+.btn-drawer:hover {
+    background-color: var(--running-bg);
+    color: var(--success-icon);
 }
 
 .btn-delete:hover {

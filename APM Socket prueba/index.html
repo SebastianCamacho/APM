@@ -83,6 +83,24 @@
 
     <hr style="margin: 30px 0;">
 
+    <h2>Comandos Directos (ESC/POS)</h2>
+    <p>Envía comandos inmediatos a la impresora sin necesidad de imprimir un documento.</p>
+    <div style="background-color: #f0fdf4; padding: 15px; border-radius: 5px; border: 1px solid #bbf7d0;">
+        <label for="directPrinterId" style="font-weight: bold;">ID Impresora:</label>
+        <input type="text" id="directPrinterId" placeholder="Ej: printHambuger" value="printHambuger" style="padding: 5px;">
+        
+        <div style="margin-top: 10px; display: flex; gap: 10px;">
+            <button onclick="sendDirectCommand('Cut')" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px;">
+                Cortar Papel
+            </button>
+            <button onclick="sendDirectCommand('Drawer')" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; cursor: pointer; border-radius: 4px;">
+                Abrir Cajón
+            </button>
+        </div>
+    </div>
+
+    <hr style="margin: 30px 0;">
+
     <h2>Simulación de Facturación</h2>
     <p>Ingrese códigos (Ej: 1001, 1002, 1003) y haga clic en Cantidad para leer de la báscula.</p>
     

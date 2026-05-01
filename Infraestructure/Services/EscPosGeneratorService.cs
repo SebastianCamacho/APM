@@ -221,10 +221,10 @@ namespace AppsielPrintManager.Infraestructure.Services
             }
 
             commands.AddRange(FeedLines(8));
-            if (printerSettings.OpenCashDrawerWithoutPrint) commands.AddRange(OpenCashDrawer());
+            if (printerSettings.OpenCashDrawerWithoutPrint) commands.AddRange(GenerateOpenDrawerCommand());
             if (printerSettings.BeepOnPrint) commands.AddRange(GenerateBeep());
-            commands.AddRange(CutPaper());
-            if (printerSettings.OpenCashDrawerAfterPrint) commands.AddRange(OpenCashDrawer());
+            commands.AddRange(GenerateCutCommand());
+            if (printerSettings.OpenCashDrawerAfterPrint) commands.AddRange(GenerateOpenDrawerCommand());
 
             return Task.FromResult(commands.ToArray());
         }
@@ -329,9 +329,9 @@ namespace AppsielPrintManager.Infraestructure.Services
 
         private byte[] FeedLines(int lines) => new byte[] { ESC, 0x64, (byte)Math.Clamp(lines, 1, 255) };
 
-        private byte[] CutPaper() => new byte[] { GS, 0x56, 0x00 };
+        public byte[] GenerateCutCommand() => new byte[] { GS, 0x56, 0x00 };
 
-        private byte[] OpenCashDrawer() => new byte[] { ESC, 0x70, 0x00, 0x32, 0x32 };
+        public byte[] GenerateOpenDrawerCommand() => new byte[] { ESC, 0x70, 0x00, 0x32, 0x32 };
 
         private byte[] ProcessRenderedElement(RenderedElement element, PrinterSettings printerSettings)
         {

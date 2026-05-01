@@ -17,5 +17,15 @@ namespace AppsielPrintManager.Core.Interfaces
         /// <param name="printerSettings">La configuración de la impresora para aplicar estilos específicos o ancho de papel.</param>
         /// <returns>Una matriz de bytes que representa los comandos ESC/POS.</returns>
         Task<byte[]> GenerateEscPosCommandsAsync(TicketContent ticketContent, PrinterSettings printerSettings);
+
+        /// <summary>
+        /// Genera el comando para cortar el papel.
+        /// </summary>
+        byte[] GenerateCutCommand();
+
+        /// <summary>
+        /// Genera el comando para abrir el cajón monedero.
+        /// </summary>
+        byte[] GenerateOpenDrawerCommand();
     }
 }

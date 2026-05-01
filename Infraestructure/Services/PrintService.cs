@@ -260,5 +260,35 @@ namespace AppsielPrintManager.Infraestructure.Services
             await _settingsRepository.DeletePrinterSettingsAsync(printerId);
             _logger.LogInfo($"Configuración de impresora para '{printerId}' eliminada.", "PrintService");
         }
+
+        public async Task ExecuteDirectCommandAsync(string printerId, string commandType)
+        {
+            var printerSettings = await _settingsRepository.GetPrinterSettingsAsync(printerId);
+            if (printerSettings == null)
+            {
+                _logger.LogWarning($"No se puede ejecutar comando '{commandType}': Impresora '{printerId}' no encontrada.");
+                return;
+            }
+
+            byte[]? commands = null;
+            switch (commandType.ToLower())
+            {
+                case "cut":
+                    commands = _escPosGenerator.GenerateCutCommand();
+                    break;
+                case "drawer":
+                    commands = _escPosGenerator.GenerateOpenDrawerCommand();
+                    break;
+                default:
+                    _logger.LogWarning($"Comando directo '{commandType}' no soportado.");
+                    return;
+            }
+
+            if (commands != null)
+            {
+                _logger.LogInfo($"Ejecutando comando directo '{commandType}' en impresora '{printerId}' ({printerSettings.IpAddress}:{printerSettings.Port})");
+                await _tcpIpPrinterClient.PrintAsync(printerSettings.IpAddress ?? string.Empty, printerSettings.Port, commands);
+            }
+        }
     }
 }

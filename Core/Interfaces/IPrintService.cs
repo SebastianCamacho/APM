@@ -43,5 +43,12 @@ namespace AppsielPrintManager.Core.Interfaces
         /// <param name="printerId">El identificador único de la impresora a eliminar.</param>
         /// <returns>Tarea que representa la operación asíncrona.</returns>
         Task DeletePrinterSettingsAsync(string printerId);
+
+        /// <summary>
+        /// Ejecuta un comando directo en la impresora (Cortar, Abrir Cajón, etc.)
+        /// </summary>
+        /// <param name="printerId">ID de la impresora.</param>
+        /// <param name="commandType">Tipo de comando ("Cut", "Drawer")</param>
+        Task ExecuteDirectCommandAsync(string printerId, string commandType);
     }
 }
