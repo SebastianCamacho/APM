@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+  <style name="Maui.SplashTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <item name="android:windowBackground">@color/colorPrimary</item>
+    <item name="android:forceDarkAllowed">false</item>
+  </style>
+
+  <style name="Maui.MainTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <item name="android:forceDarkAllowed">false</item>
+    <item name="colorPrimary">@color/colorPrimary</item>
+    <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+    <item name="colorAccent">@color/colorAccent</item>
+    <item name="android:windowLightStatusBar">true</item>
+  </style>
+</resources>

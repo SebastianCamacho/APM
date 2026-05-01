@@ -1,0 +1,76 @@
+@inherits LayoutComponentBase
+@using BlazorUI.Services
+@inject AuthState AuthState
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<div class="app-layout">
+    <!-- Sidebar / NavMenu -->
+    <aside class="sidebar @(_isSidebarOpen ? "open" : "")">
+        <NavMenu />
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Topbar Mobile Toggle & Title Container -->
+        <header class="topbar">
+            <!-- Mobile Hamburger Button -->
+            <button class="menu-toggle d-md-none" @onclick="ToggleSidebar"
+                style="background: none; border: none; cursor: pointer; color: var(--text-primary); margin-right: 15px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Body Scrollable Space -->
+        <article class="content-scrollable">
+            @Body
+        </article>
+    </main>
+
+    <!-- Overlay for mobile: click fuera del sidebar lo cierra -->
+    @if (_isSidebarOpen)
+    {
+        <div class="sidebar-overlay d-md-none" @onclick="ToggleSidebar"
+            style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99;"></div>
+    }
+</div>
+
+@code {
+    private bool _isSidebarOpen = false;
+
+    protected override void OnInitialized()
+    {
+        // Redirigir al login si no estamos autenticados
+        if (!AuthState.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+
+        // Auto-cierre del sidebar al cambiar de página (tap en NavLink en Android)
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        if (_isSidebarOpen)
+        {
+            _isSidebarOpen = false;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void ToggleSidebar()
+    {
+        _isSidebarOpen = !_isSidebarOpen;
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

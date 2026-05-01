@@ -1,0 +1,296 @@
+@page "/login"
+@using BlazorUI.Components.Layout
+@using BlazorUI.Services
+@using AppsielPrintManager.Core.Interfaces
+@using System.Security.Cryptography
+@using System.Text
+@inject IAppConfigRepository AppConfigRepository
+@inject AuthState AuthState
+@inject NavigationManager NavigationManager
+@inject IPlatformService PlatformService
+@inject IDialogService DialogService
+@layout EmptyLayout
+
+@* Overlay de verificación de permisos - bloquea la UI mientras se comprueban permisos de Android *@
+@if (_checkingPermissions)
+{
+    <div class="d-flex flex-column align-items-center justify-content-center"
+         style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background-color: var(--page-bg); z-index: 9999;">
+        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="text-secondary fw-semibold">@_permissionMessage</p>
+    </div>
+}
+
+<div class="d-flex align-items-center justify-content-center" style="height: 100vh; width: 100vw; background-color: var(--page-bg); overflow: hidden; position: fixed; top: 0; left: 0;">
+    <div class="card shadow-lg border-0" style="width: 100%; max-width: 380px; padding: 25px; border-radius: 16px; height: fit-content; margin: 0 15px;">
+        <div class="text-center mb-3">
+            <div class="brand-logo mx-auto mb-2" style="width: 50px; height: 50px; font-size: 20px;">
+                A
+            </div>
+            <h3 class="fw-bold text-primary">Iniciar Sesión</h3>
+            <p class="text-secondary small">Accede a Appsiel Print Manager</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger p-2 mb-3 text-center small rounded fw-semibold border-0" style="background-color: var(--danger-tint-bg); color: var(--danger-icon);" role="alert">
+                @ErrorMessage
+            </div>
+        }
+
+        <form @onsubmit="HandleLogin">
+            <div class="mb-4">
+                <label class="form-label text-secondary fw-semibold small">Contraseña</label>
+                <input type="password" @bind="Password" class="form-control form-control-lg bg-inner-card border-secondary text-primary" placeholder="••••••••" required />
+            </div>
+
+            <button type="submit" disabled="@IsBusy" class="btn btn-primary w-100 btn-lg fw-bold" style="background-color: var(--primary); border-color: var(--primary);">
+                @(IsBusy ? "Verificando..." : "Ingresar")
+            </button>
+        </form>
+
+        <div class="text-center mt-3">
+            <p class="text-muted small mb-0">Versión 1.0.0</p>
+        </div>
+    </div>
+
+    <!-- Botón Detener Servicio (Fuera de la card, subido un poco) -->
+    <div class="position-fixed" style="bottom: 80px; right: 20px; z-index: 1000;">
+        <button class="btn btn-link p-0 text-decoration-none" @onclick="StopService" disabled="@IsStopping" title="Detener Servicio de Impresión">
+            <div class="d-flex flex-column align-items-center">
+                <img src="images/icono_stop.png" alt="Detener" style="width: 40px; height: 40px;" />
+                <span class="text-secondary mt-1" style="font-size: 10px;">Detener</span>
+            </div>
+        </button>
+    </div>
+</div>
+
+@code {
+    private string Password { get; set; } = "AppsielAPM123*";
+    private string ErrorMessage { get; set; } = "";
+    private bool IsBusy { get; set; } = false;
+
+    // Estado del overlay de verificación de permisos
+    private bool _checkingPermissions = false;
+    private string _permissionMessage = "Verificando permisos...";
+    private bool _firstRenderDone = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Init default password on first load if it doesn't exist just like in old code
+        var config = await AppConfigRepository.GetConfigAsync();
+        if (string.IsNullOrEmpty(config.AdminPasswordHash))
+        {
+            config.AdminPasswordHash = ComputeSha256Hash("AppsielAPM123*");
+            await AppConfigRepository.SaveConfigAsync(config);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_firstRenderDone)
+        {
+            _firstRenderDone = true;
+            // Permitir que la UI del Login se dibuje completamente antes de saltar los permisos.
+            await Task.Delay(500);
+            await CheckPermissionsAsync();
+        }
+    }
+
+    /// <summary>
+    /// Replica exactamente la lógica de LoginViewModel.CheckPermissionsAsync() de la UI antigua.
+    /// Solicita POST_NOTIFICATIONS (Android 13+) y exención de optimización de batería.
+    /// Si algún permiso se deniega, muestra alerta y cierra la aplicación.
+    /// Al finalizar, inicia el servicio de fondo si no está corriendo.
+    /// </summary>
+    private async Task CheckPermissionsAsync()
+    {
+#if ANDROID
+        _checkingPermissions = true;
+        _permissionMessage = "Verificando permisos...";
+        StateHasChanged();
+
+        try
+        {
+            // --- 1. Permiso de Notificaciones (Android 13+ / API 33+) ---
+            if (OperatingSystem.IsAndroidVersionAtLeast(33))
+            {
+                _permissionMessage = "Solicitando permiso de notificaciones...";
+                StateHasChanged();
+
+                var status = await Permissions.CheckStatusAsync<Permissions.PostNotifications>();
+                if (status != PermissionStatus.Granted)
+                {
+                    status = await Permissions.RequestAsync<Permissions.PostNotifications>();
+                }
+
+                if (status != PermissionStatus.Granted)
+                {
+                    ErrorMessage = "Permiso de notificaciones denegado.";
+                    _checkingPermissions = false;
+                    StateHasChanged();
+
+                    // Notificar al usuario la obligatoriedad
+                    await DialogService.ShowAlertAsync(
+                        "Atención",
+                        "El permiso de notificaciones es OBLIGATORIO para que el servicio de impresión pueda operar en segundo plano. La aplicación se cerrará.",
+                        "Entendido");
+
+                    // Cerrar la app
+                    Application.Current?.Quit();
+                    return;
+                }
+            }
+
+            // --- 2. Exención de Optimización de Batería ---
+            try
+            {
+                _permissionMessage = "Verificando configuración de batería...";
+                StateHasChanged();
+
+                var context = Android.App.Application.Context;
+                var pm = context.GetSystemService(Android.Content.Context.PowerService) as Android.OS.PowerManager;
+
+                if (pm != null && !pm.IsIgnoringBatteryOptimizations(context.PackageName))
+                {
+                    // 1. Informar al usuario antes de sacarlo de la App
+                    await DialogService.ShowAlertAsync(
+                        "Batería sin restricciones",
+                        "Para garantizar que el servicio de impresión siga recibiendo tickets con la pantalla apagada, es OBLIGATORIO que la app funcione sin restricciones de ahorro de energía.\n\nA continuación, se abrirá una ventana donde debes seleccionar 'Permitir' o 'Sin restricciones'.",
+                        "Ir a Configurar");
+
+                    // 2. Abrir Intent a la pantalla de configuración de batería
+                    var intent = new Android.Content.Intent(Android.Provider.Settings.ActionRequestIgnoreBatteryOptimizations);
+                    intent.SetData(Android.Net.Uri.Parse($"package:{context.PackageName}"));
+                    intent.SetFlags(Android.Content.ActivityFlags.NewTask);
+                    context.StartActivity(intent);
+
+                    // 3. Esperar que el usuario regrese y confirme
+                    await DialogService.ShowAlertAsync(
+                        "Verificando permisos",
+                        "¿Ya concediste el permiso en la pantalla anterior? Pulsa este botón para continuar; si la app aún detecta restricciones, se cerrará.",
+                        "Sí, ya está concedido");
+
+                    // 4. Validar el resultado de la acción del usuario
+                    if (!pm.IsIgnoringBatteryOptimizations(context.PackageName))
+                    {
+                        ErrorMessage = "Permiso de batería denegado.";
+                        _checkingPermissions = false;
+                        StateHasChanged();
+
+                        await DialogService.ShowAlertAsync(
+                            "Permiso Denegado",
+                            "No concediste el acceso de batería sin restricciones. La aplicación se cerrará.",
+                            "Entendido");
+
+                        // Cerrar app si no cumplió
+                        Application.Current?.Quit();
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error solicitando ignorar optimización de batería: {ex.Message}");
+            }
+
+            // --- 3. Iniciar el servicio de fondo si no está corriendo ---
+            try
+            {
+                _permissionMessage = "Iniciando servicio de impresión...";
+                StateHasChanged();
+
+                if (!PlatformService.IsBackgroundServiceRunning)
+                {
+                    await PlatformService.StartBackgroundServiceAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error iniciando servicio en segundo plano tras permisos: {ex.Message}");
+            }
+        }
+        finally
+        {
+            _checkingPermissions = false;
+            StateHasChanged();
+        }
+#endif
+    }
+
+    private async Task HandleLogin()
+    {
+        ErrorMessage = "";
+        IsBusy = true;
+        
+        try
+        {
+            var config = await AppConfigRepository.GetConfigAsync();
+            string inputHash = ComputeSha256Hash(Password ?? "");
+
+            if (inputHash == config.AdminPasswordHash)
+            {
+                AuthState.EnsureAuthenticated();
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                ErrorMessage = "Contraseña incorrecta.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Error interno: " + ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private string ComputeSha256Hash(string rawData)
+    {
+        using (SHA256 sha256Hash = SHA256.Create())
+        {
+            byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                builder.Append(bytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
+    }
+
+    private bool IsStopping { get; set; } = false;
+
+    private async Task StopService()
+    {
+        if (IsStopping) return;
+        IsStopping = true;
+        
+        try
+        {
+            if (PlatformService.IsBackgroundServiceRunning)
+            {
+                await PlatformService.StopBackgroundServiceAsync();
+                ErrorMessage = "Servicio de fondo detenido.";
+            }
+            else
+            {
+                ErrorMessage = "El servicio de fondo no estaba en ejecución.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Error al detener el servicio: " + ex.Message;
+        }
+        finally
+        {
+            IsStopping = false;
+        }
+    }
+}

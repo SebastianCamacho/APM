@@ -1,0 +1,219 @@
+@page "/scale-detail"
+@page "/scale-detail/{ScaleId}"
+@using AppsielPrintManager.Core.Interfaces
+@using AppsielPrintManager.Core.Models
+@using AppsielPrintManager.Core.Enums
+@using System.IO.Ports
+@inject IScaleRepository ScaleRepository
+@inject ILoggingService Logger
+@inject NavigationManager NavigationManager
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4">
+        <button class="btn btn-link p-0 me-3 text-secondary" @onclick="NavigateBack">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </button>
+        <h2 class="fw-bold mb-0">@(string.IsNullOrEmpty(ScaleId) ? "Nueva Báscula" : "Configuración de Báscula")</h2>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow-sm p-4 p-md-5">
+                <div class="row g-4">
+                    <!-- ID y Nombre -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">ID de Báscula</label>
+                        <input type="text" class="form-control premium-input" @bind="Scale.Id" placeholder="Ej: bascula01" readonly="@(!string.IsNullOrEmpty(ScaleId))">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Nombre</label>
+                        <input type="text" class="form-control premium-input" @bind="Scale.Name" placeholder="Ej: Báscula Principal">
+                    </div>
+
+                    <!-- Puerto COM -->
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Puerto COM</label>
+                        <div class="input-group">
+                            <select class="form-select premium-input" @bind="Scale.PortName">
+                                <option value="">Seleccione un puerto...</option>
+                                @foreach (var port in AvailablePorts)
+                                {
+                                    <option value="@port">@port</option>
+                                }
+                            </select>
+                            <button class="btn btn-outline-secondary border-start-0" @onclick="LoadPorts" title="Actualizar Puertos">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <hr class="my-2 opacity-10">
+                        <h5 class="fw-bold mb-3">Configuración Serial</h5>
+                    </div>
+
+                    <!-- Baud Rate y Data Bits -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Baud Rate</label>
+                        <input type="number" class="form-control premium-input" @bind="Scale.BaudRate">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Data Bits</label>
+                        <input type="number" class="form-control premium-input" @bind="Scale.DataBits">
+                    </div>
+
+                    <!-- Parity y Stop Bits -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Paridad</label>
+                        <select class="form-select premium-input" @bind="Scale.Parity">
+                            @foreach (ScaleParity p in Enum.GetValues(typeof(ScaleParity)))
+                            {
+                                <option value="@p">@p</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Stop Bits</label>
+                        <select class="form-select premium-input" @bind="Scale.StopBits">
+                            @foreach (ScaleStopBits s in Enum.GetValues(typeof(ScaleStopBits)))
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="d-flex justify-content-end gap-3 mt-5">
+                    <button class="btn btn-link text-secondary fw-bold text-decoration-none" @onclick="NavigateBack">Cancelar</button>
+                    <button class="btn btn-primary px-5 fw-bold" @onclick="SaveScale" disabled="@IsBusy">
+                        @if (IsBusy)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        }
+                        Guardar Báscula
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    [Parameter] public string? ScaleId { get; set; }
+
+    private Scale Scale { get; set; } = new();
+    private List<string> AvailablePorts { get; set; } = new();
+    private bool IsBusy { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadPorts();
+        if (!string.IsNullOrEmpty(ScaleId))
+        {
+            await LoadScale();
+        }
+        else
+        {
+            InitializeNewScale();
+        }
+    }
+
+    private void InitializeNewScale()
+    {
+        Scale = new Scale 
+        { 
+            BaudRate = 9600,
+            DataBits = 8,
+            Parity = ScaleParity.None,
+            StopBits = ScaleStopBits.One,
+            IsActive = true
+        };
+    }
+
+    private async Task LoadScale()
+    {
+        IsBusy = true;
+        try
+        {
+            var s = await ScaleRepository.GetByIdAsync(ScaleId!);
+            if (s != null)
+            {
+                Scale = s;
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/basculas");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error loading scale detail: {ex.Message}", ex, "ScaleDetail");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void LoadPorts()
+    {
+        try
+        {
+#if WINDOWS
+            AvailablePorts = SerialPort.GetPortNames().ToList();
+#else
+            AvailablePorts = new List<string> { "COM1", "COM2", "COMMOCK" };
+#endif
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error enumerating serial ports: {ex.Message}", ex, "ScaleDetail");
+        }
+    }
+
+    private async Task SaveScale()
+    {
+        if (string.IsNullOrWhiteSpace(Scale.Id) || string.IsNullOrWhiteSpace(Scale.Name)) return;
+        
+        IsBusy = true;
+        try
+        {
+            if (string.IsNullOrEmpty(ScaleId))
+            {
+                await ScaleRepository.AddAsync(Scale);
+            }
+            else
+            {
+                await ScaleRepository.UpdateAsync(Scale);
+            }
+
+            // Sync with background service
+            try
+            {
+                using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+                await client.GetAsync("http://localhost:7000/websocket/reload-scales");
+            }
+            catch { }
+
+            Logger.LogInfo($"Scale {Scale.Id} saved.", "ScaleDetail");
+            NavigateBack();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error saving scale: {ex.Message}", ex, "ScaleDetail");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/basculas");
+    }
+}

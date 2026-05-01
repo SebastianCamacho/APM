@@ -35,11 +35,11 @@ public class TrayIcon : IDisposable
     private Image _iconActionStop;
 
     // Nombre del servicio de Windows del WorkerService (el nombre registrado en Windows Services).
-    private const string WindowsServiceName = "WorkerService"; // Asumiendo que este es el nombre real del servicio
-    // Nombre del ejecutable del WorkerService (el archivo .exe que se lanza).
-    private const string WorkerExeName = "WorkerService"; // Sin .exe para GetProcessesByName, con .exe para File.Exists y Process.Start
-    // Nombre del ejecutable de la interfaz de usuario MAUI.
-    private const string MauiUIExeName = "UI"; // Asumiendo que el proyecto MAUI UI se llama "UI" y su ejecutable es UI.exe
+    private const string WindowsServiceName = "AppsielPrintManagerWorker"; // Nombre del servicio Windows (debe coincidir con AssemblyName del WorkerService.csproj)
+    // Nombre del ejecutable del WorkerService (el archivo .exe que se lanza). Sin .exe para GetProcessesByName, con .exe para File.Exists y Process.Start.
+    private const string WorkerExeName = "AppsielPrintManagerWorker"; // Coincide con el AssemblyName definido en WorkerService.csproj
+    // Nombre del ejecutable de la interfaz de usuario Blazor Hybrid.
+    private const string MauiUIExeName = "BlazorUI";
 
 
     /// <summary>
@@ -173,9 +173,9 @@ public class TrayIcon : IDisposable
     }
 
     /// <summary>
-    /// Intenta encontrar la ruta del ejecutable de la interfaz de usuario MAUI.
+    /// Intenta encontrar la ruta del ejecutable de la interfaz de usuario Blazor Hybrid.
     /// </summary>
-    /// <returns>La ruta completa al ejecutable de la UI MAUI o null si no se encuentra.</returns>
+    /// <returns>La ruta completa al ejecutable de la UI BlazorUI o null si no se encuentra.</returns>
     private string FindMauiUIExecutablePath()
     {
         string appDirectory = AppContext.BaseDirectory;
@@ -187,11 +187,10 @@ public class TrayIcon : IDisposable
         // y allí está UI.exe
         string productionPath = Path.GetFullPath(Path.Combine(appDirectory, "..", uiExeFullName));
 
-        // --- Lógica de Rutas de Desarrollo ---
         // Desde appDirectory: E:\...\AppsielPrintManager\TrayApp\bin\Debug\net10.0-windows\
         // Subir 5 niveles para llegar a la raíz del proyecto AppsielPrintManager (que contiene los proyectos UI, WorkerService, etc.)
         string solutionRoot = Path.GetFullPath(Path.Combine(appDirectory, "..", "..", "..", "..")); // 5 ".."
-        string uiProjectBase = Path.Combine(solutionRoot, "UI"); // Ruta al proyecto UI
+        string uiProjectBase = Path.Combine(solutionRoot, "BlazorUI"); // Ruta al proyecto BlazorUI
         string debugPath = Path.Combine(uiProjectBase, "bin", "Debug", "net10.0-windows10.0.19041.0", "win-x64", uiExeFullName); // MAUI es net10.0-windows
         string releasePath = Path.Combine(uiProjectBase, "bin", "Release", "net10.0-windows10.0.19041.0", "win-x64", uiExeFullName);
 

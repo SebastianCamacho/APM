@@ -1,8 +1,11 @@
 <Solution>
+  <Project Path="BlazorUI/BlazorUI.csproj" Id="b6f53199-9732-4974-8787-c96f4c42d48a" />
   <Project Path="ConsoleApp/ConsoleApp.csproj" />
   <Project Path="Core/Core.csproj" />
   <Project Path="Infraestructure/Infraestructure.csproj" />
   <Project Path="TrayApp/TrayApp.csproj" />
-  <Project Path="UI/UI.csproj" Id="44da8534-ed12-4cd0-9574-f88acef06183" />
+  <Project Path="UI/UI.csproj" Id="44da8534-ed12-4cd0-9574-f88acef06183">
+    <Deploy />
+  </Project>
   <Project Path="WorkerService/WorkerService.csproj" />
 </Solution>

@@ -8,14 +8,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ServiceProcess;
 
-namespace UI.Services
+namespace BlazorUI.Services
 {
     public class WindowsWorkerServiceManager : IWorkerServiceManager
     {
         private readonly ILoggingService _logger;
         private Process _workerProcess;
-        private const string WorkerServiceName = "AppsielPrintManagerWorker"; // Nombre del proceso/servicio (AssemblyName del WorkerService.csproj)
-        private const string WorkerExeName = "AppsielPrintManagerWorker.exe"; // Nombre del ejecutable generado por el AssemblyName
+        private const string WorkerServiceName = "AppsielPrintManagerWorker"; // Nombre del proceso/servicio
+        private const string WorkerExeName = "AppsielPrintManagerWorker.exe"; // Nombre del ejecutable
 
         public WindowsWorkerServiceManager(ILoggingService logger)
         {
@@ -78,7 +78,7 @@ namespace UI.Services
 
                 // 2. RUTAS DE DESARROLLO (Búsqueda robusta y dinámica)
                 string solutionRoot = GetDevelopmentSolutionRoot(appDirectory);
-                string workerProjectBase = solutionRoot != null ? Path.Combine(solutionRoot, WorkerServiceName) : string.Empty;
+                string workerProjectBase = solutionRoot != null ? Path.Combine(solutionRoot, "WorkerService") : string.Empty;
 
                 var possiblePaths = new List<string>();
 
@@ -167,7 +167,7 @@ namespace UI.Services
             while (current != null)
             {
                 // Buscamos la carpeta que contiene el proyecto WorkerService o el archivo SLN
-                if (Directory.Exists(Path.Combine(current.FullName, WorkerServiceName)) ||
+                if (Directory.Exists(Path.Combine(current.FullName, "WorkerService")) ||
                     File.Exists(Path.Combine(current.FullName, "AppsielPrintManager.slnx")))
                 {
                     return current.FullName;

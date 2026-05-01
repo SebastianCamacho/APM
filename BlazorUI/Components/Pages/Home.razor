@@ -1,0 +1,177 @@
+@page "/"
+@using AppsielPrintManager.Core.Interfaces
+@implements IDisposable
+@inject IPlatformService PlatformService
+@inject ILoggingService Logger
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">Dashboard</h2>
+            <p class="text-secondary mb-0">Monitor de Servicios de Impresión Web</p>
+        </div>
+        <div class="status-indicator d-flex align-items-center">
+            <div class="status-dot @(IsServiceRunning ? "active" : "")"></div>
+            <span class="ms-2 fw-semibold @(IsServiceRunning ? "text-success" : "text-danger")">
+                @ServiceStatus
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Tarjeta de Servicio en Segundo Plano -->
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-container border border-primary text-primary rounded p-2 me-3" style="background-color: var(--primary-tint-bg)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                        </div>
+                        <h4 class="card-title fw-bold mb-0">Motor de Impresión</h4>
+                    </div>
+                    <p class="card-text text-secondary mb-4">
+                        Controla el servicio de fondo que permite a esta aplicación operar de manera invisible, escuchando órdenes de impresión de forma global en el sistema.
+                    </p>
+                    <div class="d-flex gap-2 mt-auto">
+                        <button class="btn border-primary px-4 d-flex align-items-center @(IsServiceRunning ? "text-primary" : "btn-primary text-white")" style="@(IsServiceRunning ? "background: transparent" : "")" @onclick="StartServiceAction" disabled="@(IsServiceRunning || IsBusy)">
+                            <svg class="me-2" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            Iniciar
+                        </button>
+                        <button class="btn border-danger px-4 d-flex align-items-center @(!IsServiceRunning ? "text-danger" : "btn-danger text-white")" style="@(!IsServiceRunning ? "background: transparent" : "")" @onclick="StopServiceAction" disabled="@(!IsServiceRunning || IsBusy)">
+                            <svg class="me-2" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+                            Detener
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de WebSocket Server -->
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-container border border-info text-info rounded p-2 me-3" style="background-color: var(--primary-tint-bg)">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+                        </div>
+                        <h4 class="card-title fw-bold mb-0">Servidor WebSocket</h4>
+                    </div>
+                    <p class="card-text text-secondary mb-4">
+                        Estado del puente de comunicación bidireccional en tiempo real entre las aplicaciones web de Appsiel y este dispositivo físico.
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto p-3 bg-card-dark rounded border border-secondary" style="border-color: var(--card-stroke) !important">
+                        <div class="d-flex flex-column">
+                            <span class="text-secondary small fw-semibold">Estado de Escucha</span>
+                            <span class="fs-5 fw-bold @(IsWebSocketServerRunning ? "text-success" : "text-muted")">
+                                @(IsWebSocketServerRunning ? "En línea 🟢" : "Desconectado ⚪")
+                            </span>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-secondary small fw-semibold">Apps Conectadas</span>
+                            <div class="fs-4 fw-bold">@CurrentClientCount</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool IsServiceRunning { get; set; }
+    private string ServiceStatus { get; set; } = "Detenido";
+    private bool IsWebSocketServerRunning { get; set; }
+    private int CurrentClientCount { get; set; }
+    private bool IsBusy { get; set; }
+    
+    private bool _isDisposed;
+    private PeriodicTimer? _timer;
+
+    protected override void OnInitialized()
+    {
+        UpdateServiceStatus();
+        _ = StartMonitoringAsync();
+    }
+
+    private void UpdateServiceStatus()
+    {
+        IsServiceRunning = PlatformService.IsBackgroundServiceRunning;
+        ServiceStatus = IsServiceRunning ? "En ejecución" : "Detenido";
+        IsWebSocketServerRunning = PlatformService.IsWebSocketServerRunning;
+        CurrentClientCount = PlatformService.CurrentClientCount;
+    }
+
+    private async Task StartMonitoringAsync()
+    {
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        
+        try
+        {
+            while (await _timer.WaitForNextTickAsync() && !_isDisposed)
+            {
+                UpdateServiceStatus();
+                // We use InvokeAsync to ensure UI is updated on the main thread
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Timer cancelled
+        }
+    }
+
+    private async Task StartServiceAction()
+    {
+        if (IsBusy) return;
+        IsBusy = true;
+        
+        try
+        {
+            if (!PlatformService.IsBackgroundServiceRunning)
+            {
+                await PlatformService.StartBackgroundServiceAsync();
+                Logger.LogInfo("Foreground Service start requested via Web UI.", "Dashboard");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error starting service: {ex.Message}", ex, "Dashboard");
+        }
+        finally
+        {
+            UpdateServiceStatus();
+            IsBusy = false;
+        }
+    }
+
+    private async Task StopServiceAction()
+    {
+        if (IsBusy) return;
+        IsBusy = true;
+        
+        try
+        {
+            if (PlatformService.IsBackgroundServiceRunning)
+            {
+                await PlatformService.StopBackgroundServiceAsync();
+                Logger.LogInfo("Foreground Service stop requested via Web UI.", "Dashboard");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error stopping service: {ex.Message}", ex, "Dashboard");
+        }
+        finally
+        {
+            UpdateServiceStatus();
+            IsBusy = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _isDisposed = true;
+        _timer?.Dispose();
+    }
+}
