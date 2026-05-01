@@ -7,7 +7,6 @@
     <base href="/" />
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
-    <link rel="stylesheet" href="BlazorUI.styles.css" />
     <link rel="icon" href="data:,">
 </head>
 
@@ -24,6 +23,48 @@
     </div>
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
+
+    <!-- ===== DEBUG: Captura global de errores no controlados ===== -->
+    <script>
+        // 1. Capturar errores JS globales (incluye errores de Blazor no controlados)
+        window.onerror = function (message, source, lineno, colno, error) {
+            console.error('[APM-ErrorCapture] window.onerror:', {
+                message: message,
+                source: source,
+                line: lineno,
+                col: colno,
+                stack: error ? error.stack : 'N/A'
+            });
+            return false; // No suprimir el error
+        };
+
+        // 2. Capturar promesas rechazadas sin .catch()
+        window.addEventListener('unhandledrejection', function (event) {
+            console.error('[APM-ErrorCapture] unhandledrejection:', {
+                reason: event.reason,
+                stack: event.reason ? (event.reason.stack || event.reason.message || event.reason) : 'N/A'
+            });
+        });
+
+        // 3. MutationObserver: detecta cuando Blazor hace visible el #blazor-error-ui
+        document.addEventListener('DOMContentLoaded', function () {
+            var errorUi = document.getElementById('blazor-error-ui');
+            if (errorUi) {
+                var observer = new MutationObserver(function (mutations) {
+                    mutations.forEach(function (mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                            var display = window.getComputedStyle(errorUi).display;
+                            if (display !== 'none') {
+                                console.error('[APM-ErrorCapture] ¡blazor-error-ui se hizo VISIBLE! Revisa los errores anteriores en consola.');
+                                console.trace('[APM-ErrorCapture] Stack trace del momento en que se mostró el error UI');
+                            }
+                        }
+                    });
+                });
+                observer.observe(errorUi, { attributes: true, attributeFilter: ['style'] });
+            }
+        });
+    </script>
 
 </body>
 

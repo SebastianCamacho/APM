@@ -98,9 +98,29 @@ namespace AppsielPrintManager.Infraestructure.Services
             }
 
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < template.TotalRows; i++)
+            int lastNonEmptyRow = -1;
+
+            // Primero encontramos la última fila que tiene contenido
+            for (int i = template.TotalRows - 1; i >= 0; i--)
             {
-                sb.AppendLine(new string(canvas[i]));
+                if (!string.IsNullOrWhiteSpace(new string(canvas[i])))
+                {
+                    lastNonEmptyRow = i;
+                    break;
+                }
+            }
+
+            // Si lastNonEmptyRow es -1, significa que todo el documento está vacío (hoja en blanco)
+            // En ese caso, podríamos imprimir al menos una línea para que el Form Feed funcione, 
+            // o simplemente no enviar nada. Vamos a enviar hasta la última fila con contenido.
+            int rowsToRender = lastNonEmptyRow >= 0 ? lastNonEmptyRow + 1 : 1; 
+
+            for (int i = 0; i < rowsToRender; i++)
+            {
+                // TrimEnd elimina los espacios a la derecha de la última palabra de la línea.
+                // Los espacios entre elementos (ej. Elemento A en columna 1 y Elemento B en columna 30) 
+                // NO se ven afectados porque esos espacios están en el medio de la cadena, no al final.
+                sb.AppendLine(new string(canvas[i]).TrimEnd());
             }
 
             return Task.FromResult(sb.ToString());

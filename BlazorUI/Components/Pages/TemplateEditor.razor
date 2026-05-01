@@ -9,8 +9,8 @@
 @inject IJSRuntime JS
 
 <div class=" py-4 pb-5 px-0 px-sm-3">
-    <!-- Sticky Header -->
-    <div class="sticky-top bg-light pt-2 pb-3 mb-4 border-bottom shadow-sm" style="z-index: 50; margin-top: -1.5rem;">
+    <!-- Header (No fijo, se desplaza con el scroll) -->
+    <div class="bg-light pt-2 pb-3 mb-4 border-bottom shadow-sm" style="margin-top: -1.5rem;">
         <div class="container-fluid d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mt-3 px-2 px-sm-3">
             <div class="d-flex align-items-center">
                 <button class="btn btn-link link-secondary p-0 me-3" @onclick="Cancel">
@@ -46,7 +46,7 @@
     {
         <div class="row ">
             <!-- Sidebar / Settings -->
-            <div class="col-12 col-lg-4 ">
+            <div class="col-12 col-lg-4 col-xl-3">
                 <div class="card border-0 shadow-sm p-4 mb-4">
                     <h5 class="fw-bold mb-3">Información General</h5>
                     <div class="mb-3">
@@ -69,7 +69,7 @@
             </div>
 
             <!-- Main Editor Area -->
-            <div class="col-12 col-lg-8 mt-5 mt-lg-0 px-0 px-sm-3">
+            <div class="col-12 col-lg-8 col-xl-9 mt-5 mt-lg-0 px-0 px-sm-3">
                 <div class="sections-container ">
                     @foreach (var tmplSection in Template.Sections.OrderBy(s => s.Order))
                     {
@@ -186,7 +186,7 @@
                                                 <div class="element-row border rounded-3 p-3 mb-2 bg-white shadow-xs position-relative overflow-hidden">
                                                     <div class="element-type-strip @GetElementTypeClass(tmplElement.Type)"></div>
                                                     <div class="row g-2 align-items-end">
-                                                        <div class="col-6 col-sm-4 col-xl-2">
+                                                        <div class="col-6 col-sm-4 col-xl-3 col-xxl-2">
                                                             <label class="form-label xx-small fw-bold text-uppercase text-secondary">Tipo</label>
                                                             <select class="form-select form-select-sm" value="@(tmplElement.Type ?? "Text")" @onchange="@(e => { tmplElement.Type = e.Value?.ToString(); StateHasChanged(); })" disabled="@(tmplSection.Type == "Table")">
                                                                 <option value="Text">Texto</option>
@@ -208,7 +208,7 @@
                                                             
                                                             @if (allowFixed)
                                                             {
-                                                                <div class="col-6 col-sm-2 col-xl-1 d-flex align-items-center mb-1">
+                                                                <div class="col-6 col-sm-2 col-xl-2 col-xxl-1 d-flex align-items-center mb-1">
                                                                     <div class="form-check form-switch p-0 m-0 d-flex flex-column align-items-start">
                                                                         <label class="form-check-label xx-small fw-bold text-uppercase text-secondary mb-1">Fijo</label>
                                                                         <input class="form-check-input ms-0 mt-0" type="checkbox" checked="@isFixed" @onchange="@(e => { if (e.Value is bool b && b) tmplElement.Properties["IsFixed"] = "true"; else tmplElement.Properties.Remove("IsFixed"); })" />
@@ -218,18 +218,18 @@
 
                                                             if (isFixed)
                                                             {
-                                                                <div class="col-12 col-sm-6 col-xl-3">
+                                                                <div class="col-12 col-sm-6 col-xl-4 col-xxl-3">
                                                                     <label class="form-label xx-small fw-bold text-uppercase text-secondary">Valor Fijo</label>
                                                                     <input type="text" class="form-control form-control-sm" @bind="tmplElement.StaticValue" placeholder="Texto manual..." />
                                                                 </div>
                                                             }
                                                             else
                                                             {
-                                                                <div class="col-12 col-sm-6 col-xl-2">
+                                                                <div class="col-12 col-sm-6 col-xl-4 col-xxl-2">
                                                                     <label class="form-label xx-small fw-bold text-uppercase text-secondary">Etiqueta</label>
                                                                     <input type="text" class="form-control form-control-sm" @bind="tmplElement.Label" placeholder="Ej: Total:" />
                                                                 </div>
-                                                                <div class="col-12 col-sm-6 col-xl-2">
+                                                                <div class="col-12 col-sm-6 col-xl-3 col-xxl-2">
                                                                     <label class="form-label xx-small fw-bold text-uppercase text-secondary">Fuente</label>
                                                                     <select class="form-select form-select-sm" @bind="tmplElement.Source">
                                                                         @foreach (var s in GetSourceSuggestions(tmplElement))
@@ -240,7 +240,7 @@
                                                                 </div>
                                                             }
 
-                                                            <div class="col-6 col-sm-4 col-xl-2">
+                                                            <div class="col-6 col-sm-4 col-xl-3 col-xxl-2">
                                                                 <label class="form-label xx-small fw-bold text-uppercase text-secondary">Tamaño</label>
                                                                 <select class="form-select form-select-sm" value="@GetFormatSize(tmplElement.Format)" @onchange="@(e => UpdateFormatSize(tmplElement, e.Value?.ToString(), false))">
                                                                     <option value="">Ninguno</option>
@@ -254,7 +254,7 @@
                                                             </div>
                                                             
                                                             bool isBold = tmplElement.Format?.Contains("Bold") == true;
-                                                            <div class="col-6 col-sm-2 col-xl-1 d-flex align-items-center mb-1">
+                                                            <div class="col-6 col-sm-2 col-xl-2 col-xxl-1 d-flex align-items-center mb-1">
                                                                 <div class="form-check p-0 m-0 d-flex flex-column align-items-start">
                                                                     <label class="form-check-label xx-small fw-bold text-uppercase text-secondary mb-1">Negrita</label>
                                                                     <input class="form-check-input ms-0 mt-0" type="checkbox" checked="@isBold" @onchange="@(e => UpdateFormatBold(tmplElement, (e.Value is bool b && b), false))" />
@@ -338,7 +338,7 @@
 
                                                         @if (currentType != "Line")
                                                         {
-                                                            <div class="col-6 col-sm-4 col-xl-2">
+                                                            <div class="col-6 col-sm-4 col-xl-3 col-xxl-2">
                                                                 <label class="form-label xx-small fw-bold text-uppercase text-secondary">Alineación</label>
                                                                 <select class="form-select form-select-sm" @bind="tmplElement.Align">
                                                                     <option value="Left">Izquierda</option>
@@ -348,7 +348,7 @@
                                                             </div>
                                                         }
 
-                                                        <div class="col-12 col-xl d-flex gap-1 justify-content-end align-items-end mb-1 mt-2 mt-xl-0">
+                                                        <div class="col-12 col-xl-4 col-xxl d-flex gap-1 justify-content-end align-items-end mb-1 mt-2 mt-xxl-0">
                                                             <button class="btn btn-sm btn-light border p-1" @onclick="() => MoveElement(tmplSection, tmplElement, -1)">
                                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
                                                             </button>
