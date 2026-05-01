@@ -475,12 +475,16 @@ namespace AppsielPrintManager.Infraestructure.Services
                                         if (doc.RootElement.TryGetProperty("PrinterId", out JsonElement pIdElem) &&
                                             doc.RootElement.TryGetProperty("Command", out JsonElement cmdElem))
                                         {
-                                            string? printerId = pIdElem.GetString();
-                                            string? command = cmdElem.GetString();
+                                            string? printerId = pIdElem.GetString()?.Trim();
+                                            string? command = cmdElem.GetString()?.Trim();
                                             if (!string.IsNullOrEmpty(printerId) && !string.IsNullOrEmpty(command))
                                             {
-                                                _logger.LogInfo($"Comando directo recibido de {clientId}: {command} para {printerId}", "WebSocketServerService");
-                                                _printService.ExecuteDirectCommandAsync(printerId, command).Forget();
+                                                _logger.LogInfo($"[WebSocket] Solicitud de comando externo: Acción='{action}', Comando='{command}', Impresora='{printerId}' de Cliente: {clientId}", "WebSocketServerService");
+                                                await _printService.ExecuteDirectCommandAsync(printerId, command);
+                                            }
+                                            else
+                                            {
+                                                _logger.LogWarning($"[WebSocket] Solicitud de comando incompleta de {clientId}. PrinterId o Command vacíos.", "WebSocketServerService");
                                             }
                                         }
                                     }

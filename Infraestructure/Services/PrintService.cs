@@ -270,18 +270,30 @@ namespace AppsielPrintManager.Infraestructure.Services
                 return;
             }
 
+            _logger.LogInfo($"Recibida solicitud de comando directo: '{commandType}' para '{printerId}'", "PrintService");
+
             byte[]? commands = null;
-            switch (commandType.ToLower())
+            string cmdLower = commandType.Trim().ToLower();
+
+            if (cmdLower == "cut")
             {
-                case "cut":
-                    commands = _escPosGenerator.GenerateCutCommand();
-                    break;
-                case "drawer":
-                    commands = _escPosGenerator.GenerateOpenDrawerCommand();
-                    break;
-                default:
-                    _logger.LogWarning($"Comando directo '{commandType}' no soportado.");
-                    return;
+                _logger.LogInfo("Generando comando de CORTE", "PrintService");
+                commands = _escPosGenerator.GenerateCutCommand();
+            }
+            else if (cmdLower == "drawer")
+            {
+                _logger.LogInfo("Generando comando de CAJÓN", "PrintService");
+                commands = _escPosGenerator.GenerateOpenDrawerCommand();
+            }
+            else if (cmdLower == "beep")
+            {
+                _logger.LogInfo("Generando comando de PITIDO (BEEP)", "PrintService");
+                commands = _escPosGenerator.GenerateBeepCommand();
+            }
+            else
+            {
+                _logger.LogWarning($"Comando directo '{commandType}' no soportado (Analizado como: '{cmdLower}').");
+                return;
             }
 
             if (commands != null)

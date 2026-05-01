@@ -95,6 +95,7 @@
 
                             <!-- Action Buttons (Hover managed in CSS) -->
                             <div class="action-buttons d-flex flex-column gap-2" @onclick:stopPropagation="true">
+                                <!-- Row 1: Management -->
                                 <div class="d-flex gap-2 justify-content-end">
                                     <button class="btn-action btn-edit" title="Editar" @onclick="() => NavigateToEditPrinter(printer.PrinterId)">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -103,12 +104,19 @@
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                     </button>
                                 </div>
+                                <!-- Row 2: Physical Actions -->
                                 <div class="d-flex gap-2 justify-content-end">
                                     <button class="btn-action btn-cut" title="Cortar Papel" @onclick="() => ExecuteCut(printer)">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.42 9.42 8 12"/><circle cx="4" cy="8" r="2"/><path d="m14 6-8.58 8.58"/><circle cx="4" cy="16" r="2"/><path d="M10.8 14.8 14 18"/><path d="M16 12h-2"/><path d="M22 12h-2"/></svg>
                                     </button>
                                     <button class="btn-action btn-drawer" title="Abrir Cajón" @onclick="() => ExecuteDrawer(printer)">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+                                    </button>
+                                </div>
+                                <!-- Row 3: Alerts -->
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button class="btn-action btn-beep" title="Hacer Sonar" @onclick="() => ExecuteBeep(printer)">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                                     </button>
                                 </div>
                             </div>
@@ -217,12 +225,13 @@
     {
         try
         {
+            Logger.LogInfo($"[UI] Solicitando CORTE de papel para {printer.PrinterId}", "PrintersPage");
             await PrintService.ExecuteDirectCommandAsync(printer.PrinterId, "Cut");
-            Logger.LogInfo($"Comando CORTAR enviado a {printer.PrinterId}", "PrintersPage");
+            Logger.LogInfo($"[UI] Comando CORTE enviado con éxito a {printer.PrinterId}", "PrintersPage");
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Error al cortar: {ex.Message}", ex, "PrintersPage");
+            Logger.LogError($"Error al cortar papel: {ex.Message}", ex, "PrintersPage");
         }
     }
 
@@ -230,12 +239,27 @@
     {
         try
         {
+            Logger.LogInfo($"[UI] Solicitando APERTURA de cajón para {printer.PrinterId}", "PrintersPage");
             await PrintService.ExecuteDirectCommandAsync(printer.PrinterId, "Drawer");
-            Logger.LogInfo($"Comando CAJÓN enviado a {printer.PrinterId}", "PrintersPage");
+            Logger.LogInfo($"[UI] Comando CAJÓN enviado con éxito a {printer.PrinterId}", "PrintersPage");
         }
         catch (Exception ex)
         {
             Logger.LogError($"Error al abrir cajón: {ex.Message}", ex, "PrintersPage");
+        }
+    }
+
+    private async Task ExecuteBeep(PrinterSettings printer)
+    {
+        try
+        {
+            Logger.LogInfo($"[UI] Solicitando PITIDO para {printer.PrinterId}", "PrintersPage");
+            await PrintService.ExecuteDirectCommandAsync(printer.PrinterId, "Beep");
+            Logger.LogInfo($"[UI] Comando PITIDO enviado con éxito a {printer.PrinterId}", "PrintersPage");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error al hacer pitido: {ex.Message}", ex, "PrintersPage");
         }
     }
 

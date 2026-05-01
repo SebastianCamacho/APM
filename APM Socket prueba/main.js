@@ -557,8 +557,8 @@ window.sendDirectCommand = function(command) {
 
     const payload = {
         Action: "ExecuteCommand",
-        PrinterId: printerId,
-        Command: command
+        PrinterId: printerId.trim(),
+        Command: command.trim()
     };
 
     logMessage(`Enviando comando directo: ${command} a la impresora ${printerId}`, 'info');

@@ -27,5 +27,10 @@ namespace AppsielPrintManager.Core.Interfaces
         /// Genera el comando para abrir el cajón monedero.
         /// </summary>
         byte[] GenerateOpenDrawerCommand();
+
+        /// <summary>
+        /// Genera el comando para hacer sonar el zumbador (pitido).
+        /// </summary>
+        byte[] GenerateBeepCommand();
     }
 }

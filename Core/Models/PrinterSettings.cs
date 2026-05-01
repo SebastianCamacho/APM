@@ -40,10 +40,6 @@ namespace AppsielPrintManager.Core.Models
         /// </summary>
         public bool OpenCashDrawerAfterPrint { get; set; }
 
-        /// <summary>
-        /// Indica si la impresora debe abrir el cajón monedero sin imprimir.
-        /// </summary>
-        public bool OpenCashDrawerWithoutPrint { get; set; }
 
         /// <summary>
         /// Indica el tipo de conexión de la impresora (TCP, Bluetooth, USB, IPP).

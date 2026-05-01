@@ -100,6 +100,9 @@
             <button onclick="sendDirectCommand('Drawer')" style="flex: 1; padding: 12px; background-color: #28a745; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;">
                 Abrir Cajón
             </button>
+            <button onclick="sendDirectCommand('Beep')" style="flex: 1; padding: 12px; background-color: #D600AA; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                Hacer Sonar
+            </button>
         </div>
     </div>
 
@@ -537,8 +540,8 @@
 
         const payload = {
             Action: "ExecuteCommand",
-            PrinterId: printerId,
-            Command: command
+            PrinterId: printerId.trim(),
+            Command: command.trim()
         };
 
         logMessage(`Enviando comando directo: ${command} a la impresora ${printerId}`, 'info');

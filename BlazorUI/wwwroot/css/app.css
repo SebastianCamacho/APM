@@ -582,7 +582,7 @@ h1, h2, h3, h4, h5, h6, .card-title, .fw-bold {
     }
     
     .printer-card {
-        padding-bottom: 1rem !important; /* Espacio extra para los botones en vertical */
+        padding-bottom: 4rem !important; /* Espacio extra para las 3 filas de botones */
     }
 }
 
@@ -608,6 +608,11 @@ h1, h2, h3, h4, h5, h6, .card-title, .fw-bold {
 .btn-drawer:hover {
     background-color: var(--running-bg);
     color: var(--success-icon);
+}
+
+.btn-beep:hover {
+    background-color: rgba(214, 0, 170, 0.1);
+    color: var(--magenta);
 }
 
 .btn-delete:hover {

@@ -221,11 +221,14 @@ namespace AppsielPrintManager.Infraestructure.Services
             }
 
             commands.AddRange(FeedLines(8));
-            if (printerSettings.OpenCashDrawerWithoutPrint) commands.AddRange(GenerateOpenDrawerCommand());
-            if (printerSettings.BeepOnPrint) commands.AddRange(GenerateBeep());
+            
+            _logger.LogInfo($"[EscPosGenerator] Finalizando documento. Configuración: BeepOnPrint={printerSettings.BeepOnPrint}, OpenCashDrawerAfterPrint={printerSettings.OpenCashDrawerAfterPrint}");
             commands.AddRange(GenerateCutCommand());
+
+            if (printerSettings.BeepOnPrint) commands.AddRange(GenerateBeepCommand());
             if (printerSettings.OpenCashDrawerAfterPrint) commands.AddRange(GenerateOpenDrawerCommand());
 
+            
             return Task.FromResult(commands.ToArray());
         }
 
@@ -332,6 +335,12 @@ namespace AppsielPrintManager.Infraestructure.Services
         public byte[] GenerateCutCommand() => new byte[] { GS, 0x56, 0x00 };
 
         public byte[] GenerateOpenDrawerCommand() => new byte[] { ESC, 0x70, 0x00, 0x32, 0x32 };
+
+        public byte[] GenerateBeepCommand() 
+        {
+            _logger.LogInfo("[EscPosGenerator] Generando secuencia de bytes para PITIDO (ESC B 3 2)");
+            return new byte[] { ESC, 0x42, 0x03, 0x02 }; // ESC B 3 2
+        }
 
         private byte[] ProcessRenderedElement(RenderedElement element, PrinterSettings printerSettings)
         {
