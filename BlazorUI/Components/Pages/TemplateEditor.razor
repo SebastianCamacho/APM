@@ -676,7 +676,7 @@
     {
         if (Template == null || Template.DocumentType != "Comanda") return;
 
-        // 1. Header -> COPY: (Debe ser el primero y consecutivo)
+        // 1. Header -> COPY: (Debe ser el primero)
         var header = Template.Sections.FirstOrDefault(s => s.Name == "Header");
         if (header != null)
         {
@@ -688,43 +688,36 @@
                 copyElement = new TemplateElement 
                 { 
                     Type = "Text", Label = "COPY:", Source = "order.COPY", 
-                    Format = "Bold", Align = "Left", Columns = 1 
+                    Format = "Bold", Align = "Left", Columns = 1, Order = 0
                 };
                 header.Elements.Add(copyElement);
             }
-            
-            // Reordenar lista para asegurar consecutividad
-            var others = header.Elements.Where(e => e != copyElement).OrderBy(e => e.Order).ToList();
-            header.Elements.Clear();
-            header.Elements.Add(copyElement);
-            header.Elements.AddRange(others);
-
-            for (int i = 0; i < header.Elements.Count; i++) header.Elements[i].Order = i + 1;
+            else
+            {
+                copyElement.Order = 0; // Forzar al inicio
+            }
         }
 
-        // 2. Footer -> Impreso por APM (Debe ser el último y consecutivo)
+        // 2. Footer -> Impreso por APM (Debe ser el último)
         var footer = Template.Sections.FirstOrDefault(s => s.Name == "Footer");
         if (footer != null)
         {
             footer.Elements ??= new List<TemplateElement>();
-            var apmElement = footer.Elements.FirstOrDefault(e => e.Label == "Impreso por APM");
+            // Corregido: Buscar por la etiqueta real que se asigna
+            var apmElement = footer.Elements.FirstOrDefault(e => e.Label == "Impreso por Appsiel - 3014159571");
 
             if (apmElement == null)
             {
                 apmElement = new TemplateElement 
                 { 
-                    Type = "Text", Label = "Impreso por Appsiel - 3014159571", Format = "Italic", Align = "Center"
+                    Type = "Text", Label = "Impreso por Appsiel - 3014159571", Format = "Italic", Align = "Center", Order = 99
                 };
                 footer.Elements.Add(apmElement);
             }
-            
-            // Reordenar lista para asegurar consecutividad
-            var others = footer.Elements.Where(e => e != apmElement).OrderBy(e => e.Order).ToList();
-            footer.Elements.Clear();
-            footer.Elements.AddRange(others);
-            footer.Elements.Add(apmElement);
-
-            for (int i = 0; i < footer.Elements.Count; i++) footer.Elements[i].Order = i + 1;
+            else
+            {
+                apmElement.Order = 99; // Forzar al final
+            }
         }
     }
 
