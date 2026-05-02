@@ -19,6 +19,7 @@ namespace AppsielPrintManager.Infraestructure.Services
     public class AndroidWebSocketService : IWebSocketService
     {
         private readonly ILoggingService _logger;
+        private readonly IPrintService _printService;
         private WatsonWsServer? _server;
         private int _currentClientCount = 0;
         private readonly object _lockObject = new object();
@@ -71,9 +72,10 @@ namespace AppsielPrintManager.Infraestructure.Services
             }
         }
 
-        public AndroidWebSocketService(ILoggingService logger)
+        public AndroidWebSocketService(ILoggingService logger, IPrintService printService)
         {
             _logger = logger;
+            _printService = printService;
         }
 
         /// <summary>
@@ -372,24 +374,45 @@ namespace AppsielPrintManager.Infraestructure.Services
                 }
                 else
                 {
-                    // Intentar detectar si es una actualización de plantilla
+                    // Intentar detectar si es una actualización de plantilla o comando directo
                     using (JsonDocument doc = JsonDocument.Parse(message))
                     {
-                        if (doc.RootElement.TryGetProperty("Action", out JsonElement actionProp) &&
-                            string.Equals(actionProp.GetString(), "UpdateTemplate", StringComparison.OrdinalIgnoreCase))
+                        if (doc.RootElement.TryGetProperty("Action", out JsonElement actionProp))
                         {
-                            var updateReq = JsonSerializer.Deserialize<UpdateTemplateRequest>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                            if (updateReq?.Template != null)
+                            string? action = actionProp.GetString();
+
+                            if (string.Equals(action, "UpdateTemplate", StringComparison.OrdinalIgnoreCase))
                             {
-                                _logger.LogInfo($"AndroidWebSocketService: UpdateTemplateRequest recibido de {clientId} para {updateReq.Template.DocumentType}");
-                                var updateArgs = new WebSocketMessageReceivedEventArgs<PrintTemplate>(clientId, updateReq.Template);
-                                OnTemplateUpdateReceived?.Invoke(this, updateArgs);
-                                return;
+                                var updateReq = JsonSerializer.Deserialize<UpdateTemplateRequest>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                                if (updateReq?.Template != null)
+                                {
+                                    _logger.LogInfo($"AndroidWebSocketService: UpdateTemplateRequest recibido de {clientId} para {updateReq.Template.DocumentType}");
+                                    var updateArgs = new WebSocketMessageReceivedEventArgs<PrintTemplate>(clientId, updateReq.Template);
+                                    OnTemplateUpdateReceived?.Invoke(this, updateArgs);
+                                    return;
+                                }
+                            }
+                            else if (string.Equals(action, "ExecuteCommand", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (doc.RootElement.TryGetProperty("PrinterId", out JsonElement pIdElem) &&
+                                    doc.RootElement.TryGetProperty("Command", out JsonElement cmdElem))
+                                {
+                                    string? printerId = pIdElem.GetString()?.Trim();
+                                    string? command = cmdElem.GetString()?.Trim();
+
+                                    if (!string.IsNullOrEmpty(printerId) && !string.IsNullOrEmpty(command))
+                                    {
+                                        _logger.LogInfo($"AndroidWebSocketService: Ejecutando comando directo: '{command}' para '{printerId}' solicitado por {clientId}");
+                                        // Ejecutar el comando directamente a través del PrintService
+                                        _ = Task.Run(async () => await _printService.ExecuteDirectCommandAsync(printerId, command));
+                                        return;
+                                    }
+                                }
                             }
                         }
                     }
 
-                    _logger.LogWarning($"AndroidWebSocketService: No se pudo procesar el mensaje como PrintJobRequest o UpdateTemplate: {message}");
+                    _logger.LogWarning($"AndroidWebSocketService: Mensaje no reconocido o incompleto de {clientId}: {message}");
                 }
             }
             catch (JsonException jex)
