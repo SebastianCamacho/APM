@@ -204,14 +204,19 @@
                                                         @if (currentType == "Text")
                                                         {
                                                             bool allowFixed = tmplSection.Type != "Table";
-                                                            bool isFixed = allowFixed && tmplElement.Properties.ContainsKey("IsFixed") && tmplElement.Properties["IsFixed"] == "true";
+                                                            bool isFixed = allowFixed && (tmplElement.Properties.ContainsKey("IsFixed") && tmplElement.Properties["IsFixed"] == "true" || !string.IsNullOrEmpty(tmplElement.StaticValue));
                                                             
                                                             @if (allowFixed)
                                                             {
                                                                 <div class="col-6 col-sm-2 col-xl-2 col-xxl-1 d-flex align-items-center mb-1">
                                                                     <div class="form-check form-switch p-0 m-0 d-flex flex-column align-items-start">
                                                                         <label class="form-check-label xx-small fw-bold text-uppercase text-secondary mb-1">Fijo</label>
-                                                                        <input class="form-check-input ms-0 mt-0" type="checkbox" checked="@isFixed" @onchange="@(e => { if (e.Value is bool b && b) tmplElement.Properties["IsFixed"] = "true"; else tmplElement.Properties.Remove("IsFixed"); })" />
+                                                                        <input class="form-check-input ms-0 mt-0" type="checkbox" checked="@isFixed" 
+                                                                               @onchange="@(e => { 
+                                                                                   bool val = (e.Value is bool b && b);
+                                                                                   if (val) tmplElement.Properties["IsFixed"] = "true"; 
+                                                                                   else { tmplElement.Properties.Remove("IsFixed"); tmplElement.StaticValue = null; } 
+                                                                               })" />
                                                                     </div>
                                                                 </div>
                                                             }
@@ -674,7 +679,7 @@
 
     private void EnsureMandatoryElements()
     {
-        if (Template == null || Template.DocumentType != "Comanda") return;
+        if (Template == null || Template.DocumentType != "comanda" ) return;
 
         // 1. Header -> COPY: (Debe ser el primero)
         var header = Template.Sections.FirstOrDefault(s => s.Name == "Header");
@@ -698,7 +703,7 @@
             }
         }
 
-        // 2. Footer -> Impreso por APM (Debe ser el último)
+        // 2. Footer -> Impreso por Appsiel - 3014159571 (Debe ser el último)
         var footer = Template.Sections.FirstOrDefault(s => s.Name == "Footer");
         if (footer != null)
         {

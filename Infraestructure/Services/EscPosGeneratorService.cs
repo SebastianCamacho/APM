@@ -21,7 +21,8 @@ namespace AppsielPrintManager.Infraestructure.Services
     public class EscPosGeneratorService : IEscPosGenerator
     {
         private readonly ILoggingService _logger;
-        private readonly Encoding _encoding;
+        private int _currentCodePage = 16;
+
         private const byte ESC = 0x1B;
         private const byte GS = 0x1D;
 
@@ -31,19 +32,8 @@ namespace AppsielPrintManager.Infraestructure.Services
         public EscPosGeneratorService(ILoggingService logger)
         {
             _logger = logger;
-            // Registrar proveedor para soportar Code Pages de Windows (como 1252)
+            // Registrar proveedor para soportar Code Pages extendidas (IBM850, 1252, etc.)
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            try
-            {
-                // Usaremos Windows-1252 (WPC1252) que es un estándar muy común en impresoras POS
-                _encoding = Encoding.GetEncoding(1252);
-            }
-            catch
-            {
-                _logger.LogWarning("No se pudo cargar el Code Page 1252. Usando fallback.");
-                try { _encoding = Encoding.GetEncoding("ISO-8859-1"); }
-                catch { _encoding = Encoding.UTF8; } // Último recurso, pero el mapeo manual en GetPosBytes salvará el día
-            }
         }
 
         public Task<byte[]> GenerateEscPosCommandsAsync(TicketContent ticketContent, PrinterSettings printerSettings)
@@ -53,10 +43,13 @@ namespace AppsielPrintManager.Infraestructure.Services
             // Iniciar con un alto por defecto razonable (80), se actualizará con el primer barcode del template
             _lastTemplateBarcodeHeight = 80;
 
-            var commands = new List<byte>();
+            // Cargar CodePage dinámico
+            _currentCodePage = printerSettings.CodePage;
 
-            // Inicializar impresora
-            commands.AddRange(InitializePrinter());
+            var commands = new List<byte>();
+            
+            // Inicializar impresora con settings dinámicos
+            commands.AddRange(InitializePrinter(printerSettings));
 
             // --- PROCESAMIENTO SECUENCIAL DE SECCIONES ---
             foreach (var section in ticketContent.Sections)
@@ -232,7 +225,7 @@ namespace AppsielPrintManager.Infraestructure.Services
             return Task.FromResult(commands.ToArray());
         }
 
-        private byte[] InitializePrinter()
+        private byte[] InitializePrinter(PrinterSettings settings)
         {
             var cmd = new List<byte>();
             cmd.AddRange(new byte[] { ESC, 0x40 }); // ESC @ - Inicializar
@@ -247,9 +240,9 @@ namespace AppsielPrintManager.Infraestructure.Services
 
             cmd.AddRange(new byte[] { ESC, 0x4D, 0x00 }); // Font A por defecto
 
-            // 3. SELECCIÓN DE TABLA DE CARACTERES (Code Page)
-            // n = 16 (0x10) suele ser WPC1252 (Windows-1252) que mapea con Encoding 1252
-            cmd.AddRange(new byte[] { ESC, 0x74, 0x10 });
+            // 3. SELECCIÓN DE TABLA DE CARACTERES DINÁMICA (Code Page)
+            _logger.LogInfo($"[EscPosGenerator] Configurando CodePage: {settings.CodePage}", "EscPosGenerator");
+            cmd.AddRange(new byte[] { ESC, 0x74, (byte)settings.CodePage });
 
             return cmd.ToArray();
         }
@@ -382,10 +375,8 @@ namespace AppsielPrintManager.Infraestructure.Services
         {
             if (string.IsNullOrEmpty(text)) return Array.Empty<byte>();
 
-            // Si detectamos que el sistema nos está dando UTF-8 o algo que no es 1252/850, 
-            // forzamos el mapeo de los bytes críticos del español.
-            if (_encoding.WebName.Contains("utf", StringComparison.OrdinalIgnoreCase) ||
-                _encoding.WebName.Equals("us-ascii", StringComparison.OrdinalIgnoreCase))
+            // Si es la página 0 (PC437), usamos el mapeo manual exacto para español
+            if (_currentCodePage == 0)
             {
                 var bytes = new List<byte>();
                 foreach (char c in text)
@@ -393,24 +384,23 @@ namespace AppsielPrintManager.Infraestructure.Services
                     if (c < 128) bytes.Add((byte)c);
                     else
                     {
-                        // Mapeo manual a Windows-1252
                         byte b = c switch
                         {
-                            'ñ' => 0xF1,
-                            'Ñ' => 0xD1,
-                            'á' => 0xE1,
-                            'é' => 0xE9,
-                            'í' => 0xED,
-                            'ó' => 0xF3,
-                            'ú' => 0xFA,
-                            'Á' => 0xC1,
-                            'É' => 0xC9,
-                            'Í' => 0xCD,
-                            'Ó' => 0xD3,
-                            'Ú' => 0xDA,
-                            '¿' => 0xBF,
-                            '¡' => 0xA1,
-                            _ => 0x3F // ?
+                            'ñ' => 0xA4,
+                            'Ñ' => 0xA5,
+                            'á' => 0xA0,
+                            'é' => 0x82,
+                            'í' => 0xA1,
+                            'ó' => 0xA2,
+                            'ú' => 0xA3,
+                            'Á' => 0x41, // Fallback
+                            'É' => 0x90,
+                            'Í' => 0x49,
+                            'Ó' => 0x4F,
+                            'Ú' => 0x55,
+                            '¿' => 0xA8,
+                            '¡' => 0xAD,
+                            _ => (byte)c
                         };
                         bytes.Add(b);
                     }
@@ -418,7 +408,16 @@ namespace AppsielPrintManager.Infraestructure.Services
                 return bytes.ToArray();
             }
 
-            return _encoding.GetBytes(text);
+            // Para otras tablas, usar windows-1252 (WPC1252) que es el estándar del sistema
+            try
+            {
+                return Encoding.GetEncoding(1252).GetBytes(text);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"[EscPosGenerator] Error encoding windows-1252: {ex.Message}");
+                return Encoding.ASCII.GetBytes(text);
+            }
         }
 
         private int GetCharsPerLine(int paperWidthMm, string font = "FontA")
@@ -438,7 +437,6 @@ namespace AppsielPrintManager.Infraestructure.Services
             return 1;
         }
 
-        private byte[] GenerateBeep() => new byte[] { GS, 0x28, 0x45, 0x04, 0x00, 0x01, 0x01, 0x01, 0x01 };
 
         private byte[] HandleBarcode(RenderedElement element, PrinterSettings printerSettings)
         {

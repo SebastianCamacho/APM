@@ -260,7 +260,7 @@ namespace AppsielPrintManager.Core.Services
             return new PrintTemplate
             {
                 TemplateId = "comanda-default",
-                Name = "Plantilla de Comanda Predeterminada",
+                Name = "Plantilla Predeterminada de Comanda",
                 DocumentType = "comanda",
                 Sections = new List<TemplateSection>
                 {
@@ -272,12 +272,12 @@ namespace AppsielPrintManager.Core.Services
                         Align = "Center",
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement { Type = "Text", Source = "order.COPY", Label = "COPY:", Format = "Bold", Align = "Left", Order = 1 },
-                            new TemplateElement { Type = "Text", Source = "order.RestaurantName", Format = "Bold,Large", Order = 2 },
-                            new TemplateElement { Type = "Text", Label = "COMANDA N°: ", Source = "order.Number", Format = "Bold", Order = 3 },
-                            new TemplateElement { Type = "Text", Label = "Mesa: ", Source = "order.Table", Order = 4 },
-                            new TemplateElement { Type = "Text", Label = "Mesero: ", Source = "order.Waiter", Order = 5 },
-                            new TemplateElement { Type = "Text", Label = "Fecha: ", Source = "order.Date", Order = 6 },
+                            new TemplateElement { Type = "Text", Source = "Order.Copy", Label = "COPY:", Format = "Bold", Align = "Left", Order = 1 },
+                            new TemplateElement { Type = "Text", Source = "Order.RestaurantName", Format = "Bold,Large", Order = 2 },
+                            new TemplateElement { Type = "Text", Label = "COMANDA N°: ", Source = "Order.Number", Format = "Bold", Order = 3 },
+                            new TemplateElement { Type = "Text", Label = "Mesa: ", Source = "Order.Table", Order = 4 },
+                            new TemplateElement { Type = "Text", Label = "Mesero: ", Source = "Order.Waiter", Order = 5 },
+                            new TemplateElement { Type = "Text", Label = "Fecha: ", Source = "Order.Date", Order = 6 },
                             new TemplateElement { Type = "Line", Order = 7 }
                         }
                     },
@@ -285,30 +285,20 @@ namespace AppsielPrintManager.Core.Services
                     {
                         Name = "Items",
                         Type = "Table",
-                        Format = "FontA Size3",
-                        DataSource = "order.Items",
+                        Format = "FontA Size3 Bold",
+                        DataSource = "Order.Items",
                         Order = 2,
                         Elements = new List<TemplateElement>
                         {
-                            new TemplateElement
-                            {
-                                Label = "Cant",
-                                Source = "Qty",
-                                WidthPercentage = 25,
-                                HeaderFormat = "FontB Size2",
-                                Format = "FontA Size3 ",
-                                Align = "Left",
-                                Order = 1
+                            new TemplateElement 
+                            { 
+                                Label = "Cant", Source = "Qty", WidthPercentage = 25, 
+                                HeaderFormat = "FontA Size2 Bold", Align = "Left", Order = 1 
                             },
-                            new TemplateElement
-                            {
-                                Label = "Descripción",
-                                Source = "Name",
-                                WidthPercentage = 75,
-                                HeaderFormat = "FontB Size2",
-                                Format = "FontA Size3 ",
-                                Align = "Left",
-                                Order = 2
+                            new TemplateElement 
+                            { 
+                                Label = "Producto", Source = "Name", WidthPercentage = 75, 
+                                HeaderFormat = "FontA Size2 Bold", Align = "Left", Order = 2 
                             }
                         }
                     },
@@ -321,9 +311,9 @@ namespace AppsielPrintManager.Core.Services
                         Elements = new List<TemplateElement>
                         {
                             new TemplateElement { Type = "Line", Order = 1 },
-                            new TemplateElement { Type = "Text", Label = "Notas: ", Source = "Detail",Format = "FontB Size2 ", Order = 2 },
-                            new TemplateElement { Type = "Text", Source = "order.GeneratedDate", Order = 3 },
-                            new TemplateElement { Type = "Text", StaticValue = "Impreso por APM ", Format = "", Order = 4 }
+                            new TemplateElement { Type = "Text", Label = "Notas: ", Source = "Detail", Order = 2 },
+                            new TemplateElement { Type = "Text", Source = "Order.GeneratedDate", Order = 3 },
+                            new TemplateElement { Type = "Text", Label = "Impreso por Appsiel - 3014159571", Format = "Italic", Order = 4 }
                         }
                     }
                 }

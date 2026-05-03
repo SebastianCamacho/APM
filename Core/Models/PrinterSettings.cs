@@ -61,5 +61,10 @@ namespace AppsielPrintManager.Core.Models
         /// Cada elemento en la lista es un 'PrinterId' de otra impresora configurada.
         /// </summary>
         public List<string> CopyToPrinterIds { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Code Page de la impresora (ej. 16 para WPC1252 estándar, 49 para Jaltech, 2 para PC850).
+        /// </summary>
+        public int CodePage { get; set; } = 49;
     }
 }
