@@ -27,8 +27,8 @@
 <div class="d-flex align-items-center justify-content-center" style="height: 100vh; width: 100vw; background-color: var(--page-bg); overflow: hidden; position: fixed; top: 0; left: 0;">
     <div class="card shadow-lg border-0" style="width: 100%; max-width: 380px; padding: 25px; border-radius: 16px; height: fit-content; margin: 0 15px;">
         <div class="text-center mb-3">
-            <div class="brand-logo mx-auto mb-2" style="width: 50px; height: 50px; font-size: 20px;">
-                A
+            <div class="brand-logo-container mx-auto mb-3">
+                <img src="images/logo_compress.png" alt="Appsiel Print Manager" class="login-logo" />
             </div>
             <h3 class="fw-bold text-primary">Iniciar Sesión</h3>
             <p class="text-secondary small">Accede a Appsiel Print Manager</p>
@@ -47,7 +47,7 @@
                 <input type="password" @bind="Password" class="form-control form-control-lg bg-inner-card border-secondary text-primary" placeholder="••••••••" required />
             </div>
 
-            <button type="submit" disabled="@IsBusy" class="btn btn-primary w-100 btn-lg fw-bold" style="background-color: var(--primary); border-color: var(--primary);">
+            <button type="submit" disabled="@IsBusy" class="btn btn-primary w-100 btn-lg fw-bold">
                 @(IsBusy ? "Verificando..." : "Ingresar")
             </button>
         </form>

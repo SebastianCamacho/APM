@@ -5,7 +5,7 @@
 
 :root {
     /* Brand Colors */
-    --primary: #512BD4;
+    --primary: #2F154E;
     --primary-dark: #ac99ea;
     --primary-dark-text: #242424;
     --secondary: #DFD8F7;
@@ -322,25 +322,43 @@ h1, h2, h3, h4, h5, h6, .card-title, .fw-bold {
    NAV MENU STYLES
    ========================================================================== */
 .brand-header {
-    height: 100px;
-    display: flex;
-    align-items: center;
-    padding: 0 25px;
-    gap: 12px;
-}
-
-.brand-logo {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--primary), var(--magenta));
-    border-radius: 10px;
+    min-height: 120px; /* Altura mínima para que siempre haya espacio */
+    height: auto; /* Permite que el header crezca si es necesario */
+    padding: 20px 8px; /* Un poco de margen arriba y abajo */
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-    box-shadow: 0 4px 10px rgba(81, 43, 212, 0.3);
+    overflow: hidden;
+}
+
+.brand-logo-nav {
+    width: 100%;
+    height: auto; /* El alto lo define la imagen */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-logo-nav img {
+    width: 100%;
+    height: auto; /* Mantiene la proporción natural */
+    display: block;
+}
+
+.brand-logo-container {
+    width: 100%;
+    max-width: 300px; /* Un poco más grande para el login */
+    height: 130px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.login-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .brand-text {
@@ -746,7 +764,18 @@ h1, h2, h3, h4, h5, h6, .card-title, .fw-bold {
 
 /* About Page */
 .about-card { background: var(--card-bg) !important; border-radius: 1.25rem !important; }
-.logo-container { width: 100px; height: 100px; background-color: var(--primary-tint-bg); border-radius: 1.5rem; display: flex; align-items: center; justify-content: center; padding: 1.25rem; }
+.logo-container { 
+    width: 100%; 
+    max-width: 400px; /* Ampliado a 400px como pediste */
+    height: 180px; 
+    background-color: var(--primary-tint-bg); /* Volvemos a poner el fondo */
+    border-radius: 1.5rem;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 20px; 
+    margin: 0 auto 2.5rem auto;
+}
 .version-badge .badge { font-size: 0.85rem; background-color: var(--primary-tint-bg) !important; color: var(--primary) !important; border-color: var(--primary-tint-bg) !important; }
 .btn-outline-secondary { border-color: var(--card-stroke) !important; color: var(--text-secondary) !important; }
 .btn-outline-secondary:hover { background-color: var(--neutral-tint-bg) !important; color: var(--text-primary) !important; }
